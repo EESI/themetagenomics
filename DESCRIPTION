@@ -1,0 +1,21 @@
+Package: themetagenomics
+Type: Package
+Title: A Topic Modeling Workflow for Metagenomic Data
+Version: 0.0.0.9000
+Author: Stephen Woloszynek
+Maintainer: Stephen Woloszynek <sw424@drexel.edu>
+Description: TBD
+License: CC0
+Encoding: UTF-8
+LazyData: true
+Depends:
+  R (>= 3.3.0)
+Imports: 
+  Rcpp (>= 0.12.8),
+  stm (>= 1.1.4)
+Suggests:
+  biom,
+  ggplot2,
+  rstanarm,
+  shiny
+LinkingTo: Rcpp
