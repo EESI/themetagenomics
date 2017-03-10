@@ -3,11 +3,9 @@
 
 #' Predict functional potential
 #'
-#' This predicts the functional potential of a topic metagenome.
-#' Raw OTU tables may be used as well. By default, the function
-#' uses PICRUSt's precalculated GreenGreens table. If the user
-#' chooses to provide his or her own, then the table must be
-#' formatted accordingly.
+#' This predicts the functional potential of a metagenome given
+#' a precalculated mapping table which maps the functional
+#' content for a given OTU to content across functional genes.
 #'
 #' @param file_path Path to the precalculated table
 #' @param otu_id_targets Character vector of OTU IDs to predict
