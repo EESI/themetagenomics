@@ -37,6 +37,7 @@ vector<string> split_line(const string &source, const char *delimiter = " ") {
 
 List sweep_picrust(string file_path, StringVector otu_id_targets) {
 
+  int a=0;
   int o=0;
   List out;
   string rec;
@@ -66,6 +67,11 @@ List sweep_picrust(string file_path, StringVector otu_id_targets) {
   NumericMatrix pimeta_table(otu_id_targets.size(),pimeta_n);
 
   while(getline(file,rec,'\n')) { // starting at line 2, data row 1
+
+    if (a % 5000 == 0){
+      checkUserInterrupt();
+    }
+    a += 1;
 
     // check if at gene metadata lines (final 2)
     if (rec.substr(0,8) == "metadata"){
@@ -144,6 +150,7 @@ List sweep_picrust(string file_path, StringVector otu_id_targets) {
 
 List sweep_picrust_gz(string file_path, StringVector otu_id_targets) {
 
+  int a=0;
   int o=0;
   List out;
   string rec;
@@ -174,6 +181,11 @@ List sweep_picrust_gz(string file_path, StringVector otu_id_targets) {
   NumericMatrix pimeta_table(otu_id_targets.size(),pimeta_n);
 
   while(getline(file,rec,'\n')) { // starting at line 2, data row 1
+
+    if (a % 5000 == 0){
+      checkUserInterrupt();
+    }
+    a += 1;
 
     // check if at gene metadata lines (final 2)
     if (rec.substr(0,8) == "metadata"){
@@ -254,11 +266,9 @@ List sweep_picrust_gz(string file_path, StringVector otu_id_targets) {
 
 //' Predict functional potential
 //'
-//' This predicts the functional potential of a topic metagenome.
-//' Raw OTU tables may be used as well. By default, the function
-//' uses PICRUSt's precalculated GreenGreens table. If the user
-//' chooses to provide his or her own, then the table must be
-//' formatted accordingly.
+//' This predicts the functional potential of a metagenome given
+//' a precalculated mapping table which maps the functional
+//' content for a given OTU to content across functional genes.
 //'
 //' @param file_path Path to the precalculated table
 //' @param otu_id_targets Character vector of OTU IDs to predict
