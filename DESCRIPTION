@@ -5,17 +5,21 @@ Version: 0.0.0.9000
 Author: Stephen Woloszynek
 Maintainer: Stephen Woloszynek <sw424@drexel.edu>
 Description: TBD
+URL: http://github.com/sw1/themetagenomics
+BugReports: http://github.com/sw1/themetagenomics/issues
 License: CC0
 Encoding: UTF-8
 LazyData: true
 Depends:
-  R (>= 3.3.0)
+  R (>= 3.3.3)
 Imports: 
-  Rcpp (>= 0.12.8),
-  stm (>= 1.1.4)
+  stm (>= 1.1.4),
+  Rcpp (>= 0.12.8)
 Suggests:
-  biom,
+  dada2,
   ggplot2,
+  phyloseq,
   rstanarm,
   shiny
 LinkingTo: Rcpp
+RoxygenNote: 6.0.1
