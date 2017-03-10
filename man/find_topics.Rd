@@ -12,34 +12,38 @@ find_topics(K, otu_table, rows_are_taxa, control = list(), ...)
 \item{otu_table}{Phyloseq object or OTU table as a data frame or matrix with
 OTU IDs as row or column names.}
 
-\item{rows_are_taxa}{TRUE/FALSE whether OTUs are rows and samples are columns
+\item{rows_are_taxa}{Logical whether OTUs are rows and samples are columns
 or vice versa.}
 
-\item{control}{List of additional parameters control portions of the
-optimization. See details.}
+\item{control}{(optional) List of additional parameters control portions of
+the optimization. See details.}
 
-\item{formula}{Formula object with no response variable or a matrix
-containing topic prevalence covariates.}
+\item{formula}{(optional) Formula object with no response variable or a
+matrix containing topic prevalence covariates. Must provide metadata.}
 
-\item{sigma_prior}{scalar between 0 and 1. This sets the strength of
-regularization towards a diagonalized covariance matrix. Setting the value
-above 0 can be useful if topics are becoming too highly correlated.}
+\item{metadata}{Matrix or dataframe containing the metadata that corresponds
+with the formula.}
 
-\item{model}{Prefit STM model object to restart an existing model.}
+\item{sigma_prior}{(optional) Scalar between 0 and 1. This sets the strength
+of regularization towards a diagonalized covariance matrix. Setting the
+value above 0 can be useful if topics are becoming too highly correlated.}
 
-\item{iters}{Maximum number of EM iterations.}
+\item{model}{(optional) Prefit STM model object to restart an existing model.}
 
-\item{tol}{Convergence tolerance.}
+\item{iters}{(optional) Maximum number of EM iterations.}
 
-\item{batches}{Number of groups for memoized inference.}
+\item{tol}{(optional) Convergence tolerance.}
 
-\item{seed}{Seed for the random number generator to reproduce previous
-results.}
+\item{batches}{(optional) Number of groups for memoized inference.}
 
-\item{verbose}{Logical indicating whether information should be printed.}
+\item{seed}{(optional) Seed for the random number generator to reproduce
+previous results.}
 
-\item{verbose_n}{Integer determining the intervals at which labels are
+\item{verbose}{(optional) Logical indicating whether information should be
 printed.}
+
+\item{verbose_n}{(optional) Integer determining the intervals at which labels
+are printed.}
 }
 \value{
 A list containing the topic model fit, the documents, and the
