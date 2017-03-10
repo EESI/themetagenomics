@@ -7,7 +7,7 @@
 #' @param K A positive integer indicating the number of topics to be estimated.
 #' @param otu_table Phyloseq object or OTU table as a data frame or matrix with
 #'   OTU IDs as row or column names.
-#' @param rows_are_taxa TRUE/FALSE whether OTUs are rows and samples are columns
+#' @param rows_are_taxa Logical whether OTUs are rows and samples are columns
 #'   or vice versa.
 #' @param formula (optional) Formula object with no response variable or a
 #'   matrix containing topic prevalence covariates. Must provide metadata.
@@ -42,16 +42,13 @@ find_topics <- function(K,otu_table,rows_are_taxa,control=list(),...){
 
   }
 
-  # if (!missing(metadata)){
-  #   if (!identical(rownames(otu_table),rownames(metadata))) {
-  #     stop('Please ensure that the order of sample names in the OTU table and metadata match!\n')
-  #   }
-  # }
+  user_control_params <- names(control)
+  control <- control[user_control_params %in% c('gamma.enet','gamma.ic.k','gamma.ic.k',
+                                                'nits','burnin','alpha','eta',
+                                                'rp.s','rp.p','rp.d.group.size','SpectralRP','maxV')]
 
-  control <- control[names(control) %in% c('gamma.enet','gamma.ic.k','gamma.ic.k',
-                                           'nits','burnin','alpha','eta',
-                                           'rp.s','rp.p','rp.d.group.size','SpectralRP','maxV')]
-
+  warning(sprintf('Dropping the following control arguments: %s',
+                  paste(user_control_params[!(user_control_params %in% names(control))],collapse=' ')))
 
   vocab <- colnames(otu_table)
   docs <- lapply(seq_len(nrow(otu_table)), function(i) format_to_docs(otu_table[i,],vocab))
@@ -66,6 +63,12 @@ find_topics <- function(K,otu_table,rows_are_taxa,control=list(),...){
 stm_wrapper <- function(K,docs,vocab,metadata=NULL,formula=NULL,sigma_prior=0,
                         model=NULL,iters=500,tol=1e-05,batches=1,seed=NULL,
                         verbose=FALSE,verbose_n=5,control=control){
+
+  if (!missing(metadata)){
+    if (!is.null(names(docs)) & !is.null(rownames(metadata))){
+      warning('Sample names in OTU table and metadata are inconsistent!')
+    }
+  }
 
   fit <- stm::stm(K=K,documents=docs,vocab=vocab,
                   data=metadata,
