@@ -1,17 +1,15 @@
 #' Normalize an OTU table by 16S rRNA copy number
 #'
-#' This implements copy number normalization using the PICRUSt
-#' 16S GreenGreenes 13.5 copy number count table (default) or
-#' a user provided set of copy numbers.
+#' This implements copy number normalization using the PICRUSt 16S GreenGreenes
+#' 13.5 copy number count table (default) or a user provided set of copy
+#' numbers.
 #'
-#'
-#' @param otu_table Phyloseq object or OTU table as a data frame
-#' or matrix with OTU IDs as row or column names.
-#' @param rows_are_taxa TRUE/FALSE whether OTUs are rows and
-#' samples are columns or vice versa.
-#' @param copy_numbers A 2-column matrix or data frame of copy
-#' numbers where column 1 contains the OTU IDs and column 2 the
-#' copy numbers.
+#' @param otu_table Phyloseq object or OTU table as a data frame or matrix with
+#'   OTU IDs as row or column names.
+#' @param rows_are_taxa TRUE/FALSE whether OTUs are rows and samples are columns
+#'   or vice versa.
+#' @param copy_numbers A 2-column matrix or data frame of copy numbers where
+#'   column 1 contains the OTU IDs and column 2 the copy numbers.
 #' @return A normalized, rounded (to nearest integer) OTU table.
 #' @export
 
@@ -48,6 +46,9 @@ cnn <- function(otu_table,rows_are_taxa,copy_numbers){
   copy_numbers <- copy_numbers[otus_to_load,]
 
   norm_table <- round(t(t(otu_table)/copy_numbers[,2]))
+
+  norm_table <- norm_table[,colSums(norm_table)>0]
+  norm_table <- norm_table[rowSums(norm_table)>0,]
 
   return(norm_table)
 
