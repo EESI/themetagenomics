@@ -4,7 +4,7 @@
 \alias{cnn}
 \title{Normalize an OTU table by 16S rRNA copy number}
 \usage{
-cnn(otu_table, rows_are_taxa, copy_numbers)
+cnn(otu_table, rows_are_taxa, copy_numbers, drop = TRUE)
 }
 \arguments{
 \item{otu_table}{Phyloseq object or OTU table as a data frame or matrix with
@@ -15,6 +15,9 @@ or vice versa.}
 
 \item{copy_numbers}{A 2-column matrix or data frame of copy numbers where
 column 1 contains the OTU IDs and column 2 the copy numbers.}
+
+\item{drop}{Logical whether to drop empty samples or OTUs after normalization.
+Defaults to TRUE.}
 }
 \value{
 A normalized, rounded (to nearest integer) OTU table.
