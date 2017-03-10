@@ -66,7 +66,9 @@ stm_wrapper <- function(K,docs,vocab,metadata=NULL,formula=NULL,sigma_prior=0,
 
   if (!missing(metadata)){
     if (!is.null(names(docs)) & !is.null(rownames(metadata))){
-      warning('Sample names in OTU table and metadata are inconsistent!')
+      if (!identical(names(docs),rownames(metadata))){
+        warning('Sample names in OTU table and metadata are inconsistent!')
+      }
     }
   }
 
