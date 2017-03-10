@@ -10,10 +10,12 @@
 #'   or vice versa.
 #' @param copy_numbers A 2-column matrix or data frame of copy numbers where
 #'   column 1 contains the OTU IDs and column 2 the copy numbers.
+#' @param drop Logical whether to drop empty samples or OTUs after normalization.
+#' Defaults to TRUE.
 #' @return A normalized, rounded (to nearest integer) OTU table.
 #' @export
 
-cnn <- function(otu_table,rows_are_taxa,copy_numbers){
+cnn <- function(otu_table,rows_are_taxa,copy_numbers,drop=TRUE){
 
   if (missing(copy_numbers)){
 
@@ -38,7 +40,7 @@ cnn <- function(otu_table,rows_are_taxa,copy_numbers){
 
   }
 
-  if (is.null(rownames(otu_table))) stop('otu table must have otu ids as row or column names.')
+  if (is.null(rownames(otu_table))) stop('OTU table must have otu ids as row or column names.')
 
   otus_to_load <- colnames(otu_table)
 
@@ -47,8 +49,13 @@ cnn <- function(otu_table,rows_are_taxa,copy_numbers){
 
   norm_table <- round(t(t(otu_table)/copy_numbers[,2]))
 
-  norm_table <- norm_table[,colSums(norm_table)>0]
-  norm_table <- norm_table[rowSums(norm_table)>0,]
+  if (drop){
+    norm_table <- norm_table[,colSums(norm_table)>0]
+    norm_table <- norm_table[rowSums(norm_table)>0,]
+
+    cat(sprintf('Dropped %s empty OTU columns.\n',ncol(otu_table)-ncol(norm_table)))
+    cat(sprintf('Dropped %s empty sample rows.\n',nrow(otu_table)-nrow(norm_table)))
+  }
 
   return(norm_table)
 
