@@ -137,6 +137,7 @@ List sweep_picrust(string file_path, StringVector otu_id_targets) {
     SubMatrix<REALSXP> pimeta_table_out = pimeta_table(Range(0,o - 1),_);
 
     out["gene_ids"] = gene_ids;
+    out["pimeta_ids"] = pimeta_ids;
     out["matches"] = matches;
     out["genemeta"] = genemeta;
     out["genome_table_out"] = genome_table_out;
@@ -253,6 +254,7 @@ List sweep_picrust_gz(string file_path, StringVector otu_id_targets) {
     SubMatrix<REALSXP> pimeta_table_out = pimeta_table(Range(0,o - 1),_);
 
     out["gene_ids"] = gene_ids;
+    out["pimeta_ids"] = pimeta_ids;
     out["matches"] = matches;
     out["genemeta"] = genemeta;
     out["genome_table_out"] = genome_table_out;
