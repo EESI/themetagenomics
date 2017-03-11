@@ -18,6 +18,7 @@ Imports:
 Suggests:
   dada2,
   ggplot2,
+  lme4,
   phyloseq,
   rstanarm,
   shiny
