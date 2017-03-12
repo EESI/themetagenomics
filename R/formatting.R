@@ -1,5 +1,6 @@
 # Functions to reformat data
 
+# sample vector of counts to document format
 format_to_docs <- function(doc,vocab){
 
   doc <- doc[doc != 0]
@@ -9,6 +10,7 @@ format_to_docs <- function(doc,vocab){
 
 }
 
+# functional metadata strings to lists of lists
 format_gene_metadata <- function(picrust_out){
 
   gene_metadata <- picrust_out$genemeta
@@ -42,48 +44,65 @@ format_gene_metadata <- function(picrust_out){
 
 }
 
+# format functional output to gene table for inference
 format_gene_table <- function(functions,level,pw_targets,keep){
 
+  description_idx <- grepl('Description',names(functions$fxn_meta))
+  prefix <- gsub('^(.*)\\_Description$','\\1',names(functions$fxn_meta)[description_idx])
+  names(functions$fxn_meta)[description_idx] <- 'Description'
+  names(functions$fxn_meta)[!description_idx] <- 'Category'
+
   if (missing(pw_targets)){
-    pw_targets <- list(
-      c('metabolism',
-        'environmental information processing',
-        'organismal systems',
-        'cellular processes'),
-      c('carbohydrate metabolism',
-        'amino acid metabolism',
-        'lipid metabolism',
-        'cell motility',
-        'glycan biosynthesis and metabolism',
-        'xenobiotics biodegradation and metabolism',
-        'metabolism of cofactors and vitamins',
-        'nucleotide metabolism',
-        'metabolism of terpenoids and polyketides',
-        'biosynthesis of other secondary metabolites',
-        'energy metabolism',
-        'metabolism',
-        'membrane transport',
-        'cellular processes and signaling',
-        'genetic information processing'),
-      c('none'))
-    keep <- c(TRUE,TRUE,FALSE)
+
+    if (prefix == 'COG'){
+      pw_targets <- list(
+        c('poorly characterized'),
+        c('[r] general function prediction only',
+          '[s] function unknown')
+      )
+      keep <- c(FALSE,FALSE)
+    }
+    if (prefix == 'KEGG'){
+      pw_targets <- list(
+        c('metabolism',
+          'environmental information processing',
+          'organismal systems',
+          'cellular processes'),
+        c('carbohydrate metabolism',
+          'amino acid metabolism',
+          'lipid metabolism',
+          'cell motility',
+          'glycan biosynthesis and metabolism',
+          'xenobiotics biodegradation and metabolism',
+          'metabolism of cofactors and vitamins',
+          'nucleotide metabolism',
+          'metabolism of terpenoids and polyketides',
+          'biosynthesis of other secondary metabolites',
+          'energy metabolism',
+          'metabolism',
+          'membrane transport',
+          'cellular processes and signaling',
+          'genetic information processing'),
+        c('none'))
+      keep <- c(TRUE,TRUE,FALSE)
+    }
   }
 
   gene_counts <- functions$fxn_table
-  pathways <- functions$fxn_meta$KEGG_Pathways
+  category <- functions$fxn_meta[['Category']]
 
   K <- nrow(gene_counts)
 
-  pathways_level <- vector(mode='list',length=level)
+  category_level <- vector(mode='list',length=level)
   for (i in seq_len(level)){
-    pathways_level[[i]] <- lapply(pathways,function(x) sapply(x,function(y) y[i]))
+    category_level[[i]] <- lapply(category,function(x) sapply(x,function(y) y[i]))
   }
 
   for (i in seq_len(level)){
     if (keep[i] == TRUE){
       next
     }else{
-      pw_tmp <- unique(unlist(pathways_level[[i]]))
+      pw_tmp <- unique(unlist(category_level[[i]]))
       pw_targets[[i]] <- pw_tmp[!(pw_tmp %in% pw_targets[[i]])]
     }
   }
@@ -91,16 +110,16 @@ format_gene_table <- function(functions,level,pw_targets,keep){
 
   gene_filter <- vector(mode='list',length=level-1)
   for (i in seq_len(level-1)){
-    gene_filter[[i]] <- unlist(lapply(pw_targets[[i]],function(pw) names(which(sapply(pathways_level[[i]], function(x) any(x %in% pw))))))
+    gene_filter[[i]] <- unlist(lapply(pw_targets[[i]],function(pw) names(which(sapply(category_level[[i]], function(x) any(x %in% pw))))))
   }
   gene_filter <- Reduce(intersect, gene_filter)
 
   if (!is.null(gene_filter)){
-    pathways_level_tmp <- names(pathways_level[[level]])
-    pathways_level[[level]] <- pathways_level[[level]][pathways_level_tmp %in% gene_filter]
+    category_level_tmp <- names(category_level[[level]])
+    category_level[[level]] <- category_level[[level]][category_level_tmp %in% gene_filter]
   }
 
-  gene_targets <- lapply(pw_targets[[level]],function(pw) names(which(sapply(pathways_level[[level]], function(x) any(x %in% pw)))))
+  gene_targets <- lapply(pw_targets[[level]],function(pw) names(which(sapply(category_level[[level]], function(x) any(x %in% pw)))))
   names(gene_targets) <- pw_targets[[level]]
   gene_targets <- gene_targets[sapply(gene_targets,length)>0]
 
