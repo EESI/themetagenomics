@@ -1,16 +1,20 @@
 #' Predict topic functional content
 #'
-#' Given an STM object, this function predicts the functional content using
-#' a precalculated mapping table which maps the taxonomic abundance for a
-#' given OTU to functional abundance content across a set of functional genes.
+#' Given an STM object, this function predicts the functional content using a
+#' precalculated mapping table which maps the taxonomic abundance for a given
+#' OTU to functional abundance content across a set of functional genes.
 #'
 #' @param fit STM object
 #' @param reference Location of the precalculated mapping table. Can be .gz.
-#' @param scalar Value for scaling the topics over OTUs distrubution to
-#' predicted counts. Defaults at 1000.
-#' @drop Logical to drop empty gene columns. Defaults to TRUE.
-#' @return A list containing a matrix of gene counts across topics, a list
-#' of associated functional metadata, and matrix of PICRUSt gene metadata.
+#' @param scalar (optional) Value for scaling the topics over OTUs distrubution
+#'   to predicted counts. Defaults to 100.
+#' @param drop (optional) Logical to drop empty gene columns. Defaults to TRUE.
+#'
+#' @return A list containing
+#'
+#' \item{fxn_table}{A matrix of gene counts across topics}
+#' \item{fxn_meta}{A list of associated functional metadata}
+#' \item{pi_meta}{matrix of PICRUSt gene metadata}
 #' @export
 
 predict_functions <- function(fit,reference_path,scalar=100,drop=TRUE){
