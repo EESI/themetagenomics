@@ -46,8 +46,11 @@ printed.}
 are printed.}
 }
 \value{
-A list containing the topic model fit, the documents, and the
-  vocabulary.
+A list containing
+
+\item{fit}{The topic model fit}
+\item{docs}{The documents}
+\item{vocab}{The vocabulary}
 }
 \description{
 Given an OTU table, this function converts the OTU counts across samples into

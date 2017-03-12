@@ -1,3 +1,5 @@
+# Functions to reformat data
+
 format_to_docs <- function(doc,vocab){
 
   doc <- doc[doc != 0]
@@ -121,4 +123,3 @@ format_gene_table <- function(functions,level,pw_targets,keep){
   return(gene_table)
 
 }
-

@@ -4,22 +4,27 @@
 \alias{predict_functions}
 \title{Predict topic functional content}
 \usage{
-predict_functions(fit, reference_path, scaler = 1000)
+predict_functions(fit, reference_path, scalar = 100, drop = TRUE)
 }
 \arguments{
 \item{fit}{STM object}
 
-\item{scaler}{Value for scaling the topics over OTUs distrubution to
-predicted counts. Defaults at 1000.}
+\item{scalar}{(optional) Value for scaling the topics over OTUs distrubution
+to predicted counts. Defaults to 100.}
+
+\item{drop}{(optional) Logical to drop empty gene columns. Defaults to TRUE.}
 
 \item{reference}{Location of the precalculated mapping table. Can be .gz.}
 }
 \value{
-A list containing a matrix of gene counts across topics, a list
-of associated functional metadata, and matrix of PICRUSt gene metadata.
+A list containing
+
+\item{fxn_table}{A matrix of gene counts across topics}
+\item{fxn_meta}{A list of associated functional metadata}
+\item{pi_meta}{matrix of PICRUSt gene metadata}
 }
 \description{
-Given an STM object, this function predicts the functional content using
-a precalculated mapping table which maps the taxonomic abundance for a
-given OTU to functional abundance content across a set of functional genes.
+Given an STM object, this function predicts the functional content using a
+precalculated mapping table which maps the taxonomic abundance for a given
+OTU to functional abundance content across a set of functional genes.
 }

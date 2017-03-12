@@ -12,6 +12,7 @@
 #'   column 1 contains the OTU IDs and column 2 the copy numbers.
 #' @param drop Logical whether to drop empty samples or OTUs after normalization.
 #' Defaults to TRUE.
+#'
 #' @return A normalized, rounded (to nearest integer) OTU table.
 #' @export
 
