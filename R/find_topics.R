@@ -47,8 +47,10 @@ find_topics <- function(K,otu_table,rows_are_taxa,control=list(),...){
                                                 'nits','burnin','alpha','eta',
                                                 'rp.s','rp.p','rp.d.group.size','SpectralRP','maxV')]
 
-  warning(sprintf('Dropping the following control arguments: %s',
-                  paste(user_control_params[!(user_control_params %in% names(control))],collapse=' ')))
+  if (length(control) < length(user_control_params)){
+    warning(sprintf('Dropping the following control arguments: %s',
+                    paste(user_control_params[!(user_control_params %in% names(control))],collapse=' ')))
+  }
 
   vocab <- colnames(otu_table)
   docs <- lapply(seq_len(nrow(otu_table)), function(i) format_to_docs(otu_table[i,],vocab))
