@@ -1,5 +1,9 @@
 picrust <- function(x,rows_are_taxa,reference_path,drop=TRUE){
 
+  if (!file.exists(reference_path)){
+    stop('Please provide a valid reference file.')
+  }
+
   if (rows_are_taxa == TRUE){
 
     otu_table <- t(otu_table)
