@@ -278,7 +278,6 @@ List sweep_picrust_gz(string file_path, StringVector otu_id_targets) {
 //' were present in the precalculated table and hence predicted,
 //' the PICRUSt gene metadata, the predicted gene table, and the
 //' PICRUSt metadata that contains confidence scores, etc.
-//' @export
 // [[Rcpp::export]]
 
 List picrust_otu(std::string file_path, StringVector otu_id_targets) {
