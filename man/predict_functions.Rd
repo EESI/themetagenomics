@@ -4,7 +4,7 @@
 \alias{predict_functions}
 \title{Predict topic functional content}
 \usage{
-predict_functions(fit, reference_path, scalar = 100, drop = TRUE)
+predict_functions(fit, reference_path, scalar = 100, drop = TRUE, ...)
 }
 \arguments{
 \item{fit}{STM object}
@@ -14,14 +14,15 @@ to predicted counts. Defaults to 100.}
 
 \item{drop}{(optional) Logical to drop empty gene columns. Defaults to TRUE.}
 
-\item{reference}{Location of the precalculated mapping table. Can be .gz.}
+\item{reference}{Location of the precalculated mapping file. See
+\code{link{download_ref}}}
 }
 \value{
 A list containing
 
 \item{fxn_table}{A matrix of gene counts across topics}
 \item{fxn_meta}{A list of associated functional metadata}
-\item{pi_meta}{matrix of PICRUSt gene metadata}
+\item{pi_meta}{matrix of method specific metadata}
 }
 \description{
 Given an STM object, this function predicts the functional content using a

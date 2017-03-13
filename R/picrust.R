@@ -1,3 +1,25 @@
+#' Predict topic functional content via PICRUSt
+#'
+#' Given an OTU abundance table prepared with the GreenGenes reference database,
+#' this function predicts the functional content using either COG or KO
+#' precalculated mapping tables that map the taxonomic abundance for a given OTU
+#' to functional abundance content across a set of functional genes.
+#'
+#' @param x An abundance table of samples verses OTUs
+#' @param rows_are_taxa TRUE/FALSE whether OTUs are rows and samples are columns
+#'   or vice versa.
+#' @param reference_path Location of the precalculated mapping file. See
+#'   \code{link{download_ref}}
+#' @param drop (optional) Logical whether to drop empty samples or OTUs after
+#'   normalization. Defaults to TRUE.
+#'
+#' @return A list containing
+#'
+#' \item{fxn_table}{A matrix of gene counts across topics}
+#' \item{fxn_meta}{A list of associated functional metadata}
+#' \item{pi_meta}{matrix of PICRUSt metadata (e.g., NSTI)}
+#' @export
+
 picrust <- function(x,rows_are_taxa,reference_path,drop=TRUE){
 
   if (!file.exists(reference_path)){

@@ -4,16 +4,18 @@
 \alias{download_ref}
 \title{Download PICRUSt reference tables}
 \usage{
-download_ref(reference, destination, verbose = FALSE)
+download_ref(destination, reference = "all", verbose = FALSE)
 }
 \arguments{
-\item{reference}{A string: ko, cog, or all.}
-
 \item{destination}{Location of the folder to save the reference files.}
 
-\item{verbose}{Logical to print status of download.}
+\item{reference}{(optional) A string for either gg_ko, gg_cog, silva_ko, or
+all. Defaults to all.}
+
+\item{verbose}{(optional) Logical to print status of download. Defaults to
+TRUE.}
 }
 \description{
-A function to download the KO and COG 13.5 GreenGenes reference tables
-for PICRUSt prediction.
+A function to download the KO and COG 13.5 GreenGenes reference tables for
+PICRUSt prediction.
 }

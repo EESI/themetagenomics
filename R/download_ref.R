@@ -1,14 +1,16 @@
 #' Download PICRUSt reference tables
 #'
-#' A function to download the KO and COG 13.5 GreenGenes reference tables
-#' for PICRUSt prediction.
+#' A function to download the KO and COG 13.5 GreenGenes reference tables for
+#' PICRUSt prediction.
 #'
-#' @param reference A string: ko, cog, or all.
+#' @param reference (optional) A string for either gg_ko, gg_cog, silva_ko, or
+#'   all. Defaults to all.
 #' @param destination Location of the folder to save the reference files.
-#' @param verbose Logical to print status of download.
+#' @param verbose (optional) Logical to print status of download. Defaults to
+#'   TRUE.
 #' @export
 
-download_ref <- function(reference='all',destination,verbose=FALSE){
+download_ref <- function(destination,reference='all',verbose=FALSE){
 
   dir.create(destination,showWarnings=FALSE,recursive=TRUE)
 

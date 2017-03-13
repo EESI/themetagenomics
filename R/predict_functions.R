@@ -5,7 +5,8 @@
 #' OTU to functional abundance content across a set of functional genes.
 #'
 #' @param fit STM object
-#' @param reference Location of the precalculated mapping table. Can be .gz.
+#' @param reference Location of the precalculated mapping file. See
+#'   \code{link{download_ref}}
 #' @param scalar (optional) Value for scaling the topics over OTUs distrubution
 #'   to predicted counts. Defaults to 100.
 #' @param drop (optional) Logical to drop empty gene columns. Defaults to TRUE.
@@ -14,7 +15,7 @@
 #'
 #' \item{fxn_table}{A matrix of gene counts across topics}
 #' \item{fxn_meta}{A list of associated functional metadata}
-#' \item{pi_meta}{matrix of PICRUSt gene metadata}
+#' \item{pi_meta}{matrix of method specific metadata}
 #' @export
 
 predict_functions <- function(fit,reference_path,scalar=100,drop=TRUE,...){

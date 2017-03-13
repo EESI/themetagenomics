@@ -1,3 +1,30 @@
+#' Predict topic functional content via tax4fun
+#'
+#' Given an abundance table prepared with the Silva reference database, this
+#' function predicts the functional content using a KO precalculated mapping
+#' table that maps the taxonomic abundance for given taxa to functional
+#' abundance content across a set of functional genes.
+#'
+#' @param x An abundance table of samples verses OTUs
+#' @param rows_are_taxa TRUE/FALSE whether OTUs are rows and samples are columns
+#'   or vice versa.
+#' @param reference_path Location of the precalculated mapping file. See
+#'   \code{link{download_ref}}
+#' @param type (optional) String for either uproc or pauda. Defaults to uproc.
+#' @param short (optional) Logical whether to use a short or long read
+#'   reference. Defaults to TRUE.
+#' @param copy_number_normalize (optional) Logical whether to perform 16S rRNA
+#'   copy number normalization. Defaults to FALSE.
+#' @param drop (optional) Logical whether to drop empty samples or OTUs after
+#'   normalization. Defaults to TRUE.
+#'
+#' @return A list containing
+#'
+#' \item{fxn_table}{A matrix of gene counts across topics}
+#' \item{fxn_meta}{A list of associated functional metadata}
+#' \item{pi_meta}{matrix of tax4fun metadata (e.g., FTU)}
+#' @export
+
 t4f <- function(x,rows_are_taxa,reference_path,type='uproc',short=TRUE,copy_number_normalize=FALSE,drop=TRUE){
 
   if (rows_are_taxa == TRUE){

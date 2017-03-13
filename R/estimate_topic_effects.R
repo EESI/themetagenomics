@@ -1,4 +1,20 @@
-estimate_topic_effects <- function(covariate,topics,metadata,nsims=100,ci=.95){
+#' Estimate topic effects for a given covariate
+#'
+#' Given a covariate of interest, measure its relationship with the samples over topics distribution estimated by the STM.
+#'
+#' @param covariate String corresponding to the name of the covariate of interest found in metadata.
+#' @param topics STM object containing the topic information
+#' @param metadata Dataframe or matrix of metadata. If the STM was fit with covariate information, this must point to the same metadata used in the STM.
+#' @param nsims (optional) Number of simulations to perform for inferring covariate effects.
+#' @param ui With of uncertainty interval to report effects. Defaults to .95.
+#' @return A list containing
+#'
+#' \item{est}{The estimate of the effect}
+#' \item{rank}{The rank of the topics based on the effect estimate (increasing)}
+#' \item{sig}{A vector of topic indexes for topics whose uncertainty intervals did not enclose 0.}
+#' @export
+
+estimate_topic_effects <- function(covariate,topics,metadata,nsims=100,ui=.95){
 
   fit <- topics$fit
   K <- fit$settings$dim$K
@@ -15,9 +31,9 @@ estimate_topic_effects <- function(covariate,topics,metadata,nsims=100,ci=.95){
   cov_type <- length(unique(effects$modelframe[,covariate]))
 
   if (cov_type > 2){
-    covariate_effects <- estimate_topic_effects_continuous(effects,covariate,nsims=nsims,ci=ci)
+    covariate_effects <- estimate_topic_effects_continuous(effects,covariate,nsims=nsims,ui=ui)
   }else if (cov_type == 2){
-    covariate_effects <- estimate_topic_effects_binary(effects,covariate,nsims=nsims,ci=ci)
+    covariate_effects <- estimate_topic_effects_binary(effects,covariate,nsims=nsims,ui=ui)
   }else{
     stop('Covariate has only 1 level!')
   }
@@ -26,7 +42,9 @@ estimate_topic_effects <- function(covariate,topics,metadata,nsims=100,ci=.95){
 
 }
 
-estimate_topic_effects_binary <- function(effects,covariate,nsims=100,ci=.95){
+#  Backend to extract binary effects for \code{\link{estimate_topic_effects}}.
+
+estimate_topic_effects_binary <- function(effects,covariate,nsims=100,ui=.95){
 
   K <- length(effects$topics)
 
@@ -39,7 +57,7 @@ estimate_topic_effects_binary <- function(effects,covariate,nsims=100,ci=.95){
   cdata <- cthis$cdata
   cmat <- cthis$cmatrix
   simbetas <- stm:::simBetas(effects$parameters,nsims=nsims)
-  offset <- (1-ci)/2
+  offset <- (1-ui)/2
 
   uvals <- levels(cdata[,covariate])[2]
 
@@ -62,7 +80,9 @@ estimate_topic_effects_binary <- function(effects,covariate,nsims=100,ci=.95){
 
 }
 
-estimate_topic_effects_continuous <- function(effects,covariate,nsims=100,ci=.95){
+#  Backend to extract continuous effects for \code{\link{estimate_topic_effects}}.
+
+estimate_topic_effects_continuous <- function(effects,covariate,nsims=100,ui=.95){
 
   K <- length(effects$topics)
 
@@ -71,12 +91,12 @@ estimate_topic_effects_continuous <- function(effects,covariate,nsims=100,ci=.95
   cdata <- cthis$cdata
   cmat <- cthis$cmatrix
   simbetas <- stm:::simBetas(effects$parameters,nsims=nsims)
-  offset <- (1-ci)/2
+  offset <- (1-ui)/2
 
   uvals <- cdata[,covariate]
 
   est <- matrix(0.0,K,length(uvals))
-  cis <- matrix(0.0,K,2,dimnames=list(NULL,paste0(c(offset,1-offset)*100,'%')))
+  uis <- matrix(0.0,K,2,dimnames=list(NULL,paste0(c(offset,1-offset)*100,'%')))
 
   est <- lapply(seq_len(K),function(x) matrix(0.0,1,3,
                                               dimnames=list('slope',c('estimate',paste0(c(offset,1-offset)*100,'%')))))
