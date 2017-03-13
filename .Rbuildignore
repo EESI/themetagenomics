@@ -2,5 +2,4 @@
 ^\.Rprofile$
 ^.*\.Rproj$
 ^\.Rproj\.user$
-^.*\.o$
-^.*\.os$
+^README\.Rmd$
