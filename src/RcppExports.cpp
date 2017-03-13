@@ -5,15 +5,15 @@
 
 using namespace Rcpp;
 
-// picrust
-List picrust(std::string file_path, StringVector otu_id_targets);
-RcppExport SEXP themetagenomics_picrust(SEXP file_pathSEXP, SEXP otu_id_targetsSEXP) {
+// picrust_otu
+List picrust_otu(std::string file_path, StringVector otu_id_targets);
+RcppExport SEXP themetagenomics_picrust_otu(SEXP file_pathSEXP, SEXP otu_id_targetsSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< std::string >::type file_path(file_pathSEXP);
     Rcpp::traits::input_parameter< StringVector >::type otu_id_targets(otu_id_targetsSEXP);
-    rcpp_result_gen = Rcpp::wrap(picrust(file_path, otu_id_targets));
+    rcpp_result_gen = Rcpp::wrap(picrust_otu(file_path, otu_id_targets));
     return rcpp_result_gen;
 END_RCPP
 }
