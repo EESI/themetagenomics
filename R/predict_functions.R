@@ -17,32 +17,20 @@
 #' \item{pi_meta}{matrix of PICRUSt gene metadata}
 #' @export
 
-predict_functions <- function(fit,reference_path,scalar=100,drop=TRUE){
+predict_functions <- function(fit,reference_path,scalar=100,drop=TRUE,...){
 
   beta <- round(scalar*exp(fit$beta$logbeta[[1]]))
   rownames(beta) <- paste0('T',1:nrow(beta))
   colnames(beta) <- fit$vocab
 
-  out <- picrust(reference_path,colnames(beta))
-  fxn_mapping <- out$genome_table_out
-  rownames(fxn_mapping) <- out$matches
-  colnames(fxn_mapping) <- out$gene_ids
-
-  overlap <- intersect(rownames(fxn_mapping),colnames(beta))
-  beta <- beta[,overlap]
-  fxn_mapping <- fxn_mapping[overlap,]
-
-  fxn_table <- round(beta %*% fxn_mapping)
-  fxn_meta <- format_gene_metadata(out)
-  pi_meta <- out$pimeta_table_out
-  rownames(pi_meta) <- fit$vocab
-  colnames(pi_meta) <- out$pimeta_ids
-
-  if (drop){
-    fxn_table <- fxn_table[,colSums(fxn_table)>0]
-    fxn_meta <- lapply(fxn_meta,function(x) x[colnames(fxn_table)])
+  if (grepl('13_5_precalculated',reference_path)){
+    predictions <- picrust(beta,rows_are_taxa=TRUE,reference_path=reference_path,drop=drop)
+  }else if (grepl('t4f',reference_path)){
+    predictions <- t4f(beta,rows_are_taxa=TRUE,reference_path=reference_path,drop=drop,...)
+  }else{
+    stop('Please provide a valid reference file.')
   }
 
-  return(list(fxn_table=fxn_table,fxn_meta=fxn_meta,pi_meta=pi_meta))
+  return(predictions)
 
 }
