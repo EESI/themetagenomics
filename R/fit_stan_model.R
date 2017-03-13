@@ -21,6 +21,7 @@
 #' \item{flagged}{Parameter estimates with Rhat statistics > 1.1}
 #' \item{inits}{If parameter estimates are flagged, a list of inits to initialize Rstan
 #' with more iterations.}
+#' @export
 
 fit_stan_model <- function(gene_table,inits,iters=1000,chains=1,return_fit=FALSE){
 

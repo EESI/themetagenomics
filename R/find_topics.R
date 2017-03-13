@@ -28,11 +28,12 @@
 #'   are printed.
 #' @param control (optional) List of additional parameters control portions of
 #'   the optimization. See details.
-#' @return A list containing the topic model fit, the documents, and the
-#'   vocabulary.
+#' @return A list containing
+#'
+#' \item{fit}{The topic model fit}
+#' \item{docs}{The documents}
+#' \item{vocab}{The vocabulary}
 #' @export
-
-
 
 find_topics <- function(K,otu_table,rows_are_taxa,control=list(),...){
 
@@ -61,6 +62,8 @@ find_topics <- function(K,otu_table,rows_are_taxa,control=list(),...){
   return(list(fit=fit,docs=docs,vocab=vocab))
 
 }
+
+#  An STM wrapper for \code{\link{find_topics}}.
 
 stm_wrapper <- function(K,docs,vocab,metadata=NULL,formula=NULL,sigma_prior=0,
                         model=NULL,iters=500,tol=1e-05,batches=1,seed=NULL,
