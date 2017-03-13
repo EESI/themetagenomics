@@ -4,14 +4,15 @@
 \alias{t4f}
 \title{Predict topic functional content via tax4fun}
 \usage{
-t4f(x, rows_are_taxa, reference_path, type = "uproc", short = TRUE,
-  copy_number_normalize = FALSE, drop = TRUE)
+t4f(taxa_table, rows_are_taxa, taxa, reference_path, type = "uproc",
+  short = TRUE, copy_number_normalize = FALSE, sample_normalize = FALSE,
+  drop = TRUE)
 }
 \arguments{
-\item{x}{An abundance table of samples verses OTUs}
-
 \item{rows_are_taxa}{TRUE/FALSE whether OTUs are rows and samples are columns
 or vice versa.}
+
+\item{taxa}{Dataframe or matrix containing the taxonomic information (N x 7).}
 
 \item{reference_path}{Location of the precalculated mapping file. See
 \code{link{download_ref}}}
@@ -24,8 +25,14 @@ reference. Defaults to TRUE.}
 \item{copy_number_normalize}{(optional) Logical whether to perform 16S rRNA
 copy number normalization. Defaults to FALSE.}
 
+\item{sample_normalize}{(optional) Logical whether to normalize functional
+predictions by the total functional abundance in a sample. Defaults to FALSE.}
+
 \item{drop}{(optional) Logical whether to drop empty samples or OTUs after
-normalization. Defaults to TRUE.}
+normalization and whether to drop KO annotations lacking pathway information.
+Defaults to TRUE.}
+
+\item{x}{An abundance table of samples verses OTUs}
 }
 \value{
 A list containing
