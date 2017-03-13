@@ -1,13 +1,14 @@
 Package: themetagenomics
-Type: Package
 Title: A Topic Modeling Workflow for Metagenomic Data
 Version: 0.0.0.9000
-Author: Stephen Woloszynek
-Maintainer: Stephen Woloszynek <sw424@drexel.edu>
+Authors@R: c(
+    person("Stephen", "Woloszynek", , "sw424@drexel.edu", c("aut", "cre")),
+    person("Drexel University", role = "cph")
+    )
 Description: TBD
 URL: http://github.com/sw1/themetagenomics
 BugReports: http://github.com/sw1/themetagenomics/issues
-License: CC0
+License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true
 Depends:
