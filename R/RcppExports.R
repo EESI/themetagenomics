@@ -13,7 +13,6 @@
 #' were present in the precalculated table and hence predicted,
 #' the PICRUSt gene metadata, the predicted gene table, and the
 #' PICRUSt metadata that contains confidence scores, etc.
-#' @export
 picrust_otu <- function(file_path, otu_id_targets) {
     .Call('themetagenomics_picrust_otu', PACKAGE = 'themetagenomics', file_path, otu_id_targets)
 }
