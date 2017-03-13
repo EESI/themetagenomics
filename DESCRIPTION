@@ -17,9 +17,9 @@ Imports:
   stm (>= 1.1.4),
   Rcpp (>= 0.12.8)
 Suggests:
-  dada2,
   ggplot2,
   lme4,
+  Matrix,
   phyloseq,
   rstan,
   shiny
