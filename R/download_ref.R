@@ -8,9 +8,10 @@
 #' @param destination Location of the folder to save the reference files.
 #' @param verbose (optional) Logical to print status of download. Defaults to
 #'   TRUE.
+#'
 #' @export
 
-download_ref <- function(destination,reference='all',verbose=FALSE){
+download_ref <- function(destination,reference='all',overwrite=FALSE,verbose=FALSE){
 
   dir.create(destination,showWarnings=FALSE,recursive=TRUE)
 
@@ -25,10 +26,19 @@ download_ref <- function(destination,reference='all',verbose=FALSE){
   }
 
   for (fn in fns){
-    download.file(sprintf('https://github.com/sw1/themetagenomics_data/raw/master/%s',fn),
-                  destfile(file.path(destination,fn)),
-                  quiet=verbose,
-                  mode='wb')
+
+    if (overwrite==TRUE | !file.exists(file.path(destination,fn))){
+
+      cat(sprintf('Downloading %s.\n',fn))
+
+      download.file(sprintf('https://github.com/sw1/themetagenomics_data/raw/master/%s',fn),
+                    destfile=file.path(destination,fn),
+                    quiet=verbose,
+                    method='libcurl',
+                    mode='w')
+
+    }
+
   }
 
 }
