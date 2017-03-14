@@ -73,7 +73,7 @@ estimate_topic_effects_binary <- function(effects,covariate,nsims=100,ui=.95){
   }
 
   est_mat <- do.call('rbind',est)
-  rank <- order(est_mat[,1])
+  rank <- dense_rank(est_mat[,1])
   sig <- which(rowSums(sign(est_mat[,2:3])) != 0)
 
   return(list(est=est,rank=rank,sig=sig))
@@ -114,7 +114,7 @@ estimate_topic_effects_continuous <- function(effects,covariate,nsims=100,ui=.95
   }
 
   est_mat <- do.call('rbind',est)
-  rank <- order(est_mat[,1])
+  rank <- dense_rank(est_mat[,1])
   sig <- which(rowSums(sign(est_mat[,2:3])) != 0)
 
   return(list(est=est,rank=rank,sig=sig,fitted=fitted))
