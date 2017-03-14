@@ -90,6 +90,7 @@ format_gene_table <- function(functions,level,pw_targets,keep){
 
   gene_counts <- functions$fxn_table
   category <- functions$fxn_meta[['Category']]
+  description <- sapply(functions$fxn_meta[['Description']],paste0,collapse='; ')
 
   K <- nrow(gene_counts)
 
@@ -125,8 +126,8 @@ format_gene_table <- function(functions,level,pw_targets,keep){
 
   j1 <- 1
   j2 <- 0
-  gene_table <- as.data.frame(matrix(0,sum(sapply(gene_targets,length)) * K,4,
-                                     dimnames=list(NULL,c('topic','pw','ko','count'))))
+  gene_table <- as.data.frame(matrix(0,sum(sapply(gene_targets,length)) * K,5,
+                                     dimnames=list(NULL,c('topic','pw','ko','description','count'))))
   for (i in seq_along(gene_targets)){
     genes <- gene_targets[[i]]
     for (k in seq_len(K)){
@@ -134,11 +135,39 @@ format_gene_table <- function(functions,level,pw_targets,keep){
       gene_table[j1:j2,1] <- k
       gene_table[j1:j2,2] <- pw_targets[[level]][i]
       gene_table[j1:j2,3] <- genes
-      gene_table[j1:j2,4] <- gene_counts[k,genes]
+      gene_table[j1:j2,4] <- description[genes]
+      gene_table[j1:j2,5] <- gene_counts[k,genes]
       j1 <- j2+1
     }
   }
 
   return(gene_table)
+
+}
+
+# generate pretty taxa names
+pretty_taxa_names <- function(x){
+
+  taxonomy <- c('Species','Genus','Family','Order','Class','Phylum','Kingdom')
+
+  taxon <- gsub('[a-z]__','',x[,taxonomy[1]])
+  taxon <- ifelse(taxon != '',paste(gsub('[a-z]__','',x[,taxonomy[2]]),taxon),'')
+  bad_names <- taxon == ''
+
+  for (tax in taxonomy[-1]){
+    clean <- gsub('[a-z]__','',x[bad_names,tax])
+    taxon[bad_names] <- ifelse(clean != '',paste(clean,tolower(tax)),'')
+    bad_names <- taxon == ''
+  }
+
+  taxon
+
+}
+
+# dplyr dense_rank
+dense_rank <- function(x) {
+
+  r <- rank(x,na.last='keep')
+  match(r,sort(unique(r)))
 
 }
