@@ -25,9 +25,9 @@ predict_functions <- function(fit,reference_path,scalar=100,drop=TRUE,...){
   colnames(beta) <- fit$vocab
 
   if (grepl('13_5_precalculated',reference_path)){
-    predictions <- picrust(beta,rows_are_taxa=TRUE,reference_path=reference_path,drop=drop)
+    predictions <- picrust(beta,rows_are_taxa=FALSE,reference_path=reference_path,drop=drop)
   }else if (grepl('t4f',reference_path)){
-    predictions <- t4f(beta,rows_are_taxa=TRUE,reference_path=reference_path,drop=drop,...)
+    predictions <- t4f(beta,rows_are_taxa=FALSE,reference_path=reference_path,drop=drop,...)
   }else{
     stop('Please provide a valid reference file.')
   }
