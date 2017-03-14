@@ -1,3 +1,8 @@
+#' @importFrom lme4 glmer.nb glmer
+#' @importFrom rstan stan
+#' @importFrom stats4 summary
+NULL
+
 #' Estimate function effects via HMC
 #'
 #' Given within topic functional predictions, estimate the effects at a given
@@ -7,10 +12,11 @@
 #'
 #' @param gene_table A gene_table formatted via \code{\link{format_gene_table}}.
 #' @param inits List of values for parameter initialization. If omitted, values
-#'   are generated via \code{\link{lme4::glmer.nb}}
+#'   are generated via \code{\link{glmer.nb}}
 #' @param iters Number of iterations for HMC. Defaults to 1000.
 #' @param chains (optional) Number of chains for HMC. Defaults to 1.
 #' @param return_fit (optional) Logical to return the rstan data and fit.
+#' @param verbose (optional) Logical to print progress.
 #'
 #' @return A list containing
 #'
@@ -23,7 +29,7 @@
 #' with more iterations.}
 #' @export
 
-fit_stan_model <- function(gene_table,inits,iters=1000,chains=1,return_fit=FALSE){
+fit_stan_model <- function(gene_table,inits,iters=1000,chains=1,return_fit=FALSE,verbose=FALSE){
 
   stan_dat <- list(N=nrow(gene_table),
                    J=length(unique(gene_table$pw)),
@@ -106,24 +112,23 @@ fit_stan_model <- function(gene_table,inits,iters=1000,chains=1,return_fit=FALSE
 
     if (verbose) cat('Generating initial values.\n')
 
-    mm_init <- lme4::glmer.nb(y ~ (1|pw) + (1|topic) + (1|pwxtopic),
-                              data=stan_table,
-                              verbose=verbose,
-                              ...)
+    mm_init <- glmer.nb(y ~ (1|pw) + (1|topic) + (1|pwxtopic),
+                        data=stan_table,
+                        verbose=verbose)
 
-    inits <- lapply(seq_len(chains),function(x) list(mu=lme4::fixef(mm_init),
-                                                     phi=lme4::getME(mm_init,"glmer.nb.theta"),
-                                                     b_pw=unlist(lme4::ranef(mm_init)$pw),
-                                                     b_topic=unlist(lme4::ranef(mm_init)$topic),
-                                                     b_pwxtopic=unlist(lme4::ranef(mm_init)$pwxtopic)))
+    inits <- lapply(seq_len(chains),function(x) list(mu=fixef(mm_init),
+                                                     phi=getME(mm_init,"glmer.nb.theta"),
+                                                     b_pw=unlist(ranef(mm_init)$pw),
+                                                     b_topic=unlist(ranef(mm_init)$topic),
+                                                     b_pwxtopic=unlist(ranef(mm_init)$pwxtopic)))
 
   }else if (class(inits) == 'glmerMod'){
 
-    inits <- lapply(seq_len(chains),function(x) list(mu=lme4::fixef(inits),
-                                                     phi=lme4::getME(inits,"glmer.nb.theta"),
-                                                     b_pw=unlist(lme4::ranef(inits)$pw),
-                                                     b_topic=unlist(lme4::ranef(inits)$topic),
-                                                     b_pwxtopic=unlist(lme4::ranef(inits)$pwxtopic)))
+    inits <- lapply(seq_len(chains),function(x) list(mu=fixef(inits),
+                                                     phi=getME(inits,"glmer.nb.theta"),
+                                                     b_pw=unlist(ranef(inits)$pw),
+                                                     b_topic=unlist(ranef(inits)$topic),
+                                                     b_pwxtopic=unlist(ranef(inits)$pwxtopic)))
 
   }else if (class(inits) == 'list'){
 
@@ -131,9 +136,13 @@ fit_stan_model <- function(gene_table,inits,iters=1000,chains=1,return_fit=FALSE
 
     inits <- lapply(seq_len(chains),function(x) inits)
 
+  }else if (is.null(inits) | tolower(inits) == 'none' | is.na(inits) | tolower(inits) == 'random'){
+
+    inits <- 'random'
+
   }else{
 
-    stop('inits must be a list or glmer.nb object (glmerMod).')
+    stop('inits must be a list, glmer.nb object (glmerMod), or NULL.')
 
   }
 
@@ -142,37 +151,33 @@ fit_stan_model <- function(gene_table,inits,iters=1000,chains=1,return_fit=FALSE
   if (chains > 1){
     if (verbose) cat('Preparing parallelization.\n')
     options_old <- options()
-    rstan_options_old <- rstan_options()
 
     on.exit(options(options_old),add=TRUE)
-    on.exit(rstan_options(rstan_options_old),add=TRUE)
 
-    rstan_options(auto_write=TRUE)
-    options(mc.cores = chains)
+    rstan::rstan_options(auto_write=TRUE)
+    options(mc.cores=chains)
   }
 
 
 
   if (verbose) cat('Fitting model via Stan.\n')
 
-  fit <- rstan::stan(model_code=stan_code,data=stan_dat,
+  fit <- stan(model_code=stan_code,data=stan_dat,
                      pars=c('theta'),include=FALSE,
                      init=inits,
                      iter=iters,chains=chains,
                      verbose=verbose)
 
-
-
   if (verbose) cat('Extracting summary.\n')
 
-  summary_pars <- c('mu','phi','b_pw','b_topic','b_pwxtopic','yhat')
+  summary_pars <- c('mu','phi','b_pw_sigma','b_topic_sigma','b_pwxtopic_sigma','b_pw','b_topic','b_pwxtopic','yhat')
   extract_summary <- vector(mode='list',length=length(summary_pars))
   names(extract_summary) <- summary_pars
   for (i in seq_along(extract_summary)){
 
     if (grepl('^b\\_',summary_pars[i])){
 
-      extract_summary_tmp <- rstan::summary(fit,pars=summary_pars[i])$summary
+      extract_summary_tmp <- summary(fit,pars=summary_pars[i])[['summary']]
       par_name <- gsub('^b\\_','',summary_pars[i])
       lookup_table <- unique(cbind(as.character(stan_dat[[par_name]]),as.character(stan_dat[[paste0(par_name,'_full')]])))
       rownames(extract_summary_tmp) <- lookup_table[,2][order(as.integer(lookup_table[,1],decreasing=TRUE))]
@@ -191,7 +196,7 @@ fit_stan_model <- function(gene_table,inits,iters=1000,chains=1,return_fit=FALSE
 
     }else{
 
-      extract_summary[[i]] <- rstan::summary(fit,pars=summary_pars[i])$summary
+      extract_summary[[i]] <- summary(fit,pars=summary_pars[i])[['summary']]
 
     }
 
@@ -204,20 +209,22 @@ fit_stan_model <- function(gene_table,inits,iters=1000,chains=1,return_fit=FALSE
     out[['data']] <- stan_dat
   }
 
-  rhat <- rstan::summary(fit,pars=c('mu','phi','b_pw','b_topic','b_pwxtopic'))$summary[,'Rhat'] > 1.1
+  rhat <- summary(fit,pars=c('mu','phi','b_pw','b_topic','b_pwxtopic'))[['summary']][,'Rhat'] > 1.1
   rhat_count <- sum(rhat)
   if (rhat_count > 0){
 
     warning(sprintf('%s parameters with Rhat > 1.1. Consider more iterations.',rhat_count))
 
     out[['flagged']] <- names(which(rhat))
-    out[['inits']] <- list(mu=rstan::summary(fit,pars='mu')$summary[,'mean'],
-                           phi=rstan::summary(fit,pars='phi')$summary[,'mean'],
-                           b_pw=rstan::summary(fit,pars='b_pw')$summary[,'mean'],
-                           b_topic=rstan::summary(fit,pars='b_topic')$summary[,'mean'],
-                           b_pwxtopic=rstan::summary(fit,pars='b_pwxtopic')$summary[,'mean'])
+    out[['inits']] <- list(mu=summary(fit,pars='mu')[['summary']][,'mean'],
+                           phi=summary(fit,pars='phi')[['summary']][,'mean'],
+                           b_pw=summary(fit,pars='b_pw')[['summary']][,'mean'],
+                           b_topic=summary(fit,pars='b_topic')[['summary']][,'mean'],
+                           b_pwxtopic=summary(fit,pars='b_pwxtopic')[['summary']][,'mean'])
 
   }
+
+  out[['sampler']] <- rstan::get_sampler_params(fit)
 
   return(out)
 
