@@ -4,11 +4,9 @@
 \alias{picrust}
 \title{Predict topic functional content via PICRUSt}
 \usage{
-picrust(x, rows_are_taxa, reference_path, drop = TRUE)
+picrust(otu_table, rows_are_taxa, reference_path, drop = TRUE)
 }
 \arguments{
-\item{x}{An abundance table of samples verses OTUs}
-
 \item{rows_are_taxa}{TRUE/FALSE whether OTUs are rows and samples are columns
 or vice versa.}
 
@@ -17,6 +15,8 @@ or vice versa.}
 
 \item{drop}{(optional) Logical whether to drop empty samples or OTUs after
 normalization. Defaults to TRUE.}
+
+\item{x}{An abundance table of samples verses OTUs}
 }
 \value{
 A list containing

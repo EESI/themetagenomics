@@ -4,7 +4,8 @@
 \alias{download_ref}
 \title{Download PICRUSt reference tables}
 \usage{
-download_ref(destination, reference = "all", verbose = FALSE)
+download_ref(destination, reference = "all", overwrite = FALSE,
+  verbose = FALSE)
 }
 \arguments{
 \item{destination}{Location of the folder to save the reference files.}

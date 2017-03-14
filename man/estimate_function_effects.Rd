@@ -5,7 +5,7 @@
 \title{Estimate the predicted function-topic effects}
 \usage{
 estimate_function_effects(functions, topics_subset, level = 2,
-  method = "ML", verbose = FALSE)
+  method = "ML", ...)
 }
 \arguments{
 \item{functions}{List containing the output of

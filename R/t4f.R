@@ -29,7 +29,9 @@
 #' \item{pi_meta}{matrix of tax4fun metadata (e.g., FTU)}
 #' @export
 
-t4f <- function(taxa_table,rows_are_taxa,taxa,reference_path,type='uproc',short=TRUE,copy_number_normalize=FALSE,sample_normalize=FALSE,drop=TRUE){
+t4f <- function(taxa_table,rows_are_taxa,taxa,reference_path,type='uproc',
+                short=TRUE,copy_number_normalize=FALSE,sample_normalize=FALSE,
+                drop=TRUE){
 
   if (missing(taxa)){
 
@@ -53,9 +55,9 @@ t4f <- function(taxa_table,rows_are_taxa,taxa,reference_path,type='uproc',short=
 
   if (short) size <- 'short' else size <- 'long'
 
-  silva_to_kegg <- readRDS(system.file('extdata/silva_to_kegg.rds',package='themetagenomics'))
-  copy_numbers <- readRDS(system.file('extdata/copy_numbers.rds',package='themetagenomics'))
-  kegg_lookup <- readRDS(system.file('extdata/kegg_lookup_table.rds',package='themetagenomics'))
+  silva_to_kegg <- readRDS(system.file('references/silva_to_kegg.rds',package='themetagenomics'))
+  copy_numbers <- readRDS(system.file('references/copy_numbers.rds',package='themetagenomics'))
+  kegg_lookup <- readRDS(system.file('references/kegg_lookup_table.rds',package='themetagenomics'))
   ref_profile <- readRDS(reference_path)[[type]][[size]]
 
   sample_name <- rownames(taxa_table)

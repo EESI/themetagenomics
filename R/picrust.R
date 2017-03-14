@@ -1,3 +1,7 @@
+#' @useDynLib themetagenomics
+#' @importFrom Rcpp sourceCpp
+NULL
+
 #' Predict topic functional content via PICRUSt
 #'
 #' Given an OTU abundance table prepared with the GreenGenes reference database,
@@ -20,7 +24,7 @@
 #' \item{pi_meta}{matrix of PICRUSt metadata (e.g., NSTI)}
 #' @export
 
-picrust <- function(x,rows_are_taxa,reference_path,drop=TRUE){
+picrust <- function(otu_table,rows_are_taxa,reference_path,drop=TRUE){
 
   if (!file.exists(reference_path)){
     stop('Please provide a valid reference file.')
@@ -32,19 +36,19 @@ picrust <- function(x,rows_are_taxa,reference_path,drop=TRUE){
 
   }
 
-  out <- picrust_otu(reference_path,colnames(x))
+  out <- picrust_otu(reference_path,colnames(otu_table))
   fxn_mapping <- out$genome_table_out
   rownames(fxn_mapping) <- out$matches
   colnames(fxn_mapping) <- out$gene_ids
 
-  overlap <- intersect(rownames(fxn_mapping),colnames(x))
-  x <- x[,overlap]
+  overlap <- intersect(rownames(fxn_mapping),colnames(otu_table))
+  otu_table <- otu_table[,overlap]
   fxn_mapping <- fxn_mapping[overlap,]
 
-  fxn_table <- round(x %*% fxn_mapping)
+  fxn_table <- round(otu_table %*% fxn_mapping)
   fxn_meta <- format_gene_metadata(out)
   pi_meta <- out$pimeta_table_out
-  rownames(pi_meta) <- fit$vocab
+  rownames(pi_meta) <- colnames(otu_table)
   colnames(pi_meta) <- out$pimeta_ids
 
   if (drop){
