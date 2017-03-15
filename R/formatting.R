@@ -171,3 +171,52 @@ dense_rank <- function(x) {
   match(r,sort(unique(r)))
 
 }
+
+# group_by summarize function for taxa without dplyr
+sum_taxa_by_group <- function(otu_ids,taxa,otu_table,metadata,cov_list,group=c('Phylum','Class','Order','Family','Genus'),sample_norm=FALSE){
+
+  if (sample_norm) z <- cov_list$coverage else {z <- sapply(cov_list$ids,length); z <- z/median(z)}
+
+  group_list <- vector(mode='list',length=length(group))
+  names(group_list) <- group
+  for (g in names(group_list)){
+
+    group_df <- rbind(data.frame(taxon=taxa[otu_ids,g],abundance=colSums(otu_table[cov_list$ids[[1]],otu_ids])/z[1],cov=names(cov_list$ids)[1],group=g),
+                      data.frame(taxon=taxa[otu_ids,g],abundance=colSums(otu_table[cov_list$ids[[2]],otu_ids])/z[2],cov=names(cov_list$ids)[2],group=g))
+
+    group_list[[g]] <- with(group_df,aggregate(abundance,by=list(taxon=taxon,cov=cov,group=group),FUN=sum))
+
+  }
+
+  group_list <- do.call('rbind',group_list)
+  colnames(group_list) <- gsub('^x$','abundance',colnames(group_list))
+
+  group_list <- group_list[order(group_list$abundance,decreasing=TRUE),]
+  group_list$taxon <- with(group_list,factor(taxon,levels=c(as.character(unique(taxon)[unique(taxon) != 'Other']),'Other'),ordered=TRUE))
+  group_list$group <- with(group_list,factor(group,levels=colnames(taxa),ordered=TRUE))
+
+  return(group_list)
+
+}
+
+# rename taxa below rank to other
+rename_taxa_to_other <- function(otu_table,taxa,top_n=7,group=c('Phylum','Class','Order','Family','Genus')){
+
+  taxa <- as.data.frame(taxa[colnames(otu_table),])
+
+  for (g in group){
+
+    taxa[,g] <- gsub('^[a-z]__','',taxa[,g])
+    taxa_temp <- taxa[taxa[,g] != '',g]
+    taxa_temp_ids <- rownames(taxa)[taxa[,g] != '']
+    group_df <- data.frame(count=colSums(otu_table[,taxa_temp_ids]),taxon=taxa_temp)
+    group_df <- with(group_df,aggregate(count,by=list(taxon=taxon),FUN=sum))
+    taxa_top <- as.character(group_df[order(group_df$x,decreasing=TRUE),'taxon'][1:top_n])
+
+    taxa[,g] <- ifelse(taxa[,g] %in% taxa_top,taxa[,g],'Other')
+
+  }
+
+  return(taxa)
+
+}
