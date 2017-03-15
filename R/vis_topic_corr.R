@@ -17,7 +17,7 @@ vis_topic_corr <- function(topics,topics_effects,method='huge'){
   effects_sig <- topics_effects$sig
 
   K <- nrow(corr$posadj)
-  g <- igraph::graph.adjacency(x$posadj,mode='undirected',
+  g <- igraph::graph.adjacency(corr$posadj,mode='undirected',
                                weighted=TRUE,diag=FALSE)
 
   wc <- igraph::cluster_walktrap(g)
@@ -27,7 +27,7 @@ vis_topic_corr <- function(topics,topics_effects,method='huge'){
 
   g_d3$nodes$group <- effects_rank
   g_d3$nodes$sig <- ifelse(1:K %in% effects_sig,50,1)
-  g_d3$links <- g_d3$links-1
+  g_d3$links <- g_d3$links
   g_d3$nodes$name <- paste0('T',g_d3$nodes$name)
 
   col_scale <- sprintf("color=d3.scaleLinear()\n.domain([1,%s])\n.range(['blue','red']);",K)
@@ -38,8 +38,17 @@ vis_topic_corr <- function(topics,topics_effects,method='huge'){
                           Nodesize='sig',
                           fontSize=20,
                           zoom=TRUE,
-                          colourScale=JS(col_scale))
+                          colourScale=networkD3::JS(col_scale))
 
-  return(corr)
+}
 
+# for shiny
+topic_network_out <- function(outputId,width='100%',height='500px'){
+  shinyWidgetOutput(outputId,'vis_topic_corr',width,height,package='themetagenomics')
+}
+
+# for shiny
+render_topic_network <- function(expr,env=parent.frame(),quoted=FALSE){
+  if (!quoted) expr <- substitute(expr)
+  shinyRenderWidget(expr,topic_network_out,env,quoted=TRUE)
 }
