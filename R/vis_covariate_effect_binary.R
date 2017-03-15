@@ -15,31 +15,17 @@ NULL
 #'
 #' @export
 
-vis_function_effects <- function(topics,topic_effects,otu_table,taxa,covariate,metadata){
+vis_covariate_effects_binary <- function(topics,topic_effects,otu_table,taxa,covariate,metadata){
 
-
-  cov1_name <- unique(metadata[,covariate])[1]
-  cov2_name <- unique(metadata[,covariate])[2]
-
-  cov1 <- rownames(otu_table)[metadata[,covariate] == cov1_name]
-  cov2 <- rownames(otu_table)[metadata[,covariate] == cov2_name]
-
+  cov_names <- c(unique(metadata[,covariate])[1],unique(metadata[,covariate])[2])
+  cov_ids <- list(rownames(otu_table)[metadata[,covariate] == cov_names[1]],rownames(otu_table)[metadata[,covariate] == cov_names[2]])
+  names(cov_ids) <- cov_names
+  cov_coverage <- c(sum(otu_table[cov_ids[[1]],]),sum(otu_table[cov_ids[[2]],]))
+  names(cov_coverage) <- cov_names
+  cov_list <- list(ids=cov_ids,coverage=cov_coverage)
 
   pretty_names <- pretty_taxa_names(taxa)
-
-  taxa_top <- as.data.frame(taxa)
-  taxa_top[,2] <- gsub('^[a-z]__','',taxa_top[,2])
-  taxa_top[,3] <- gsub('^[a-z]__','',taxa_top[,3])
-  taxa_top[,4] <- gsub('^[a-z]__','',taxa_top[,4])
-
-  phyla_top <- names(sort(table(taxa_top[,2]),decreasing=TRUE)[1:7])
-  taxa_top[,2] <- ifelse(taxa_top[,2] %in% phyla_top,taxa_top[,2],'Other')
-
-  class_top <- names(sort(table(taxa_top[,3]),decreasing=TRUE)[1:7])
-  taxa_top[,3] <- ifelse(taxa_top[,3] %in% class_top,taxa_top[,3],'Other')
-
-  order_top <- names(sort(table(taxa_top[,4]),decreasing=TRUE)[1:7])
-  taxa_top[,4] <- ifelse(taxa_top[,4] %in% order_top,taxa_top[,4],'Other')
+  taxa_other <- rename_taxa_to_other(otu_table,taxa,top_n=7)
 
   fit <- topics$fit
   K <- fit$settings$dim$K
@@ -110,7 +96,9 @@ vis_function_effects <- function(topics,topic_effects,otu_table,taxa,covariate,m
 
 
       output$est <- renderPlotly({
+
         ggplotly(p_est,source='reg_est')
+
       })
 
 
@@ -136,7 +124,7 @@ vis_function_effects <- function(topics,topic_effects,otu_table,taxa,covariate,m
           df1 <- data.frame(count=matrix(otu_subset,ncol=1)+1,
                             otu=rownames(otu_subset),
                             p=beta_subset,
-                            sample=rep(colnames(otu_subset),each=length(nrow(otu_subset))),
+                            sample=rep(colnames(otu_subset),each=nrow(otu_subset)),
                             covariate=metadata[colnames(otu_subset),covariate])
           )
           df1$taxon <- paste0(pretty_names[df1$otu],' (',df1$otu,')')
@@ -184,36 +172,15 @@ vis_function_effects <- function(topics,topic_effects,otu_table,taxa,covariate,m
 
           h_otu <- gsub('^taxon:.*\\(([0-9]+)\\)$','\\1',p_dis$x$data[[3]]$text)[h$pointNumber]
 
-          h_otu <- sample(colnames(otu_table),25)
+          df_tax <- sum_taxa_by_group(h_otu,taxa_other,otu_table,metadata,cov_list)
 
-          df_tax1 <- data.frame(taxon=taxa_top[h_otu,2],count=colSums(otu_table[cov1,h_otu]),cov=cov1_name)
-          df_tax2 <- data.frame(taxon=taxa_top[h_otu,2],count=colSums(otu_table[cov2,h_otu]),cov=cov2_name)
-          df_tax_p <- rbind(aggregate(df_tax1$count,by=list(taxon=df_tax1$taxon,cov=df_tax1$cov),FUN=sum),
-                          aggregate(df_tax2$count,by=list(taxon=df_tax2$taxon,cov=df_tax2$cov),FUN=sum))
-
-          df_tax1 <- data.frame(taxon=taxa_top[h_otu,3],count=colSums(otu_table[cov1,h_otu]),cov=cov1_name)
-          df_tax2 <- data.frame(taxon=taxa_top[h_otu,3],count=colSums(otu_table[cov2,h_otu]),cov=cov2_name)
-          df_tax_c <- rbind(aggregate(df_tax1$count,by=list(taxon=df_tax1$taxon,cov=df_tax1$cov),FUN=sum),
-                          aggregate(df_tax2$count,by=list(taxon=df_tax2$taxon,cov=df_tax2$cov),FUN=sum))
-
-          df_tax1 <- data.frame(taxon=taxa_top[h_otu,4],count=colSums(otu_table[cov1,h_otu]),cov=cov1_name)
-          df_tax2 <- data.frame(taxon=taxa_top[h_otu,4],count=colSums(otu_table[cov2,h_otu]),cov=cov2_name)
-          df_tax_o <- rbind(aggregate(df_tax1$count,by=list(taxon=df_tax1$taxon,cov=df_tax1$cov),FUN=sum),
-                          aggregate(df_tax2$count,by=list(taxon=df_tax2$taxon,cov=df_tax2$cov),FUN=sum))
-
-          df_tax <- data.frame(rbind(df_tax_p,df_tax_c,df_tax_o),
-                               group=rep(c('phylum','class','order'),c(nrow(df_tax_p),nrow(df_tax_c),nrow(df_tax_o))))
-          colnames(df_tax)[3] <- 'count'
-
-          df_tax <- df_tax[order(df_tax$count,decreasing=TRUE),]
-          df_tax$taxon <- factor(df_tax$taxon,levels=c(as.character(unique(df_tax$taxon)[unique(df_tax$taxon) != 'Other']),'Other'),ordered=TRUE)
-          df_tax$group <- factor(df_tax$group,levels=c('phylum','class','order'),ordered=TRUE)
-
-          p_tax <- ggplot(df_tax,aes(taxon,count,fill=cov)) +
+          p_tax <- ggplot(df_tax,aes(taxon,abundance,fill=cov)) +
             geom_bar(color='black',stat='identity',position='dodge') +
             facet_grid(.~group,scales='free_x') +
+            scale_fill_manual(values=c('darkred','darkblue')) +
             theme_classic() +
-            theme(axis.text.x=element_text(angle=45,hjust=1)) +
+            theme(axis.text.x=element_text(angle=45,hjust=1,size=16),
+                  strip.text=element_text(face='bold',size=16)) +
             labs(x='',y='Count')
 
           p_tax
