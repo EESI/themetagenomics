@@ -65,7 +65,8 @@ vis_function_effects <- function(topics,topic_effects,function_effects,taxa,beta
                        topic=rep(colnames(beta),each=length(fit$vocab)),
                        topic_rank=rep(topic_effects$rank,each=length(fit$vocab)))
       df$taxon <- pretty_taxa_names(taxa[df$otu,])
-      df <- df[order(df$topic_rank,df$otu_rank),]
+      df$taxon <- paste0(df$taxon,' (',df$otu,')')
+      df <- df[order(-df$topic_rank,df$otu_rank),]
       df$topic <- factor(df$topic,levels=unique(df$topic),ordered=TRUE)
       df$otu <- factor(df$otu,levels=unique(df$otu),ordered=TRUE)
       df$taxon <- factor(df$taxon,levels=unique(df$taxon),ordered=TRUE)
@@ -74,6 +75,7 @@ vis_function_effects <- function(topics,topic_effects,function_effects,taxa,beta
         geom_raster(aes(fill=probability)) +
         viridis::scale_fill_viridis(name='Probability Rank') +
         labs(x='',y='',fill='Probability Rank') +
+        scale_y_discrete(labels=taxon) +
         theme(legend.position='none',
               axis.title.y=element_text(face='bold',size=20),
               axis.ticks.y=element_blank(),
@@ -113,7 +115,8 @@ vis_function_effects <- function(topics,topic_effects,function_effects,taxa,beta
       df1$topic <- factor(df1$topic,levels=unique(df1$topic),ordered=TRUE)
       df1$pw <- factor(df1$pw,levels=unique(df1$pw),ordered=TRUE)
 
-      df2 <- data.frame(weight=matrix(sig_mat,ncol=1),
+      df2 <- data.frame(sig=matrix(sig_mat,ncol=1),
+                        weight=matrix(int_mat,ncol=1),
                         pw=rownames(int_mat),
                         pw_rank=pw_ord$pw_rank,
                         topic=rep(colnames(int_mat),each=nrow(int_mat)),
@@ -122,12 +125,11 @@ vis_function_effects <- function(topics,topic_effects,function_effects,taxa,beta
       df2$topic <- factor(df2$topic,levels=unique(df2$topic),ordered=TRUE)
       df2$pw <- factor(df2$pw,levels=unique(df2$pw),ordered=TRUE)
 
-
       p_fxn <- ggplot(df1,aes(topic,pw,fill=weight)) +
         geom_raster() +
-        geom_point(data=df2[df2$weight > 0,],
+        geom_point(data=df2[df2$sig > 0,],
                    aes(topic,pw),color='red',shape=3) +
-        geom_point(data=df2[df2$weight < 0,],
+        geom_point(data=df2[df2$sig < 0,],
                    aes(topic,pw),color='cyan',shape=3) +
         viridis::scale_fill_viridis(name='Coefficient') +
         labs(x='',y='',fill='Coefficient') +
@@ -137,16 +139,6 @@ vis_function_effects <- function(topics,topic_effects,function_effects,taxa,beta
         geom_vline(xintercept=22.5,color='white',size=2) +
         theme(legend.position='none')
 
-
-
-        df <- data.frame(int_mat,pw=rownames(int_mat)) %>%
-          gather(topic,weight,-pw) %>%
-          mutate(topic=gsub('X','T',topic)) %>%
-          left_join(topic_ord,by='topic') %>%
-          left_join(pw_ord,by='pw') %>%
-          arrange(topic_estimate,pw_rank) %>%
-          mutate(topic=factor(topic,levels=unique(topic)),
-                 pw=factor(pw,levels=unique(pw)))
 
       output$est <- renderPlot({
         p_est
@@ -166,8 +158,8 @@ vis_function_effects <- function(topics,topic_effects,function_effects,taxa,beta
 
         if (length(s)){
 
-          k <- levels(df$topic)[s[['x']]]
-          pw <- levels(df$pw)[s[['y']]]
+          k <- levels(df1$topic)[s[['x']]]
+          pw <- levels(df1$pw)[s[['y']]]
 
           gene_tbl <- function_effects$gene_table[paste0('T',function_effects$gene_table$topic) == k & function_effects$gene_table$pw == pw,c('count','ko','description')]
           gene_tbl <- gene_tbl[gene_tbl$count >= 10,]
