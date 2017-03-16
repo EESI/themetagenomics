@@ -11,9 +11,12 @@ NULL
 #' @param function_effects Output of \code{\link{estimate_function_effects}} that contains the results from either HMC or ML.
 #' @param taxa Dataframe or matrix containing the taxonomy information.
 #' @param beta_min (optional) Minimum probability in topics over taxa distribution to set to 0.
-#' @param gene_min (optional) Mininum count for gene set table.
+#' @param gene_min (optional) Mininum abundance for gene set table.
 
-vis_covariate_effects_binary <- function(topics,topic_effects,otu_table,taxa,covariate,metadata,sample_norm=FALSE,taxa_n=7){
+vis_covariate_effects_binary <- function(topics,topic_effects,otu_table,taxa,covariate,metadata,taxa_n=7){
+
+  otu_table <- otu_table + 1
+  ra_table <- otu_table/rowSums(otu_table)
 
   cov_names <- c(unique(metadata[,covariate])[1],unique(metadata[,covariate])[2])
   cov_ids <- list(rownames(otu_table)[metadata[,covariate] == cov_names[1]],rownames(otu_table)[metadata[,covariate] == cov_names[2]])
@@ -50,8 +53,7 @@ vis_covariate_effects_binary <- function(topics,topic_effects,otu_table,taxa,cov
     scale_fill_brewer(type='qual',palette=6,direction=-1) +
     theme(legend.position='none')
 
-  df0 <- data.frame(count=c(1,max(otu_table)),
-                    otu=c('x','y'),
+  df0 <- data.frame(otu=c('x','y'),
                     p=c(0,1),
                     covariate=unique(metadata[,covariate]),
                     taxon=c('x','y'))
@@ -73,14 +75,15 @@ vis_covariate_effects_binary <- function(topics,topic_effects,otu_table,taxa,cov
 
                         fixedRow(
                           column(8,htmlOutput('text'))
-                        )
-                 ,
+                        ),
+                        fixedRow(
+                          column(2,checkboxInput('norm',label='Normalize',value=TRUE))
+                        ),
                  column(12,plotlyOutput('dis')
                  )
                )
         )
       ),
-
 
       fixedRow(
         column(12,plotOutput('highlight'))
@@ -111,32 +114,39 @@ vis_covariate_effects_binary <- function(topics,topic_effects,otu_table,taxa,cov
         beta_subset <- beta[,k]
         beta_subset <- beta_subset[beta_subset > 10^(as.integer(input$z))]
 
-        otu_subset <- t(otu_table[,names(beta_subset)])
+        if (input$norm) x <- ra_table else x <- otu_table
+        df0$abundance <- c(0,max(x))
 
-        df1 <- data.frame(count=matrix(otu_subset,ncol=1)+1,
-                            otu=rownames(otu_subset),
-                            p=beta_subset,
-                            sample=rep(colnames(otu_subset),each=nrow(otu_subset)),
-                            covariate=metadata[colnames(otu_subset),covariate])
+        otu_subset <- t(x[,names(beta_subset)])
+
+        df1 <- data.frame(abundance=matrix(otu_subset,ncol=1),
+                          otu=rownames(otu_subset),
+                          p=beta_subset,
+                          sample=rep(colnames(otu_subset),each=nrow(otu_subset)),
+                          covariate=metadata[colnames(otu_subset),covariate])
 
         df1$covariate <- factor(df1$covariate,levels=cov_names,ordered=TRUE)
         df1$taxon <- paste0(pretty_names[df1$otu],' (',df1$otu,')')
 
-        p_dis <- ggplot(data=df0,aes(covariate,count,color=p)) +
+        df2 <- df1[df1$abundance > min(df1$abundance),]
+
+        p_dis <- ggplot(data=df0,aes(covariate,abundance,color=p)) +
           geom_blank() +
-          geom_violin(data=df1[df1$count > 1,],
-                      aes(covariate,count,color=p),fill=NA) +
+          geom_violin(data=df2,
+                      aes(covariate,abundance,color=p),fill=NA) +
           geom_jitter(data=df1,
-                      aes(covariate,count,color=p,labels=taxon),alpha=.5,size=2) +
+                      aes(covariate,abundance,color=p,labels=taxon),alpha=.5,size=2) +
           scale_y_log10(labels=scales::comma) +
           viridis::scale_color_viridis('Beta Prob.') +
           theme_classic() +
-          labs(x='',y='Count')
+          labs(x='',y='Abundance')
 
-        p_dis <- ggplotly(p_dis,source='dis_cov',tooltip=c('taxon','otu'))
+        class(p_dis)
+
+        p_dis <- ggplotly(p_dis,source='dis_cov',tooltip=c('taxon','abundance','p'))
         p_dis <- layout(p_dis,dragmode='select')
 
-        list(p_dis,df1)
+        list(p_dis=p_dis,df1=df1,df0=df0)
         })
 
       })
@@ -155,18 +165,18 @@ vis_covariate_effects_binary <- function(topics,topic_effects,otu_table,taxa,cov
 
       output$dis <- renderPlotly({
 
-        if (length(DF1()[[1]])){
+        if (length(DF1()$p_dis)){
 
-          DF1()[[1]]
+          DF1()$p_dis
 
         }else{
 
-          ggplot(data=df0,aes(covariate,count,color=p)) +
+          ggplot(data=DF1()$df0,aes(covariate,abundance,color=p)) +
             geom_blank() +
             scale_y_log10() +
             viridis::scale_color_viridis('Probability') +
             theme_classic() +
-            labs(x='',y='Count')
+            labs(x='',y='Abundance')
 
         }
 
@@ -178,11 +188,11 @@ vis_covariate_effects_binary <- function(topics,topic_effects,otu_table,taxa,cov
 
         if (length(h)){
 
-          h_otu <- gsub('^taxon:.*\\(([0-9]+)\\)$','\\1',DF1()[[2]]$otu)[h$pointNumber + 1] # indexed from 0
+          h_otu <- gsub('^taxon:.*\\(([0-9]+)\\)$','\\1',DF1()$df1$otu)[h$pointNumber + 1] # indexed from 0
 
           df_tax <- try({
 
-            df_tax <- sum_taxa_by_group(h_otu,taxa_other,otu_table,metadata,cov_list,sample_norm=sample_norm)
+            df_tax <- sum_taxa_by_group(h_otu,taxa_other,otu_table,metadata,cov_list,sample_norm=input$norm)
             df_tax$cov <- factor(df_tax$cov,levels=cov_names,ordered=TRUE)
 
             df_tax
@@ -198,7 +208,7 @@ vis_covariate_effects_binary <- function(topics,topic_effects,otu_table,taxa,cov
             theme_classic() +
             theme(axis.text.x=element_text(angle=45,hjust=1,size=16),
                   strip.text=element_text(face='bold',size=16)) +
-            labs(x='',y='Count',fill='')
+            labs(x='',y='abundance',fill='')
 
           p_tax
 
