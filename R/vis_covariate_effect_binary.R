@@ -12,10 +12,8 @@ NULL
 #' @param taxa Dataframe or matrix containing the taxonomy information.
 #' @param beta_min (optional) Minimum probability in topics over taxa distribution to set to 0.
 #' @param gene_min (optional) Mininum count for gene set table.
-#'
-#' @export
 
-vis_covariate_effects_binary <- function(topics,topic_effects,otu_table,taxa,covariate,metadata){
+vis_covariate_effects_binary <- function(topics,topic_effects,otu_table,taxa,covariate,metadata,sample_norm=FALSE,taxa_n=7){
 
   cov_names <- c(unique(metadata[,covariate])[1],unique(metadata[,covariate])[2])
   cov_ids <- list(rownames(otu_table)[metadata[,covariate] == cov_names[1]],rownames(otu_table)[metadata[,covariate] == cov_names[2]])
@@ -25,7 +23,7 @@ vis_covariate_effects_binary <- function(topics,topic_effects,otu_table,taxa,cov
   cov_list <- list(ids=cov_ids,coverage=cov_coverage)
 
   pretty_names <- pretty_taxa_names(taxa)
-  taxa_other <- rename_taxa_to_other(otu_table,taxa,top_n=7)
+  taxa_other <- rename_taxa_to_other(otu_table,taxa,top_n=taxa_n)
 
   fit <- topics$fit
   K <- fit$settings$dim$K
@@ -42,12 +40,13 @@ vis_covariate_effects_binary <- function(topics,topic_effects,otu_table,taxa,cov
                    sig=ifelse(1:K %in% topic_effects$sig,'1','0'))[order(topic_effects$rank),]
   df$sig <- as.character(sign(df$est) * as.numeric(as.character.factor(df$sig)))
   df$topic <- factor(df$topic,levels=df$topic,ordered=TRUE)
+
   p_est <- ggplot(df,aes(topic,y=est,ymin=lower,ymax=upper,color=sig)) +
     geom_hline(yintercept=0,linetype=3) +
     geom_pointrange(size=2) +
     theme_void() +
     labs(x='',y='Estimate') +
-    scale_color_manual(values=c('gray','darkred','darkblue')) +
+    scale_color_manual(values=c('gray','indianred3','dodgerblue3')) +
     scale_fill_brewer(type='qual',palette=6,direction=-1) +
     theme(legend.position='none')
 
@@ -57,24 +56,26 @@ vis_covariate_effects_binary <- function(topics,topic_effects,otu_table,taxa,cov
                     covariate=unique(metadata[,covariate]),
                     taxon=c('x','y'))
 
+  s <- NULL
 
   shinyApp(
 
 
     ui <- fluidPage(
 
-      titlePanel('Thematic Structure of Predicted Functional Effects'),
+      titlePanel('Topic-Covariate Effects'),
 
       fixedRow(
-        column(12,
-               plotlyOutput('est',height='200px'),
+        column(12,plotlyOutput('est',height='200px'),
                fixedRow(
-                 column(2,
-                        sliderInput('z', label='exp(x): ',
-                                    min=-6,max=-1,value=-2,step=.5)
-                 ),
-                 column(10,
-                        plotlyOutput('dis')
+                 column(2,sliderInput('z', label='Min. beta prob.: ',min=-6,max=-1,value=-2,step=.25,
+                                      pre='10^(',post=')')),
+
+                        fixedRow(
+                          column(8,htmlOutput('text'))
+                        )
+                 ,
+                 column(12,plotlyOutput('dis')
                  )
                )
         )
@@ -91,10 +92,6 @@ vis_covariate_effects_binary <- function(topics,topic_effects,otu_table,taxa,cov
     server = function(input,output){
 
 
-
-
-
-
       output$est <- renderPlotly({
 
         ggplotly(p_est,source='reg_est')
@@ -102,67 +99,78 @@ vis_covariate_effects_binary <- function(topics,topic_effects,otu_table,taxa,cov
       })
 
 
+      DF1 <- reactive({
 
-
-
-
-      output$dis <- renderPlotly({
-
-        z <- reactive(as.integer(input$z))
-
+        suppressWarnings({
         s <- event_data('plotly_click',source='reg_est')
 
-        if (length(s)){
+        validate(need(!is.null(s),'Please choose a topic by clicking a point.'))
 
-          k <- levels(df$topic)[s[['x']]]
+        k <- levels(df$topic)[s[['x']]]
 
-          beta_subset <- beta[,k]
-          beta_subset <- beta_subset[beta_subset > 10^(z())]
+        beta_subset <- beta[,k]
+        beta_subset <- beta_subset[beta_subset > 10^(as.integer(input$z))]
 
-          otu_subset <- t(otu_table[,names(beta_subset)])
-          suppressWarnings(
-          df1 <- data.frame(count=matrix(otu_subset,ncol=1)+1,
+        otu_subset <- t(otu_table[,names(beta_subset)])
+
+        df1 <- data.frame(count=matrix(otu_subset,ncol=1)+1,
                             otu=rownames(otu_subset),
                             p=beta_subset,
                             sample=rep(colnames(otu_subset),each=nrow(otu_subset)),
                             covariate=metadata[colnames(otu_subset),covariate])
-          )
-          df1$taxon <- paste0(pretty_names[df1$otu],' (',df1$otu,')')
 
+        df1$covariate <- factor(df1$covariate,levels=cov_names,ordered=TRUE)
+        df1$taxon <- paste0(pretty_names[df1$otu],' (',df1$otu,')')
 
-          df2 <- df1[df1$count > 1,]
+        p_dis <- ggplot(data=df0,aes(covariate,count,color=p)) +
+          geom_blank() +
+          geom_violin(data=df1[df1$count > 1,],
+                      aes(covariate,count,color=p),fill=NA) +
+          geom_jitter(data=df1,
+                      aes(covariate,count,color=p,labels=taxon),alpha=.5,size=2) +
+          scale_y_log10(labels=scales::comma) +
+          viridis::scale_color_viridis('Beta Prob.') +
+          theme_classic() +
+          labs(x='',y='Count')
 
-          suppressWarnings(
-          p_dis <- ggplot(data=df0,aes(covariate,count,color=p)) +
-            geom_blank() +
-            geom_violin(data=df2,aes(covariate,count,color=p),fill=NA) +
-            geom_jitter(data=df1,aes(covariate,count,color=p,labels=taxon),alpha=.5,size=2) +
-            scale_y_log10() +
-            viridis::scale_color_viridis('Probability') +
-            theme_classic() +
-            labs(x='',y='Count')
-          )
+        p_dis <- ggplotly(p_dis,source='dis_cov',tooltip=c('taxon','otu'))
+        p_dis <- layout(p_dis,dragmode='select')
 
-          p_dis <- ggplotly(p_dis,source='dis_cov',tooltip=c('taxon','otu'))
-          layout(p_dis,dragmode='select')
-
-        }else{
-
-          p_dis <- ggplot(data=df0,aes(covariate,count,color=p)) +
-            geom_blank() +
-            scale_y_log10() +
-            viridis::scale_color_viridis('Probability') +
-            theme_classic() +
-            labs(x='',y='Count')
-
-          p_dis
-
-        }
+        list(p_dis,df1)
+        })
 
       })
 
 
+      observeEvent(event_data('plotly_click',source='reg_est'),
+                   {
+                     output$text <- renderUI({
+                       HTML('The slider on the <b>left</b> adjusts the value in which taxa are filtered based on their probability in the topics over
+                             taxa distribution beta. The violin plots <b>below</b> are interactive. Select a subset of points to visualize their
+                             distribution in the raw data as a function on taxonomy.')
+                       })
+                     }
+                   )
 
+
+      output$dis <- renderPlotly({
+
+        if (length(DF1()[[1]])){
+
+          DF1()[[1]]
+
+        }else{
+
+          ggplot(data=df0,aes(covariate,count,color=p)) +
+            geom_blank() +
+            scale_y_log10() +
+            viridis::scale_color_viridis('Probability') +
+            theme_classic() +
+            labs(x='',y='Count')
+
+        }
+
+      })
 
       output$highlight <- renderPlot({
 
@@ -170,20 +178,30 @@ vis_covariate_effects_binary <- function(topics,topic_effects,otu_table,taxa,cov
 
         if (length(h)){
 
-          h_otu <- gsub('^taxon:.*\\(([0-9]+)\\)$','\\1',p_dis$x$data[[3]]$text)[h$pointNumber]
+          h_otu <- gsub('^taxon:.*\\(([0-9]+)\\)$','\\1',DF1()[[2]]$otu)[h$pointNumber + 1] # indexed from 0
 
-          df_tax <- sum_taxa_by_group(h_otu,taxa_other,otu_table,metadata,cov_list)
+          df_tax <- try({
+
+            df_tax <- sum_taxa_by_group(h_otu,taxa_other,otu_table,metadata,cov_list,sample_norm=sample_norm)
+            df_tax$cov <- factor(df_tax$cov,levels=cov_names,ordered=TRUE)
+
+            df_tax
+
+          },silent=TRUE)
+
+          validate(need(!(class(df_tax) == 'try-error'),'Please select more points.'))
 
           p_tax <- ggplot(df_tax,aes(taxon,abundance,fill=cov)) +
             geom_bar(color='black',stat='identity',position='dodge') +
             facet_grid(.~group,scales='free_x') +
-            scale_fill_manual(values=c('darkred','darkblue')) +
+            scale_fill_manual(values=c('indianred3','dodgerblue3')) +
             theme_classic() +
             theme(axis.text.x=element_text(angle=45,hjust=1,size=16),
                   strip.text=element_text(face='bold',size=16)) +
-            labs(x='',y='Count')
+            labs(x='',y='Count',fill='')
 
           p_tax
+
 
         }else{
 
@@ -194,11 +212,7 @@ vis_covariate_effects_binary <- function(topics,topic_effects,otu_table,taxa,cov
       })
 
 
-
-
-
     }
-
 
 
   )
