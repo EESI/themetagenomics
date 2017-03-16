@@ -13,7 +13,9 @@ NULL
 #' @param beta_min (optional) Minimum probability in topics over taxa distribution to set to 0.
 #' @param gene_min (optional) Mininum count for gene set table.
 
-vis_covariate_effects_continuous <- function(topics,topic_effects,otu_table,taxa,covariate,metadata,sample_norm=FALSE,taxa_n=10){
+vis_covariate_effects_continuous <- function(topics,topic_effects,otu_table,taxa,covariate,metadata,taxa_n=12){
+
+  otu_table <- otu_table + 1
 
   pretty_names <- pretty_taxa_names(taxa)
 
@@ -28,43 +30,63 @@ vis_covariate_effects_continuous <- function(topics,topic_effects,otu_table,taxa
   rownames(theta) <- rownames(metadata)
   colnames(theta) <- paste0('T',1:K)
 
-  beta_rank <- apply(beta,2,function(x) rownames(beta)[order(x,decreasing=TRUE)])
+  df0 <- data.frame(p=c(0,max(theta)),
+                    covariate=range(metadata[,covariate]))
 
-  ra_table <- otu_table/rowSums(otu_table)
+  beta_rank <- apply(beta,2,function(x) rownames(beta)[order(x,decreasing=TRUE)])
 
   est_mat <- do.call('rbind',topic_effects$est)
 
-  if (sample_norm) df0_range <- c(1e-10,max(ra_table)) else df0_range <- c(1,max(otu_table))
-  df0 <- data.frame(abundance=df0_range,
-                    p=c(0,max(theta)),
-                    covariate=range(metadata[,covariate]))
+  df <- data.frame(topic=paste0('T',1:K),
+                   est=est_mat[,1],
+                   lower=est_mat[,2],
+                   upper=est_mat[,3],
+                   sig=ifelse(1:K %in% topic_effects$sig,'1','0'))[order(topic_effects$rank),]
+  df$sig <- as.character(sign(df$est) * as.numeric(as.character.factor(df$sig)))
+  df$topic <- factor(df$topic,levels=df$topic,ordered=TRUE)
+
+  p_est <- ggplot(df,aes(topic,y=est,ymin=lower,ymax=upper,color=sig)) +
+    geom_hline(yintercept=0,linetype=3) +
+    geom_pointrange(size=2) +
+    theme_void() +
+    labs(x='',y='Estimate') +
+    scale_color_manual(values=c('gray','indianred3','dodgerblue3')) +
+    scale_fill_brewer(type='qual',palette=6,direction=-1) +
+    theme(legend.position='none')
+
 
 
   shinyApp(
 
-
     ui <- fluidPage(
 
-      titlePanel('Thematic Structure of Predicted Functional Effects'),
+      titlePanel('Topic-Covariate Effects'),
 
-      fixedRow(
-        column(12,plotlyOutput('est',height='200px'),
+    fixedRow(
+      column(12,plotlyOutput('est',height='200px'),
+             fixedRow(
+               column(2,checkboxGroupInput('z',
+                                           label='',
+                                           c('Ignore zeros'=1,'Normalize'=2),
+                                           selected=c(1,2))),
                fixedRow(
-                 column(12,plotlyOutput('dis')
-                 )
+                 column(8,htmlOutput('text'))
+               ),
+               column(12,plotlyOutput('ss')
                )
-        )
+             )
       )
+    ),
+
+    fixedRow(
+      column(12,plotlyOutput('full'))
+    )
 
     ),
 
 
+
     server = function(input,output){
-
-
-
-
-
 
       output$est <- renderPlotly({
 
@@ -72,76 +94,124 @@ vis_covariate_effects_continuous <- function(topics,topic_effects,otu_table,taxa
 
       })
 
+      TAB <- reactive({
 
+        if (any(input$z %in% '2')) x <- otu_table/rowSums(otu_table) else x <- otu_table
 
+        df_temp <- df0
+        df_temp$abundance <- c(min(x),max(x))
 
+        list(table=x,df=df_temp)
 
+      })
 
-      output$dis <- renderPlotly({
+      P <- reactive({
 
-        z <- reactive(as.integer(input$z))
+        suppressWarnings({
 
         s <- event_data('plotly_click',source='reg_est')
 
-        if (length(s)){
+        validate(need(!is.null(s),'Please choose a topic by clicking a point.'))
 
-          k <- levels(df$topic)[s[['x']]]
+        k <- levels(df$topic)[s[['x']]]
 
-          beta_subset <- beta_rank[1:taxa_n,k]
+        beta_subset <- beta_rank[1:taxa_n,k]
 
-          if (sample_norm) x <- ra_table + 1e-10 else x <- otu_table + 1
+        otu_subset <- t(TAB()$table[,beta_subset])
 
-          otu_subset <- t(x[,beta_subset])
-          suppressWarnings(
-            df1 <- data.frame(abundance=matrix(otu_subset,ncol=1),
-                              otu=rownames(otu_subset),
-                              sample=rep(colnames(otu_subset),each=nrow(otu_subset)),
-                              covariate=metadata[colnames(otu_subset),covariate])
-          )
-          df1$p <- theta[df1$sample,k]
-          df1$taxon <- paste0(pretty_names[df1$otu],' (',df1$otu,')')
+        df_temp <- data.frame(abundance=matrix(otu_subset,ncol=1),
+                          otu=rownames(otu_subset),
+                          sample=rep(colnames(otu_subset),each=nrow(otu_subset)),
+                          covariate=metadata[colnames(otu_subset),covariate])
 
-          if (sample_norm) df2 <- df1[df1$abundance > 1e-10,] else df2 <- df1[df1$abundance > 1,]
+        df_temp$p <- theta[df_temp$sample,k]
+        df_temp$taxon <- paste0(pretty_names[df_temp$otu],' (',df_temp$otu,')')
 
-          suppressWarnings({
-            p_reg <- ggplot(data=df0,aes(covariate,abundance,color=p)) +
-              geom_blank() +
-              geom_point(data=df1,aes(covariate,abundance,color=p),alpha=.3,size=2) +
-              stat_smooth(data=df2,aes(covariate,abundance),color='black',size=1.1,method='loess',se=FALSE) +
-              stat_smooth(data=df2,aes(covariate,abundance),color='darkred',size=1.1,method='lm',linetype=2,se=FALSE) +
-              facet_wrap(~taxon,ncol=5) +
-              scale_y_log10() +
-              viridis::scale_color_viridis('Probability') +
-              theme_classic() +
-              theme(aspect.ratio=.5) +
-              labs(x=covariate,y='Abundance')
+        p_full <- ggplot(data=TAB()$df,aes(covariate,abundance,color=p)) +
+          geom_blank() +
+          geom_point(data=df_temp,aes(covariate,abundance,color=p),alpha=.5,size=1.2) +
+          scale_y_log10(labels=scales::comma) +
+          viridis::scale_color_viridis('Beta Prob.') +
+          theme_classic() +
+          theme(aspect.ratio=.5) +
+          labs(x=covariate,y='Abundance')
 
-          ggplotly(p_reg)
-          })
+        p_ss <- p_full +
+          facet_wrap(~taxon,ncol=4)
 
-        }else{
+        list(df=df_temp,min=min(df_temp$abundance),p_ss=p_ss,p_full=p_full)
 
-          p_reg <- ggplot(data=df0,aes(covariate,abundance,color=p)) +
-            geom_blank() +
-            scale_y_log10() +
-            viridis::scale_color_viridis('Probability') +
-            theme_classic() +
-            theme(aspect.ratio=.5) +
-            labs(x='',y='')
-
-          p_reg
-
-        }
+        })
 
       })
 
 
+      observeEvent(event_data('plotly_click',source='reg_est'),
+                   {
+                     output$text <- renderUI({
+                       HTML(sprintf("The check box on the <b>left</b> sets whether to ignore zeros for the best fit lines and whether raw counts or
+                                     relative abundances will be shown. The scatter plots <b>below</b> show the top %s taxa in terms of their
+                                     probability in the topics over taxa distributions versus %s. Each point represents the abundance of that taxa
+                                     in that sample. Each point is colored based on the probability of that sample occuring in the chosen topic. The
+                                     large scatter plot shows all %s taxa combined.",
+                                    taxa_n,covariate,taxa_n))
+                     })
+                   }
+      )
 
+      output$ss <- renderPlotly({
 
+        suppressWarnings({
+
+        if (any(input$z %in% '1')){
+
+          df2 <- P()$df[P()$df$abundance > round(P()$min,5),]
+
+          p_ss <- P()$p_ss +
+            stat_smooth(data=df2,aes(covariate,abundance),color='black',size=1.1,method='loess',se=FALSE) +
+            stat_smooth(data=df2,aes(covariate,abundance),color='darkred',size=1.1,method='lm',linetype=2,se=FALSE)
+
+        }else{
+
+          p_ss <- P()$p_ss +
+            stat_smooth(data=P()$df,aes(covariate,abundance),color='black',size=1.1,method='loess',se=FALSE) +
+            stat_smooth(data=P()$df,aes(covariate,abundance),color='darkred',size=1.1,method='lm',linetype=2,se=FALSE)
+
+        }
+
+        ggplotly(p_ss)
+
+        })
+
+      })
+
+      output$full <- renderPlotly({
+
+        suppressWarnings({
+
+          if (any(input$z %in% '1')){
+
+            df2 <- P()$df[P()$df$abundance > round(P()$min,5),]
+
+            p_full <- P()$p_full +
+              stat_smooth(data=df2,aes(covariate,abundance),color='black',size=1.1,method='loess',se=FALSE) +
+              stat_smooth(data=df2,aes(covariate,abundance),color='darkred',size=1.1,method='lm',linetype=2,se=FALSE)
+
+          }else{
+
+            p_full <- P()$p_full +
+              stat_smooth(data=P()$df,aes(covariate,abundance),color='black',size=1.1,method='loess',se=FALSE) +
+              stat_smooth(data=P()$df,aes(covariate,abundance),color='darkred',size=1.1,method='lm',linetype=2,se=FALSE)
+          }
+
+          ggplotly(p_full)
+
+        })
+
+      })
 
 
     }
-
 
 
   )
