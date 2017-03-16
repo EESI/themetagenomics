@@ -28,7 +28,7 @@ estimate_function_effects <- function(functions,topics_subset,level=2,method='ML
   }
 
   fxn_table <- fxn_table[topics_subset,]
-  fxn_table <- fxn_table[,colSums(fxn_table)>0]
+  fxn_table <- fxn_table[,colSums(fxn_table) > 0]
 
   fxn_meta <- lapply(fxn_meta,function(x) x[colnames(fxn_table)])
 

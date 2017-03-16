@@ -117,7 +117,7 @@ fit_stan_model <- function(gene_table,inits,iters=1000,chains=1,return_fit=FALSE
                         verbose=verbose)
 
     inits <- lapply(seq_len(chains),function(x) list(mu=fixef(mm_init),
-                                                     phi=getME(mm_init,"glmer.nb.theta"),
+                                                     phi=getME(mm_init,'glmer.nb.theta'),
                                                      b_pw=unlist(ranef(mm_init)$pw),
                                                      b_topic=unlist(ranef(mm_init)$topic),
                                                      b_pwxtopic=unlist(ranef(mm_init)$pwxtopic)))
@@ -125,7 +125,7 @@ fit_stan_model <- function(gene_table,inits,iters=1000,chains=1,return_fit=FALSE
   }else if (class(inits) == 'glmerMod'){
 
     inits <- lapply(seq_len(chains),function(x) list(mu=fixef(inits),
-                                                     phi=getME(inits,"glmer.nb.theta"),
+                                                     phi=getME(inits,'glmer.nb.theta'),
                                                      b_pw=unlist(ranef(inits)$pw),
                                                      b_topic=unlist(ranef(inits)$topic),
                                                      b_pwxtopic=unlist(ranef(inits)$pwxtopic)))
@@ -160,7 +160,7 @@ fit_stan_model <- function(gene_table,inits,iters=1000,chains=1,return_fit=FALSE
 
 
 
-  if (verbose) cat('Fitting model via Stan.\n')
+  if (verbose) cat('Fitting model via HMC.\n')
 
   fit <- stan(model_code=stan_code,data=stan_dat,
                      pars=c('theta'),include=FALSE,
