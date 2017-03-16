@@ -29,9 +29,40 @@ NULL
 
 fit_ml_model <- function(gene_table,return_fit=FALSE,verbose=FALSE,...){
 
+  if (verbose) cat('Fitting model via ML.\n')
+
   mm <- glmer.nb(count ~ (1|pw) + (1|topic) + (1|pw:topic),
                  data=gene_table,...)
 
-  return(mm)
+
+  if (verbose) cat('Extracting summary.\n')
+
+  summary_pars <- c('mu','phi','b_pw_sigma','b_topic_sigma','b_pwxtopic_sigma','b_pw','b_topic','b_pwxtopic','yhat')
+  extract_summary <- vector(mode='list',length=length(summary_pars))
+  names(extract_summary) <- summary_pars
+
+  extract_summary[['mu']] <- matrix(lme4::fixef(mm),ncol=1,dimnames=list('mu','mean'))
+  extract_summary[['phi']] <- matrix(lme4::getME(mm,'glmer.nb.theta'),ncol=1,dimnames=list('phi','mean'))
+  extract_summary[['b_pw_sigma']] <- matrix(c(lme4::VarCorr(mm)$`pw`),ncol=1,dimnames=list('b_pw_sigma','mean'))
+  extract_summary[['b_topic_sigma']] <- matrix(c(lme4::VarCorr(mm)$`topic`),ncol=1,dimnames=list('b_topic_sigma','mean'))
+  extract_summary[['b_pwxtopic_sigma']] <- matrix(c(lme4::VarCorr(mm)$`pw:topic`),ncol=1,dimnames=list('b_pwxtopic_sigma','mean'))
+  extract_summary[['b_pw']] <- data.frame(pw=rownames(lme4::ranef(mm)$pw),
+                                          mean=lme4::ranef(mm)$pw[,1])
+  rownames(extract_summary[['b_pw']]) <- extract_summary[['pw']]$pw
+  extract_summary[['b_topic']] <- data.frame(topic=1:nrow(lme4::ranef(mm)$topic),
+                                             mean=lme4::ranef(mm)$topic[,1])
+  rownames(extract_summary[['b_topic']]) <- extract_summary[['topic']]$topic
+  extract_summary[['b_pwxtopic']] <- data.frame(pw=gsub('^(.*)\\:([0-9]+)$','\\1',rownames(lme4::ranef(mm)$`pw:topic`)),
+                                                topic=gsub('^(.*)\\:([0-9]+)$','\\1',rownames(lme4::ranef(mm)$`pw:topic`)),
+                                                mean=lme4::ranef(mm)$`pw:topic`[,1])
+  extract_summary[['yhat']] <- matrix(predict(mm),ncol=1)
+  dimnames(extract_summary[['yhat']]) <- list(sprintf('yhat[%s]',1:nrow(extract_summary[['yhat']])),'mean')
+
+  out <- list(summary=extract_summary)
+
+  if (return_fit) out[['fit']] <- mm
+
+
+  return(out)
 
 }
