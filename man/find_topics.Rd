@@ -4,7 +4,8 @@
 \alias{find_topics}
 \title{Fit a topic model on an OTU table}
 \usage{
-find_topics(K, otu_table, rows_are_taxa, control = list(), ...)
+find_topics(K, otu_table, rows_are_taxa, formula, metadata, control = list(),
+  ...)
 }
 \arguments{
 \item{K}{A positive integer indicating the number of topics to be estimated.}
@@ -15,14 +16,14 @@ OTU IDs as row or column names.}
 \item{rows_are_taxa}{Logical whether OTUs are rows and samples are columns
 or vice versa.}
 
-\item{control}{(optional) List of additional parameters control portions of
-the optimization. See details.}
-
 \item{formula}{(optional) Formula object with no response variable or a
 matrix containing topic prevalence covariates. Must provide metadata.}
 
 \item{metadata}{Matrix or dataframe containing the metadata that corresponds
 with the formula.}
+
+\item{control}{(optional) List of additional parameters control portions of
+the optimization. See details.}
 
 \item{sigma_prior}{(optional) Scalar between 0 and 1. This sets the strength
 of regularization towards a diagonalized covariance matrix. Setting the

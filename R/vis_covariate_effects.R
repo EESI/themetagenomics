@@ -12,25 +12,23 @@
 #' @export
 
 
-vis_covariate_effects <- function(topics,topic_effects,otu_table,taxa,covariate,metadata,...){
+vis_covariate_effects <- function(topics,topic_effects,otu_table,taxa,metadata,...){
 
-  covariate_data <- metadata[,covariate]
+  if (missing(topic_effects)){
 
-  if (length(unique(covariate_data)) == 2){
+    cat('Estimating topic effects.')
 
-    vis_covariate_effects_binary(topics,topic_effects,otu_table,taxa,covariate,metadata,...)
+    topic_effects <- estimate_topic_effects(topics,metadata)
 
-  }else if (length(unique(covariate_data)) > 2){
+  }
 
-    if (class(covariate_data) == 'numeric'){
+  if (sum(is.na(sapply(topic_effects,fitted))) == length(topic_effects)){
 
-      vis_covariate_effects_continuous(topics,topic_effects,otu_table,taxa,covariate,metadata,...)
+    vis_covariate_effects_binary(topics,topic_effects,otu_table,taxa,metadata,...)
 
-    }else{
+  }else if (sum(is.na(sapply(topic_effects,fitted))) == 1){
 
-      # do some multiclass stuff.
-
-    }
+    vis_covariate_effects_continuous(topics,topic_effects,otu_table,taxa,metadata,...)
 
   }else{
 

@@ -35,13 +35,24 @@
 #' \item{vocab}{The vocabulary}
 #' @export
 
-find_topics <- function(K,otu_table,rows_are_taxa,control=list(),...){
+find_topics <- function(K,otu_table,rows_are_taxa,formula,metadata,control=list(),...){
 
-  if (rows_are_taxa == TRUE){
-
-    otu_table <- t(otu_table)
-
+  if (!missing(formula)){
+    if (missing(metadata)){
+      stop('Must provide metadata if a formula is given.\n')
+    }else{
+      err <- try(model.frame(formula,data=metadata,na.action=na.fail),silent=TRUE)
+      if (class(err) == 'try-error'){
+        stop('NA values in metadata. Please remove (see function prepare_data).')
+      }
+    }
+  }else{
+    formula <- NULL
+    metadata <- NULL
   }
+
+  if (rows_are_taxa == TRUE) otu_table <- t(otu_table)
+
 
   user_control_params <- names(control)
   control <- control[user_control_params %in% c('gamma.enet','gamma.ic.k','gamma.ic.k',
@@ -57,15 +68,15 @@ find_topics <- function(K,otu_table,rows_are_taxa,control=list(),...){
   docs <- lapply(seq_len(nrow(otu_table)), function(i) format_to_docs(otu_table[i,],vocab))
   names(docs) <- rownames(otu_table)
 
-  fit <- stm_wrapper(K=K,docs=docs,vocab=vocab,control=control,...)
+  fit <- stm_wrapper(K=K,docs=docs,vocab=vocab,formula,metadata,control=control,...)
 
   return(list(fit=fit,docs=docs,vocab=vocab))
 
 }
 
-#  An STM wrapper for \code{\link{find_topics}}.
+#  An STM wrapper
 
-stm_wrapper <- function(K,docs,vocab,metadata=NULL,formula=NULL,sigma_prior=0,
+stm_wrapper <- function(K,docs,vocab,formula=NULL,metadata=NULL,sigma_prior=0,
                         model=NULL,iters=500,tol=1e-05,batches=1,seed=NULL,
                         verbose=FALSE,verbose_n=5,control=control){
 

@@ -5,7 +5,7 @@
 \title{Generate interactive functional effect heatmap}
 \usage{
 vis_function_effects(topics, topic_effects, function_effects, taxa,
-  beta_min = 1e-05, gene_min = 10)
+  beta_min = 1e-05, ui_level = 0.8, gene_min = 10, pw_min = 20)
 }
 \arguments{
 \item{topics}{Output of \code{\link{find_topics}} that contains the STM object.}

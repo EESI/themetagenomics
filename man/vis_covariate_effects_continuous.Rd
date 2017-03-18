@@ -5,7 +5,7 @@
 \title{Generate interactive continuous covariate effect figure}
 \usage{
 vis_covariate_effects_continuous(topics, topic_effects, otu_table, taxa,
-  covariate, metadata, sample_norm = FALSE, taxa_n = 10)
+  covariate, metadata, taxa_n = 12)
 }
 \arguments{
 \item{topics}{Output of \code{\link{find_topics}} that contains the STM object.}

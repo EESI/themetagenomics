@@ -4,7 +4,8 @@
 \alias{estimate_topic_effects}
 \title{Estimate topic effects for a given covariate}
 \usage{
-estimate_topic_effects(covariate, topics, metadata, nsims = 100, ui = 0.95)
+estimate_topic_effects(covariate, topics, metadata, nsims = 100,
+  ui_level = 0.8)
 }
 \arguments{
 \item{covariate}{String corresponding to the name of the covariate of interest found in metadata.}
@@ -15,7 +16,7 @@ estimate_topic_effects(covariate, topics, metadata, nsims = 100, ui = 0.95)
 
 \item{nsims}{(optional) Number of simulations to perform for inferring covariate effects.}
 
-\item{ui}{With of uncertainty interval to report effects. Defaults to .95.}
+\item{ui_level}{With of uncertainty interval to report effects. Defaults to .95.}
 }
 \value{
 A list containing

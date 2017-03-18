@@ -5,7 +5,7 @@
 \title{Generate interactive binary covariate effect figure}
 \usage{
 vis_covariate_effects_binary(topics, topic_effects, otu_table, taxa, covariate,
-  metadata, sample_norm = FALSE, taxa_n = 7)
+  metadata, taxa_n = 7)
 }
 \arguments{
 \item{topics}{Output of \code{\link{find_topics}} that contains the STM object.}
@@ -18,7 +18,7 @@ vis_covariate_effects_binary(topics, topic_effects, otu_table, taxa, covariate,
 
 \item{beta_min}{(optional) Minimum probability in topics over taxa distribution to set to 0.}
 
-\item{gene_min}{(optional) Mininum count for gene set table.}
+\item{gene_min}{(optional) Mininum abundance for gene set table.}
 }
 \description{
 TBD
