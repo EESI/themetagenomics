@@ -1,5 +1,4 @@
-#' @import ggplot2 shiny
-#' @importFrom plotly plotlyOutput renderPlotly ggplotly
+#' @import ggplot2 shiny plotly
 NULL
 
 #' Generate interactive binary covariate effect figure
@@ -13,20 +12,7 @@ NULL
 #' @param beta_min (optional) Minimum probability in topics over taxa distribution to set to 0.
 #' @param gene_min (optional) Mininum abundance for gene set table.
 
-vis_covariate_effects_binary <- function(topics,topic_effects,otu_table,taxa,covariate,metadata,taxa_n=7){
-
-  otu_table <- otu_table + 1
-  ra_table <- otu_table/rowSums(otu_table)
-
-  cov_names <- c(unique(metadata[,covariate])[1],unique(metadata[,covariate])[2])
-  cov_ids <- list(rownames(otu_table)[metadata[,covariate] == cov_names[1]],rownames(otu_table)[metadata[,covariate] == cov_names[2]])
-  names(cov_ids) <- cov_names
-  cov_coverage <- c(sum(otu_table[cov_ids[[1]],]),sum(otu_table[cov_ids[[2]],]))
-  names(cov_coverage) <- cov_names
-  cov_list <- list(ids=cov_ids,coverage=cov_coverage)
-
-  pretty_names <- pretty_taxa_names(taxa)
-  taxa_other <- rename_taxa_to_other(otu_table,taxa,top_n=taxa_n)
+vis_covariate_effects_binary <- function(topics,topic_effects,otu_table,taxa,metadata,taxa_n=7){
 
   fit <- topics$fit
   K <- fit$settings$dim$K
@@ -34,82 +20,112 @@ vis_covariate_effects_binary <- function(topics,topic_effects,otu_table,taxa,cov
   rownames(beta) <- fit$vocab
   colnames(beta) <- paste0('T',1:K)
 
-  est_mat <- do.call('rbind',topic_effects$est)
+  otu_table <- otu_table + 1
+  ra_table <- otu_table/rowSums(otu_table)
 
-  df <- data.frame(topic=paste0('T',1:K),
-                   est=est_mat[,1],
-                   lower=est_mat[,2],
-                   upper=est_mat[,3],
-                   sig=ifelse(1:K %in% topic_effects$sig,'1','0'))[order(topic_effects$rank),]
-  df$sig <- as.character(sign(df$est) * as.numeric(as.character.factor(df$sig)))
-  df$topic <- factor(df$topic,levels=df$topic,ordered=TRUE)
+  pretty_names <- pretty_taxa_names(taxa)
+  taxa_other <- rename_taxa_to_other(otu_table,taxa,top_n=taxa_n)
 
-  p_est <- ggplot(df,aes(topic,y=est,ymin=lower,ymax=upper,color=sig)) +
-    geom_hline(yintercept=0,linetype=3) +
-    geom_pointrange(size=2) +
-    theme_void() +
-    labs(x='',y='Estimate') +
-    scale_color_manual(values=c('gray','indianred3','dodgerblue3')) +
-    scale_fill_brewer(type='qual',palette=6,direction=-1) +
-    theme(legend.position='none')
+  covariates <- lapply(names(topic_effects),identity)
+  names(covariates) <- tolower(names(topic_effects))
 
-  df0 <- data.frame(otu=c('x','y'),
-                    p=c(0,1),
-                    covariate=unique(metadata[,covariate]),
-                    taxon=c('x','y'))
+  est_range <- range(c(sapply(topic_effects, function(x) unlist(x$est))))
 
   s <- NULL
 
   shinyApp(
-
 
     ui <- fluidPage(
 
       titlePanel('Topic-Covariate Effects'),
 
       fixedRow(
-        column(12,plotlyOutput('est',height='200px'),
-               fixedRow(
-                 column(2,sliderInput('z', label='Min. beta prob.: ',min=-6,max=-1,value=-2,step=.25,
-                                      pre='10^(',post=')')),
-
-                        fixedRow(
-                          column(8,htmlOutput('text'))
-                        ),
-                        fixedRow(
-                          column(2,checkboxInput('norm',label='Normalize',value=TRUE))
-                        ),
-                 column(12,plotlyOutput('dis')
-                 )
-               )
-        )
+        column(2,selectInput('choose', label='Covariate',
+                             choices=covariates,selected=covariates[[1]])),
+        column(10,plotlyOutput('est',height='200px'))
       ),
 
       fixedRow(
-        column(12,plotOutput('highlight'))
-      )
+        column(2,
+               conditionalPanel(condition='output.show',sliderInput('z', label='Min. beta prob.',min=-6,max=-1,value=-2,step=.25,pre='10^(',post=')'))
+               ),
+        column(8,htmlOutput('text')),
+        column(2,
+               conditionalPanel(condition='output.show',checkboxInput('norm',label=strong('Normalize'),value=TRUE))
+               )
+      ),
+
+      plotlyOutput('dis'),
+
+      plotOutput('highlight')
 
     ),
 
 
+
     server = function(input,output){
 
+      EST <- reactive({
+        suppressWarnings({
+
+          covariate <- input$choose
+
+          cov_names <- c(unique(metadata[,covariate])[1],unique(metadata[,covariate])[2])
+          cov_ids <- list(rownames(otu_table)[metadata[,covariate] == cov_names[1]],rownames(otu_table)[metadata[,covariate] == cov_names[2]])
+          names(cov_ids) <- cov_names
+          cov_coverage <- c(sum(otu_table[cov_ids[[1]],]),sum(otu_table[cov_ids[[2]],]))
+          names(cov_coverage) <- cov_names
+          cov_list <- list(ids=cov_ids,coverage=cov_coverage)
+
+          est_mat <- topic_effects[[covariate]][['est']]
+
+          df <- data.frame(topic=paste0('T',1:K),
+                           est=est_mat[,1],
+                           lower=est_mat[,2],
+                           upper=est_mat[,3],
+                           sig=ifelse(1:K %in% topic_effects[[covariate]][['sig']],'1','0'))[order(topic_effects[[covariate]][['rank']]),]
+          df$sig <- as.character(sign(df$est) * as.numeric(as.character.factor(df$sig)))
+          df$topic <- factor(df$topic,levels=df$topic,ordered=TRUE)
+
+          p_est <- ggplot(df,aes(topic,y=est,ymin=lower,ymax=upper,color=sig)) +
+            geom_hline(yintercept=0,linetype=3) +
+            geom_pointrange(size=2) +
+            theme_minimal() +
+            ylim(est_range[1],est_range[2]) +
+            labs(x='',y='Estimate') +
+            scale_color_manual(values=c('gray','indianred3','dodgerblue3')) +
+            scale_fill_brewer(type='qual',palette=6,direction=-1) +
+            theme(legend.position='none',
+                  axis.text.y=element_blank(),
+                  axis.ticks.y=element_blank())
+
+          df0 <- data.frame(otu=c('x','y'),
+                            p=c(0,1),
+                            covariate=unique(metadata[,covariate]),
+                            taxon=c('x','y'))
+
+
+          list(p_est=p_est,k_levels=levels(df$topic),df0=df0,cov_list=cov_list,cov_names=cov_names,covariate=covariate)
+
+        })
+      })
 
       output$est <- renderPlotly({
 
-        ggplotly(p_est,source='reg_est')
+        ggplotly(EST()$p_est,source='reg_est')
 
       })
 
-
       DF1 <- reactive({
-
         suppressWarnings({
+
         s <- event_data('plotly_click',source='reg_est')
 
         validate(need(!is.null(s),'Please choose a topic by clicking a point.'))
 
-        k <- levels(df$topic)[s[['x']]]
+        df0 <- EST()$df0
+
+        k <- EST()$k_levels[s[['x']]]
 
         beta_subset <- beta[,k]
         beta_subset <- beta_subset[beta_subset > 10^(as.integer(input$z))]
@@ -119,13 +135,16 @@ vis_covariate_effects_binary <- function(topics,topic_effects,otu_table,taxa,cov
 
         otu_subset <- t(x[,names(beta_subset)])
 
-        df1 <- data.frame(abundance=matrix(otu_subset,ncol=1),
-                          otu=rownames(otu_subset),
-                          p=beta_subset,
-                          sample=rep(colnames(otu_subset),each=nrow(otu_subset)),
-                          covariate=metadata[colnames(otu_subset),covariate])
+        df1 <- try(data.frame(abundance=matrix(otu_subset,ncol=1),
+                              otu=rownames(otu_subset),
+                              p=beta_subset,
+                              sample=rep(colnames(otu_subset),each=nrow(otu_subset)),
+                              covariate=metadata[colnames(otu_subset),EST()$covariate]),
+                   silent=TRUE)
 
-        df1$covariate <- factor(df1$covariate,levels=cov_names,ordered=TRUE)
+        validate(need(!(class(df1) == 'try-error'),'Too many points filtered. Lower the minimum beta probability.'))
+
+        df1$covariate <- factor(df1$covariate,levels=EST()$cov_names,ordered=TRUE)
         df1$taxon <- paste0(pretty_names[df1$otu],' (',df1$otu,')')
 
         df2 <- df1[df1$abundance > min(df1$abundance),]
@@ -139,25 +158,30 @@ vis_covariate_effects_binary <- function(topics,topic_effects,otu_table,taxa,cov
           scale_y_log10(labels=scales::comma) +
           viridis::scale_color_viridis('Beta Prob.') +
           theme_classic() +
-          labs(x='',y='Abundance')
-
-        class(p_dis)
+          labs(x='',y='Abundance') +
+          ggtitle(k)
 
         p_dis <- ggplotly(p_dis,source='dis_cov',tooltip=c('taxon','abundance','p'))
         p_dis <- layout(p_dis,dragmode='select')
 
         list(p_dis=p_dis,df1=df1,df0=df0)
-        })
 
+        })
       })
+
+
+      output$show <- reactive({
+        length(DF1()) > 0
+      })
+      outputOptions(output,'show',suspendWhenHidden=FALSE)
 
 
       observeEvent(event_data('plotly_click',source='reg_est'),
                    {
                      output$text <- renderUI({
                        HTML('The slider on the <b>left</b> adjusts the value in which taxa are filtered based on their probability in the topics over
-                             taxa distribution beta. The violin plots <b>below</b> are interactive. Select a subset of points to visualize their
-                             distribution in the raw data as a function on taxonomy.')
+                             taxa distribution beta. The check box sets whether to shown counts or relative abundances. The violin plots <b>below</b>
+                             are interactive. Select a subset of points to visualize their distribution in the raw data as a function on taxonomy.')
                        })
                      }
                    )
@@ -165,20 +189,9 @@ vis_covariate_effects_binary <- function(topics,topic_effects,otu_table,taxa,cov
 
       output$dis <- renderPlotly({
 
-        if (length(DF1()$p_dis)){
+        validate(need(length(DF1()$p_dis),''))
 
-          DF1()$p_dis
-
-        }else{
-
-          ggplot(data=DF1()$df0,aes(covariate,abundance,color=p)) +
-            geom_blank() +
-            scale_y_log10() +
-            viridis::scale_color_viridis('Probability') +
-            theme_classic() +
-            labs(x='',y='Abundance')
-
-        }
+        DF1()$p_dis
 
       })
 
@@ -186,38 +199,32 @@ vis_covariate_effects_binary <- function(topics,topic_effects,otu_table,taxa,cov
 
         h <- event_data('plotly_selected',source='dis_cov')
 
-        if (length(h)){
+        validate(need(length(h),''))
 
-          h_otu <- gsub('^taxon:.*\\(([0-9]+)\\)$','\\1',DF1()$df1$otu)[h$pointNumber + 1] # indexed from 0
+        h_otu <- gsub('^taxon:.*\\(([0-9]+)\\)$','\\1',DF1()$df1$otu)[h$pointNumber + 1] # indexed from 0
 
-          df_tax <- try({
+        df_tax <- try({
 
-            df_tax <- sum_taxa_by_group(h_otu,taxa_other,otu_table,metadata,cov_list,sample_norm=input$norm)
-            df_tax$cov <- factor(df_tax$cov,levels=cov_names,ordered=TRUE)
+          df_tax <- sum_taxa_by_group(h_otu,taxa_other,otu_table,metadata,EST()$cov_list,sample_norm=input$norm)
+          df_tax$cov <- factor(df_tax$cov,levels=EST()$cov_names,ordered=TRUE)
 
-            df_tax
+          df_tax
 
-          },silent=TRUE)
+        },silent=TRUE)
 
-          validate(need(!(class(df_tax) == 'try-error'),'Please select more points.'))
+        validate(need(!(class(df_tax) == 'try-error'),'Too few or no points selected. Drag select points in the ribbon plots.'))
 
-          p_tax <- ggplot(df_tax,aes(taxon,abundance,fill=cov)) +
-            geom_bar(color='black',stat='identity',position='dodge') +
-            facet_grid(.~group,scales='free_x') +
-            scale_fill_manual(values=c('indianred3','dodgerblue3')) +
-            theme_classic() +
-            theme(axis.text.x=element_text(angle=45,hjust=1,size=16),
-                  strip.text=element_text(face='bold',size=16)) +
-            labs(x='',y='abundance',fill='')
+        p_tax <- ggplot(df_tax,aes(taxon,abundance,fill=cov)) +
+          geom_bar(color='black',stat='identity',position='dodge') +
+          facet_grid(.~group,scales='free_x') +
+          scale_fill_manual(values=c('indianred3','dodgerblue3')) +
+          theme_classic() +
+          theme(axis.text.x=element_text(angle=45,hjust=1,size=16),
+                strip.text=element_text(face='bold',size=16)) +
+          labs(x='',y='abundance',fill='')
 
-          p_tax
+        p_tax
 
-
-        }else{
-
-          ggplot() + geom_blank() + theme_classic() + labs(x='',y='')
-
-        }
 
       })
 
