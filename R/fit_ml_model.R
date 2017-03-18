@@ -27,12 +27,16 @@ NULL
 #' with more iterations.}
 #' @export
 
-fit_ml_model <- function(gene_table,return_fit=FALSE,verbose=FALSE,...){
+fit_ml_model <- function(gene_table,iters=1000,return_fit=FALSE,verbose=FALSE,...){
 
   if (verbose) cat('Fitting model via ML.\n')
 
   mm <- glmer.nb(count ~ (1|pw) + (1|topic) + (1|pw:topic),
-                 data=gene_table,...)
+                 data=gene_table,
+                 verbose=verbose,
+                 control=glmerControl(calc.derivs=TRUE,
+                                      optCtrl=list(maxfun=iters)),
+                 ...)
 
 
   if (verbose) cat('Extracting summary.\n')
