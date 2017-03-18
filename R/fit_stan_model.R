@@ -29,7 +29,9 @@ NULL
 #' with more iterations.}
 #' @export
 
-fit_stan_model <- function(gene_table,inits,iters=1000,chains=1,return_fit=FALSE,verbose=FALSE){
+fit_stan_model <- function(gene_table,inits,prior=c('t','laplace'),t_df=c(5,5,5),iters=1000,chains=1,return_fit=FALSE,verbose=FALSE){
+
+  prior <- match.arg(prior)
 
   stan_dat <- list(N=nrow(gene_table),
                    J=length(unique(gene_table$pw)),
@@ -43,7 +45,18 @@ fit_stan_model <- function(gene_table,inits,iters=1000,chains=1,return_fit=FALSE
                    pwxtopic=as.integer(as.factor(gene_table$pw):as.factor(gene_table$topic)),
                    y=gene_table$count)
 
-  stan_code <- '
+  if (prior == 't'){
+    param_sub <- '\n'
+    model_sub <- sprintf('b_pwxtopic ~ student_t(%s,0,b_pwxtopic_sigma);\n',t_df[3])
+  } else if (prior == 'laplace'){
+    param_sub <- 'real nu;\n'
+    model_sub <- 'b_pwxtopic ~ double_exponential(nu,b_pwxtopic_sigma);\n    nu ~ chi_square(1);\n'
+  }
+
+
+  cat(stan_code)
+
+  stan_code <- sprintf('
   data{
     int<lower=1> N;
     int<lower=1> J;
@@ -60,7 +73,7 @@ fit_stan_model <- function(gene_table,inits,iters=1000,chains=1,return_fit=FALSE
     vector[J] b_pw;
     vector[K] b_topic;
     vector[I] b_pwxtopic;
-
+    %s
     real mu;
 
     real<lower=0,upper=100> b_pw_sigma;
@@ -75,9 +88,9 @@ fit_stan_model <- function(gene_table,inits,iters=1000,chains=1,return_fit=FALSE
     phi ~ exponential(1.25);
 
     mu ~ normal(0,5);
-    b_pw ~ normal(0,b_pw_sigma);
-    b_topic ~ normal(0,b_topic_sigma);
-    b_pwxtopic ~ normal(0,b_pwxtopic_sigma);
+    b_pw ~ student_t(%s,0,b_pw_sigma);
+    b_topic ~ student_t(%s,0,b_topic_sigma);
+    %s
 
     b_pw_sigma ~ normal(0,2.5);
     b_topic_sigma ~ normal(0,2.5);
@@ -99,7 +112,7 @@ fit_stan_model <- function(gene_table,inits,iters=1000,chains=1,return_fit=FALSE
       log_lik[n] = neg_binomial_2_log_lpmf(y[n]|theta,phi);
     }
   }
-  '
+  ',param_sub,t_df[1],t_df[2],model_sub)
 
   stan_table <- data.frame(y=stan_dat$y,
                            pw=stan_dat$pw,
@@ -114,7 +127,9 @@ fit_stan_model <- function(gene_table,inits,iters=1000,chains=1,return_fit=FALSE
 
     mm_init <- glmer.nb(y ~ (1|pw) + (1|topic) + (1|pwxtopic),
                         data=stan_table,
-                        verbose=verbose)
+                        verbose=verbose,
+                        control=glmerControl(calc.derivs=FALSE,
+                                             optCtrl=list(maxfun=30))) # check if ok for level 3
 
     inits <- lapply(seq_len(chains),function(x) list(mu=fixef(mm_init),
                                                      phi=getME(mm_init,'glmer.nb.theta'),
@@ -175,9 +190,9 @@ fit_stan_model <- function(gene_table,inits,iters=1000,chains=1,return_fit=FALSE
   names(extract_summary) <- summary_pars
   for (i in seq_along(extract_summary)){
 
-    if (grepl('^b\\_',summary_pars[i])){
+    if (grepl('^b\\_[a-z]+$',summary_pars[i])){
 
-      extract_summary_tmp <- summary(fit,pars=summary_pars[i])[['summary']]
+      extract_summary_tmp <- summary(fit,pars=summary_pars[i],probs=c(.005,.025,.05,.1,.25,.5,.75,0.9,.95,.975,.995))[['summary']]
       par_name <- gsub('^b\\_','',summary_pars[i])
       lookup_table <- unique(cbind(as.character(stan_dat[[par_name]]),as.character(stan_dat[[paste0(par_name,'_full')]])))
       rownames(extract_summary_tmp) <- lookup_table[,2][order(as.integer(lookup_table[,1],decreasing=TRUE))]
@@ -196,7 +211,7 @@ fit_stan_model <- function(gene_table,inits,iters=1000,chains=1,return_fit=FALSE
 
     }else{
 
-      extract_summary[[i]] <- summary(fit,pars=summary_pars[i])[['summary']]
+      extract_summary[[i]] <- summary(fit,pars=summary_pars[i],probs=c(.005,.025,.05,.1,.25,.5,.75,0.9,.95,.975,.995))[['summary']]
 
     }
 
