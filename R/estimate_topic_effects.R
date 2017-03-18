@@ -6,7 +6,7 @@
 #' @param topics STM object containing the topic information
 #' @param metadata Dataframe or matrix of metadata. If the STM was fit with covariate information, this must point to the same metadata used in the STM.
 #' @param nsims (optional) Number of simulations to perform for inferring covariate effects.
-#' @param ui With of uncertainty interval to report effects. Defaults to .95.
+#' @param ui_level With of uncertainty interval to report effects. Defaults to .95.
 #' @return A list containing
 #'
 #' \item{est}{The estimate of the effect}
@@ -14,109 +14,132 @@
 #' \item{sig}{A vector of topic indexes for topics whose uncertainty intervals did not enclose 0.}
 #' @export
 
-estimate_topic_effects <- function(covariate,topics,metadata,nsims=100,ui=.95){
+estimate_topic_effects <- function(topics,metadata,formula,nsims=100,ui_level=.8,...){
 
   fit <- topics$fit
   K <- fit$settings$dim$K
-  formula <- fit$settings$covariates$formula
 
-  if (!is.null(formula)){
-    formula <- as.formula(sprintf('1:%s %s',K,paste0(formula,collapse=' ')))
-  }else{
-    formula <- as.formula(sprintf('1:%s ~ %s',K,covariate))
+  if (missing(formula)){
+    formula <- fit$settings$covariates$formula
+    if (is.null(formula)) stop('Please provide a formula.')
   }
 
-  effects <- stm::estimateEffect(formula,fit,metadata,uncertainty='Global')
+  formula <- as.formula(sprintf('1:%s %s',K,paste0(formula,collapse=' ')))
 
-  cov_type <- length(unique(effects$modelframe[,covariate]))
+  estimated_effects <- stm::estimateEffect(formula,fit,metadata,uncertainty='Global')
 
-  if (cov_type > 2){
-    covariate_effects <- estimate_topic_effects_continuous(effects,covariate,nsims=nsims,ui=ui)
-  }else if (cov_type == 2){
-    covariate_effects <- estimate_topic_effects_binary(effects,covariate,nsims=nsims,ui=ui)
+  modelframe <- as.data.frame(unclass(estimated_effects$modelframe))
+  estimated_effects$modelframe <- modelframe
+
+  # must provide binary convariate as either factor or character, even if 0-1, otherwise treated as continuous
+
+  modelframe_classes <- sapply(modelframe,class)
+  if (NCOL(modelframe) == 0){
+    stop('modelframe has 0 dimensions.')
+  }else if (any(sapply(modelframe,function(x) length(levels(x))) > 2)){
+    stop('Recode multilevel factor as dummy variables.')
   }else{
-    stop('Covariate has only 1 level!')
+    topic_effects <- estimate_topic_effects_backend(estimated_effects,nsims=nsims,ui_level=ui_level,...)
   }
 
-  return(covariate_effects)
+  return(topic_effects)
 
 }
 
-#  Backend to extract binary effects for \code{\link{estimate_topic_effects}}.
+#  Backend to extract effects for \code{\link{estimate_topic_effects}}.
 
-estimate_topic_effects_binary <- function(effects,covariate,nsims=100,ui=.95){
+estimate_topic_effects_backend <- function(estimated_effects,nsims=100,ui_level=.8,npoints=100){
 
-  K <- length(effects$topics)
+  K <- length(estimated_effects$topics)
 
-  covariate_levels <- levels(as.factor(effects$modelframe[,covariate]))
+  ui_offset <- (1-ui_level)/2
+  ui_interval <- paste0(c(ui_offset,1-ui_offset)*100,'%')
+  ui_levels <- matrix(0.0,K,2,dimnames=list(NULL,ui_interval))
 
-  cthis <- stm:::produce_cmatrix(prep=effects,covariate=covariate,
-                           method='difference',
-                           cov.value1=covariate_levels[1],cov.value2=covariate_levels[2],
-                           npoints=100)
-  cdata <- cthis$cdata
-  cmat <- cthis$cmatrix
-  simbetas <- stm:::simBetas(effects$parameters,nsims=nsims)
-  offset <- (1-ui)/2
+  modelframe <- estimated_effects$modelframe
+  modelframe_classes <- sapply(modelframe,class)
+  cov_switch <- names(which(modelframe_classes == 'factor'))
+  cov_switch_levels <- levels(modelframe[,cov_switch])
 
-  uvals <- levels(cdata[,covariate])[2]
+  simbetas <- stm:::simBetas(estimated_effects$parameters,nsims=nsims)
+  for (i in seq_along(simbetas)) colnames(simbetas[[i]]) <- c('Intercept',names(modelframe_classes))
 
-  est <- lapply(seq_len(K),function(x) matrix(0.0,1,3,
-                                              dimnames=list(uvals,c('estimate',paste0(c(offset,1-offset)*100,'%')))))
-  for (i in seq_len(K)){
 
-    sims <- cmat %*% t(simbetas[[i]])
-    diff <- sims[1,] - sims[2,]
-    est[[i]][,1] <- mean(diff)
-    est[[i]][,2:3] = quantile(diff,c(offset,1-offset))
+  covariate_list <- vector(mode='list',length=length(modelframe_classes))
+  names(covariate_list) <- names(modelframe_classes)
+  for (i in seq_along(modelframe_classes)){
+
+    # freezes other covariates except target
+
+    cov_i <- names(modelframe_classes)[i]
+
+    if (modelframe_classes[i] == 'numeric'){
+
+      cthis <- stm:::produce_cmatrix(prep=estimated_effects,covariate=cov_i,
+                                     method='continuous',npoints=npoints,
+                                     moderator=cov_switch,moderator.value=cov_switch_levels[2])
+
+      cthis_switch <- stm:::produce_cmatrix(prep=estimated_effects,covariate=cov_i,
+                                     method='continuous',npoints=npoints,
+                                     moderator=cov_switch,moderator.value=cov_switch_levels[1])
+
+      cdata_switch <- cthis_switch$cdata
+      cmat_switch <- cthis_switch$cmatrix
+
+    }else if (modelframe_classes[i] == 'factor'){
+
+      factor_levels <- levels(modelframe[,cov_i])
+      cthis <- stm:::produce_cmatrix(prep=estimated_effects,covariate=cov_i,
+                                     method='difference',
+                                     cov.value1=factor_levels[1],cov.value2=factor_levels[2])
+
+    }
+
+    cdata <- cthis$cdata
+    cmat <- cthis$cmatrix
+
+    fitted <- NA
+    fitted_switch <- NA
+    if (modelframe_classes[i] == 'numeric'){
+      fitted <- lapply(seq_len(K),function(x) matrix(0.0,npoints,4,dimnames=list(NULL,c('estimate',ui_interval,'covariate'))))
+      names(fitted) <- paste0('T',1:K)
+      fitted_switch <- lapply(seq_len(K),function(x) matrix(0.0,npoints,4,dimnames=list(NULL,c('estimate',ui_interval,'covariate'))))
+      names(fitted_switch) <- paste0('T',1:K)
+    }
+
+    est <- lapply(seq_len(K), function(x) matrix(0.0,1,3,dimnames=list('slope',c('estimate',ui_interval))))
+    for (j in seq_len(K)){
+
+      sims <- cmat %*% t(simbetas[[j]])
+
+      if (modelframe_classes[i] == 'numeric'){
+
+        sims_switch <- cmat_switch %*% t(simbetas[[j]])
+
+        est[[j]][,] <- c(mean(simbetas[[j]][,cov_i]),quantile(simbetas[[j]][,cov_i],c(ui_offset,1-ui_offset)))
+
+        fitted[[j]][,] <- c(rowMeans(sims),t(apply(sims,1,function(x) quantile(x,c(ui_offset,1-ui_offset)))),cdata[,cov_i])
+        fitted_switch[[j]][,] <- c(rowMeans(sims_switch),t(apply(sims_switch,1,function(x) quantile(x,c(ui_offset,1-ui_offset)))),cdata_switch[,cov_i])
+
+      }else if (modelframe_classes[i] == 'factor'){
+
+        diff <- sims[1,] - sims[2,]
+        est[[j]][,] <- c(mean(diff),quantile(diff,c(ui_offset,1-ui_offset)))
+
+      }
+
+    }
+
+    est_mat <- do.call('rbind',est)
+    rownames(est_mat) <- paste0('T',1:K)
+    rank <- dense_rank(est_mat[,1])
+    names(rank) <- paste0('T',1:K)
+    sig <- which(rowSums(sign(est_mat[,2:3])) != 0)
+
+    covariate_list[[i]] <- list(est=est_mat,rank=rank,sig=sig,fitted=fitted,fitted_switch=fitted_switch)
 
   }
 
-  est_mat <- do.call('rbind',est)
-  rank <- dense_rank(est_mat[,1])
-  sig <- which(rowSums(sign(est_mat[,2:3])) != 0)
-
-  return(list(est=est,rank=rank,sig=sig))
-
-}
-
-#  Backend to extract continuous effects for \code{\link{estimate_topic_effects}}.
-
-estimate_topic_effects_continuous <- function(effects,covariate,nsims=100,ui=.95){
-
-  K <- length(effects$topics)
-
-  cthis <- stm:::produce_cmatrix(prep=effects,covariate=covariate,
-                                 method='continuous',npoints=100)
-  cdata <- cthis$cdata
-  cmat <- cthis$cmatrix
-  simbetas <- stm:::simBetas(effects$parameters,nsims=nsims)
-  offset <- (1-ui)/2
-
-  uvals <- cdata[,covariate]
-
-  est <- matrix(0.0,K,length(uvals))
-  uis <- matrix(0.0,K,2,dimnames=list(NULL,paste0(c(offset,1-offset)*100,'%')))
-
-  est <- lapply(seq_len(K),function(x) matrix(0.0,1,3,
-                                              dimnames=list('slope',c('estimate',paste0(c(offset,1-offset)*100,'%')))))
-  fitted <- lapply(seq_len(K),function(x) matrix(0.0,length(uvals),3,
-                                              dimnames=list(NULL,c('estimate',paste0(c(offset,1-offset)*100,'%')))))
-  for (i in seq_len(K)){
-
-      est[[i]][,1] <- mean(simbetas[[i]][,2])
-      est[[i]][,2:3] <- quantile(simbetas[[i]][,2],c(offset,1-offset))
-
-      sims <- cmat %*% t(simbetas[[i]])
-      fitted[[i]][,1] <- rowMeans(sims)
-      fitted[[i]][,2:3] = apply(sims,1,function(x) quantile(x,c(offset,1-offset)))
-
-  }
-
-  est_mat <- do.call('rbind',est)
-  rank <- dense_rank(est_mat[,1])
-  sig <- which(rowSums(sign(est_mat[,2:3])) != 0)
-
-  return(list(est=est,rank=rank,sig=sig,fitted=fitted))
+  return(covariate_list)
 
 }
