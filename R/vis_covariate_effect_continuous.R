@@ -202,7 +202,7 @@ vis_covariate_effects_continuous <- function(topics,topic_effects,otu_table,taxa
         }
 
         if (any(input$z %in% '3'))
-          p_ss <- p_ss + facet_wrap(switch~taxon,ncol=6) + theme(strip.text=element_text(size=8))
+          p_ss <- p_ss + facet_wrap(switch~taxon,ncol=6) + theme(strip.text.x=element_text(size=7,margin=margin(t=15,b=15)))
 
         ggplotly(p_ss)
 

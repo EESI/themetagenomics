@@ -24,9 +24,9 @@ Suggests:
   Matrix,
   networkD3,
   plotly,
+  proxy,
   RCurl,
   rstan (>= 2.14.1),
-  servr,
   shiny,
   viridis
 LinkingTo: Rcpp
