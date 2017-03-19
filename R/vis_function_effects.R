@@ -125,7 +125,8 @@ vis_function_effects <- function(topics,topic_effects,function_effects,taxa,beta
         ),
       fixedRow(
         column(2,radioButtons('dist_tax',label=strong('Distance'),
-                              choices=list('Bray Curtis'='bray','Jaccard'='jaccard','Euclidean'='euclidean','Hellinger'='hellinger','Chi Squared'='chi2'),
+                              choices=list('Bray Curtis'='bray','Jaccard'='jaccard','Euclidean'='euclidean',
+                                           'Hellinger'='hellinger','Chi Squared'='chi2','Jensen Shannon'='jsd'),
                               selected='bray')),
         column(10,plotlyOutput('tax'))
       ),
@@ -182,7 +183,7 @@ vis_function_effects <- function(topics,topic_effects,function_effects,taxa,beta
 
       output$est <- renderPlotly({
 
-        ggplotly(EST()$p_est,source='reg_est')
+        ggplotly(EST()$p_est)
 
       })
 
@@ -195,6 +196,16 @@ vis_function_effects <- function(topics,topic_effects,function_effects,taxa,beta
         }else if (input$dist_tax == 'chi2'){
 
           d <- vegan::vegdist(vegan::decostand(beta,'chi.square'),method='euclidean')
+
+        }else if (input$dist_tax == 'jsd'){
+
+          if (min(beta) == 0){
+            min_beta <- min(beta[beta > 0])
+            pbeta <- beta + min_beta
+            pbeta <- pbeta/colSums(pbeta)
+          }
+
+          d <- proxy::dist(pbeta,jsd)
 
         }else{
 
@@ -296,27 +307,6 @@ vis_function_effects <- function(topics,topic_effects,function_effects,taxa,beta
 
 
       },digits=0,width='900',align='l',rownames=FALSE,striped=TRUE,hover=TRUE,bordered=FALSE,spacing='s')
-
-      # output$tbl <- renderTable({
-      #
-      #   s <- event_data('plotly_click',source='hm_fxn')
-      #
-      #   validate(need(!is.null(s) & show_table$show_table,'Please explore a gene set by clicking a cell in the heatmap.'))
-      #
-      #   k <- levels(df1$topic)[s[['x']]]
-      #   pw <- levels(df1$pw)[s[['y']]]
-      #
-      #   gene_tbl <- function_effects$gene_table[paste0('T',function_effects$gene_table$topic) == k & function_effects$gene_table$pw == pw,c('count','ko','description')]
-      #   gene_tbl <- gene_tbl[gene_tbl$count >= 10,]
-      #   gene_tbl <- gene_tbl[order(gene_tbl$count,decreasing=TRUE),]
-      #   colnames(gene_tbl) <- c('Count','ID','Description')
-      #
-      #   gene_tbl
-      #
-      #
-      # },digits=0,width='900',align='l',rownames=FALSE,striped=TRUE,hover=TRUE,bordered=FALSE,spacing='s')
-
-
 
     }
 
