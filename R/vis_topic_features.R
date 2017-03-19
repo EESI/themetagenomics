@@ -1,0 +1,507 @@
+#' @import ggplot2 shiny plotly
+NULL
+
+#' Visualize principal components of topics over samples distribution.
+#'
+#' TBD
+#'
+#' @param topics Output of \code{\link{find_topics}} that contains the STM object.
+#' @param otu_table Taxonomy table used in STM.
+#' @param taxa Dataframe or matrix containing the taxonomy information.
+#' @param taxa_n (optional) Number of taxa to show in table. Defaults to 25.
+#'
+#' @export
+
+vis_topic_features <- function(topics,otu_table,topic_effects,taxa,lambda_step=.01,taxa_n=30,top_n=7,method='huge'){
+
+  fit <- topics$fit
+  K <- fit$settings$dim$K
+  vocab <- fit$vocab
+  taxa <- taxa[vocab,]
+  taxon <- paste0(pretty_taxa_names(taxa),' (',vocab,')')
+  taxa <- rename_taxa_to_other(otu_table,taxa,top_n=top_n)
+  rownames(taxa) <- taxon
+
+  corr <- stm::topicCorr(fit,method=method)
+
+  colors_order <- sort(as.character(c(-1,0,1)))
+  colors <- c('gray','indianred3','dodgerblue3','indianred4','dodgerblue4','gray15')
+  names(colors) <- c('0','1','-1','2','-2','00')
+  col_scale <- sprintf("color=d3.scaleLinear()\n.domain([1,%s])\n.range(['blue','red']);",K)
+
+  covariates <- lapply(names(topic_effects),identity)
+  names(covariates) <- tolower(names(topic_effects))
+  est_range <- range(c(sapply(topic_effects, function(x) unlist(x$est))))
+
+  doc_lengths <- sapply(topics$docs,function(x) sum(x[2,]))
+
+  theta <- fit$theta
+  rownames(theta) <- names(topics$docs)
+  colnames(theta) <- paste0('T',1:K)
+  if (min(theta) == 0){
+    min_theta <- min(theta[theta > 0])
+    theta <- theta + min_theta
+    theta <- theta/rowSums(theta)
+  }
+
+  beta <- exp(fit$beta$logbeta[[1]])
+  colnames(beta) <- taxon
+  rownames(beta) <- paste0('T',1:K)
+  if (min(beta) == 0){
+    min_beta <- min(beta[beta > 0])
+    beta <- beta + min_beta
+    beta <- beta/rowSums(beta)
+  }
+
+  topic_freq <- colSums(theta*doc_lengths)
+  topic_marg <- topic_freq/sum(topic_freq)
+  term_topic_freq <- beta*topic_freq
+
+  # compute term frequencies as column sums of term.topic.frequency
+  # we actually won't use the user-supplied term.frequency vector.
+  # the term frequencies won't match the user-supplied frequencies exactly
+  # this is a work-around to solve the bug described in Issue #32 on github:
+  # https://github.com/cpsievert/LDAvis/issues/32
+  term_freq <- colSums(term_topic_freq) # topic_freq <- colSums(theta*doc_lengths)
+
+  # marginal distribution over terms (width of blue bars)
+  term_marg <- term_freq/sum(term_freq)
+
+  beta <- t(beta)
+
+
+  # compute the distinctiveness and saliency of the terms:
+  # this determines the R terms that are displayed when no topic is selected
+  topic_g_term <- beta/rowSums(beta)  # (W x K)
+  kernel <- topic_g_term*log(t(t(topic_g_term)/topic_marg))
+  distinctiveness <- rowSums(kernel)
+  saliency <- term_marg*distinctiveness
+
+
+  # Order the terms for the "default" view by decreasing saliency:
+  default_terms <- taxon[order(saliency,decreasing=TRUE)][1:taxa_n]
+  counts <- as.integer(term_freq[match(default_terms,taxon)])
+  taxa_n_rev <- rev(seq_len(taxa_n))
+
+  default <- data.frame(Term=default_terms,
+                        logprob=taxa_n_rev,
+                        loglift=taxa_n_rev,
+                        Freq=counts,
+                        Total=counts,
+                        Category='Default',
+                        stringsAsFactors=FALSE)
+  default$Taxon <- taxa[default$Term,'Phylum']
+  default$Term <- factor(default$Term,levels=rev(default$Term),ordered=TRUE)
+
+  topic_seq <- rep(seq_len(K),each=taxa_n)
+  category <- paste0('T',topic_seq)
+  lift <- beta/term_marg
+
+
+  # Collect R most relevant terms for each topic/lambda combination
+  # Note that relevance is re-computed in the browser, so we only need
+  # to send each possible term/topic combination to the browser
+  find_relevance <- function(i){
+    relevance <- i*log(beta) + (1 - i)*log(lift)
+    idx <- apply(relevance,2,function(x) order(x,decreasing=TRUE)[seq_len(taxa_n)])
+    # for matrices, we pick out elements by their row/column index
+    indices <- cbind(c(idx),topic_seq)
+    data.frame(Term=taxon[idx],
+               Category=category,
+               logprob=round(log(beta[indices]),4),
+               loglift=round(log(lift[indices]),4),
+               stringsAsFactors=FALSE)
+  }
+
+  max_freq <- as.integer(max(term_freq))
+
+
+
+
+  shinyApp(
+
+    ui <- fluidPage(
+
+      titlePanel('Topics Features'),
+
+      fixedRow(
+        column(2,selectInput('choose', label='Covariate',
+                             choices=covariates,selected=covariates[[1]])),
+        column(10,plotlyOutput('est',height='200px'))
+      ),
+
+      fixedRow(
+        column(2,''),
+        column(8,htmlOutput('text1')),
+        column(2,'')
+      ),
+
+      fixedRow(
+        column(1,radioButtons('dim',label=strong('Dimensions'),
+                              choices=list('2D'='2d','3D'='3d'),
+                              selected='2d')),
+        column(3,selectInput('dist',label=strong('Method'),
+                              choices=list('Bray Curtis'='bray','Jaccard'='jaccard','Euclidean'='euclidean',
+                                           'Hellinger'='hellinger','Chi Squared'='chi2','Jensen Shannon'='jsd',
+                                           't-SNE'='tsne'),
+                              selected='jsd')),
+        column(1,actionButton('reset','Reset')),
+        column(2,numericInput('k_in',label=strong('Topic Number'),value=0,min=0,max=K,step=1)),
+        column(3,sliderInput('lambda',label=strong('Lambda'),min=0,max=1,value=1)),
+        column(2,selectInput('taxon',label=strong('Taxon'),
+                             choices=list('Phylum'='Phylum','Class'='Class','Order'='Order',
+                                          'Family'='Family','Genus'='Genus')))
+      ),
+
+      fixedRow(
+        column(6,plotlyOutput('ord')),
+        column(6,plotOutput('bar'))
+      ),
+
+      fixedRow(
+        column(2,''),
+        column(8,htmlOutput('text2')),
+        column(2,'')
+      ),
+
+      networkD3::forceNetworkOutput('corr')
+
+    ),
+
+
+    server = function(input,output,session){
+
+      TOKEN_TBL <- reactive({
+
+        lambda_seq <- seq(0,1,by=input$lambda) # 0.01
+        tinfo <- lapply(as.list(lambda_seq),find_relevance)
+        tinfo <- unique(do.call('rbind', tinfo))
+        tinfo$Total <- term_freq[match(tinfo$Term,taxon)]
+        rownames(term_topic_freq) <- paste0('T',seq_len(K))
+        colnames(term_topic_freq) <- taxon
+        tinfo$Freq <- term_topic_freq[as.matrix(tinfo[c('Category','Term')])]
+        tinfo <- rbind(default[,-7],tinfo)
+
+        # last, to compute the areas of the circles when a term is highlighted
+        # we must gather all unique terms that could show up (for every combination
+        # of topic and value of lambda) and compute its distribution over topics.
+
+        # unique terms across all topics and all values of lambda
+        ut <- sort(unique(tinfo$Term))
+        # indices of unique terms in the taxon
+        m <- sort(match(ut,taxon))
+        # term-topic frequency table
+        tmp <- term_topic_freq[,m]
+
+        # round down infrequent term occurrences so that we can send sparse
+        # data to the browser:
+        r <- row(tmp)[tmp >= 0.5]
+        c <- col(tmp)[tmp >= 0.5]
+        dd <- data.frame(Term=taxon[m][c],
+                         Topic=paste0('T',r),
+                         Freq=round(tmp[cbind(r,c)]),
+                         stringsAsFactors=FALSE)
+
+        # Normalize token frequencies:
+        dd[,'Freq'] <- dd[,'Freq']/term_freq[match(dd[,'Term'],taxon)]
+        token_table <- dd[order(dd[, 1],dd[, 2]),]
+
+        token_table
+
+      })
+
+
+      EST <- reactive({
+        suppressWarnings({
+
+          covariate <- input$choose
+
+          est_mat <- topic_effects[[covariate]]$est
+
+          df0 <- data.frame(topic=paste0('T',1:K),
+                           est=est_mat[,1],
+                           lower=est_mat[,2],
+                           upper=est_mat[,3],
+                           sig=ifelse(1:K %in% topic_effects[[covariate]]$sig,'1','0'))
+          df0$sig <- as.character(sign(df0$est) * as.numeric(as.character.factor(df0$sig)))
+          df <- df0[order(topic_effects[[covariate]][['rank']]),]
+          df$topic <- factor(df$topic,levels=df$topic,ordered=TRUE)
+
+          p_est <- ggplot(df,aes(topic,y=est,ymin=lower,ymax=upper,color=sig)) +
+            geom_hline(yintercept=0,linetype=3) +
+            geom_pointrange(size=2) +
+            theme_minimal() +
+            ylim(est_range[1],est_range[2]) +
+            labs(x='',y='Estimate') +
+            scale_color_manual(values=c('gray','indianred3','dodgerblue3')) +
+            scale_fill_brewer(type='qual',palette=6,direction=-1) +
+            theme(legend.position='none',
+                  axis.text.y=element_blank(),
+                  axis.ticks.y=element_blank())
+
+          list(p_est=p_est,k_levels=levels(df$topic),covariate=covariate,df0=df0)
+
+        })
+      })
+
+
+      output$est <- renderPlotly({
+
+        ggplotly(EST()$p_est,source='est_hover')
+
+      })
+
+
+     output$text1 <- renderUI({
+       HTML(sprintf("The check box on the <b>left</b> sets whether to ignore zeros for the best fit lines and whether raw counts or
+                    relative abundances will be shown. The scatter plots <b>below</b> show the top %s taxa in terms of their
+                    probability in the topics over taxa distributions versus %s. Each point represents the abundance of that taxa
+                    in that sample. Each point is colored based on the probability of that sample occuring in the chosen topic. The
+                    large scatter plot shows all %s taxa combined.",
+                    taxa_n,EST()$covariate,taxa_n))
+     })
+
+     output$text2 <- renderUI({
+       HTML(sprintf("The check box on the <b>left</b> sets whether to ignore zeros for the best fit lines and whether raw counts or
+                    relative abundances will be shown. The scatter plots <b>below</b> show the top %s taxa in terms of their
+                    probability in the topics over taxa distributions versus %s. Each point represents the abundance of that taxa
+                    in that sample. Each point is colored based on the probability of that sample occuring in the chosen topic. The
+                    large scatter plot shows all %s taxa combined.",
+                    taxa_n,EST()$covariate,taxa_n))
+     })
+
+
+     output$ord <- renderPlotly({
+
+       beta <- t(beta)
+
+       if (input$dist == 'hellinger'){
+
+         d <- cmdscale(vegan::vegdist(vegan::decostand(beta,'norm'),method='euclidean'),3,eig=TRUE)
+
+       }else if (input$dist == 'chi2'){
+
+         d <- cmdscale(vegan::vegdist(vegan::decostand(beta,'chi.square'),method='euclidean'),3,eig=TRUE)
+
+       }else if (input$dist == 'jsd'){
+
+         d <- cmdscale(proxy::dist(beta,jsd),3,eig=TRUE)
+
+       }else if (input$dist == 'tsne'){
+
+         p <- 30
+         d <- try(Rtsne::Rtsne(beta,3,theta=.5,perplexity=p),silent=TRUE)
+         while(class(d) == 'try-error'){
+           p <- p-1
+           d <- try(Rtsne::Rtsne(beta,3,theta=.5,perplexity=p),silent=TRUE)
+         }
+         if (p < 30) cat(sprintf('Performed t-SNE with perplexity = %s.\n',p))
+         d$points <- d$Y
+         d$eig <- NULL
+
+       }else{
+
+         d <- cmdscale(vegan::vegdist(beta,method=input$dist),3,eig=TRUE)
+
+       }
+
+       eig <- d$eig[1:3]/sum(d$eig)
+       colnames(d$points) <- c('Axis1','Axis2','Axis3')
+       df <- data.frame(d$points,EST()$df0)
+       df$marg <- topic_marg
+
+       df$colors <- colors[as.character(df$sig)]
+
+       if (input$dim == '2d'){
+         p1 <- plot_ly(df,source='ord_click')
+         p1 <- add_trace(p1,
+                 x=~Axis1,y=~Axis2,size=~marg,
+                 type='scatter',mode='markers',sizes=c(5,125),
+                 color=I(df$colors),opacity=.5,
+                 marker=list(symbol='circle',sizemode='diameter',line=list(width=3,color='#FFFFFF')),
+                 text=~paste('<br>Topic:',topic),hoverinfo='text')
+         p1 <- layout(p1,
+                      showlegend=FALSE,
+                      xaxis=list(title=sprintf('Axis 1 [%.02f%%]',eig[1]*100),
+                                 showgrid=FALSE),
+                      yaxis=list(title=sprintf('Axis 2 [%.02f%%]',eig[2]*100),
+                                 showgrid=FALSE),
+                      paper_bgcolor='rgb(243, 243, 243)',
+                      plot_bgcolor='rgb(243, 243, 243)')
+         p1 <- add_annotations(p1,x=df$Axis1,y=df$Axis2,text=df$topic,showarrow=FALSE,
+                               font=list(size=10))
+
+         h <- event_data('plotly_hover',source='est_hover')
+
+         if (!is.null(h)){
+           k <- EST()$k_levels[h[['x']]]
+
+           df_update <- df[df$topic == k,]
+           if (df_update$sig == '1') df_update$sig <- '2' else if(df_update$sig== '-1') df_update$sig <- '-2' else df_update$sig<- '00'
+           df_update$colors <- colors[df_update$sig]
+
+           p1 <- add_markers(p1,
+                     x=df_update$Axis1,y=df_update$Axis2,opacity=.8,color=I(df_update$color),
+                     marker=list(size=150,symbol='circle',sizemode='diameter',line=list(width=3,color='#000000')))
+
+         }
+
+
+       }
+       if (input$dim == '3d'){
+         p1 <- plot_ly(df,source='ord_click',
+                 x=~Axis1,y=~Axis2,z=~Axis3,size=~marg,
+                 type='scatter3d',mode='markers',sizes=c(5,125),
+                 color=I(df$colors),opacity=.5,
+                 marker=list(symbol='circle',sizemode='diameter'),
+                 text=~paste('<br>Topic:',topic),hoverinfo='text')
+         p1 <- layout(p1,
+                      showlegend=FALSE,
+                      scene=list(
+                        xaxis=list(title=sprintf('Axis 1 [%.02f%%]',eig[1]*100),
+                                   showgrid=FALSE),
+                        yaxis=list(title=sprintf('Axis 2 [%.02f%%]',eig[2]*100),
+                                   showgrid=FALSE),
+                        zaxis=list(title=sprintf('Axis 3 [%.02f%%]',eig[3]*100),
+                                   showgrid=FALSE)),
+                      paper_bgcolor='rgb(243, 243, 243)',
+                      plot_bgcolor='rgb(243, 243, 243)')
+
+       }
+
+       p1
+
+     })
+
+
+     show_topic <- reactiveValues(k=0)
+
+     observeEvent(event_data('plotly_click',source='ord_click'),{
+
+       s <- event_data('plotly_click',source='ord_click')
+
+       cat(sprintf('\n\n\ncurvenumber: %s\tpointnumber: %s\n\n\n',s$curveNumber + 1,s$pointNumber + 1))
+
+       if (is.null(s)){
+
+         show_topic$k <- 0
+         updateNumericInput(session,'k_in',value=0)
+
+       }else{
+
+         # s_sig <- colors_order[s$curveNumber + 1]
+         # s_topic <- subset(EST()$df0,sig == s_sig)[s$pointNumber + 1,'topic']
+
+         t_idx <- s$pointNumber + 1
+         updateNumericInput(session,'k_in',value=t_idx)
+         show_topic$k <- t_idx
+
+       }
+
+
+     })
+
+     observeEvent(input$k_in,{
+
+       show_topic$k <- input$k_in
+
+     })
+
+     observeEvent(input$reset,{
+
+       show_topic$k <- 0
+       updateNumericInput(session,'k_in',value=0)
+
+     })
+
+     output$bar <- renderPlot({
+
+
+       if (show_topic$k != 0){
+
+
+         current_k <- paste0('T',show_topic$k)
+
+         token_ss <- subset(TOKEN_TBL(),Topic == current_k)
+         top_taxa <- term_freq[token_ss$Term]
+         top_taxa_topic <- token_ss$Freq*top_taxa
+         top_taxa_order <- order(top_taxa_topic,decreasing=TRUE)[1:taxa_n]
+         token_ss <- data.frame(token_ss,
+                                Freq_overall=as.integer(top_taxa),
+                                Freq_topic=as.integer(top_taxa_topic))[top_taxa_order,]
+         token_ss$Term <- factor(token_ss$Term,levels=rev(token_ss$Term),ordered=TRUE)
+         token_ss$Taxon <- taxa[token_ss$Term,input$taxon]
+
+         ggplot(data=token_ss) +
+           geom_bar(aes(Term,Freq_overall,fill=Taxon),stat='identity',color='white',alpha=.6) +
+           geom_bar(aes(Term,Freq_topic),stat='identity',fill='darkred',color='white') +
+           coord_flip() +
+           labs(x='',y='Frequency',fill='') +
+           theme(axis.text.x=element_text(angle=-90,hjust=0,vjust=.5),
+                 legend.position='bottom') +
+           ylim(0,max_freq) +
+           viridis::scale_fill_viridis(discrete=TRUE) +
+           guides(fill=guide_legend(nrow=2))
+
+       }else{
+
+         def <- data.frame(default,Taxon=taxa[default$Term,input$taxon])
+         ggplot(data=def) +
+           geom_bar(aes(Term,Freq,fill=Taxon),stat='identity',color='white',alpha=1) +
+           coord_flip() +
+           labs(x='',y='Frequency',fill='') +
+           theme(axis.text.x=element_text(angle=-90,hjust=0,vjust=.5),
+                 legend.position='bottom') +
+           ylim(0,max_freq) +
+           viridis::scale_fill_viridis(discrete=TRUE) +
+           guides(fill=guide_legend(nrow=2))
+
+       }
+
+     })
+
+
+     output$corr <- networkD3::renderForceNetwork({
+
+       effects_rank <- topic_effects[[EST()$covariate]][['rank']]
+       effects_sig <- topic_effects[[EST()$covariate]][['sig']]
+
+       K <- nrow(corr$posadj)
+       g <- igraph::graph.adjacency(corr$posadj,mode='undirected',
+                                    weighted=TRUE,diag=FALSE)
+
+       wc <- igraph::cluster_walktrap(g)
+       members <- igraph::membership(wc)
+
+       g_d3 <- networkD3::igraph_to_networkD3(g,group=members)
+
+       g_d3$nodes$group <- effects_rank
+       g_d3$nodes$sig <- ifelse(1:K %in% effects_sig,50,1)
+       g_d3$links <- g_d3$links
+       g_d3$nodes$name <- paste0('T',g_d3$nodes$name)
+
+       networkD3::forceNetwork(Links=g_d3$links,Nodes=g_d3$nodes,
+                               Source='source',Target='target',
+                               NodeID='name',Group='group',
+                               Nodesize='sig',
+                               charge=-50,
+                               height=400,
+                               width=400,
+                               fontSize=20,
+                               opacity=.8,
+                               zoom=TRUE,
+                               colourScale=networkD3::JS(col_scale))
+
+     })
+
+
+
+
+
+ }
+
+
+   )
+
+}
+
