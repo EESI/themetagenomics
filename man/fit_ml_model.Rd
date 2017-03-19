@@ -4,10 +4,13 @@
 \alias{fit_ml_model}
 \title{Estimate function effects via ML}
 \usage{
-fit_ml_model(gene_table, return_fit = FALSE, verbose = FALSE, ...)
+fit_ml_model(gene_table, iters = 1000, return_fit = FALSE,
+  verbose = FALSE, ...)
 }
 \arguments{
 \item{gene_table}{A gene_table formatted via \code{\link{format_gene_table}}.}
+
+\item{iters}{Number of iterations for HMC. Defaults to 1000.}
 
 \item{return_fit}{(optional) Logical to return the rstan data and fit.}
 
@@ -15,8 +18,6 @@ fit_ml_model(gene_table, return_fit = FALSE, verbose = FALSE, ...)
 
 \item{inits}{List of values for parameter initialization. If omitted, values
 are generated via \code{\link{lme4::glmer.nb}}}
-
-\item{iters}{Number of iterations for HMC. Defaults to 1000.}
 
 \item{chains}{(optional) Number of chains for HMC. Defaults to 1.}
 }

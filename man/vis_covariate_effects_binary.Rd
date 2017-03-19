@@ -4,8 +4,8 @@
 \alias{vis_covariate_effects_binary}
 \title{Generate interactive binary covariate effect figure}
 \usage{
-vis_covariate_effects_binary(topics, topic_effects, otu_table, taxa, covariate,
-  metadata, taxa_n = 7)
+vis_covariate_effects_binary(topics, topic_effects, otu_table, taxa, metadata,
+  taxa_n = 7)
 }
 \arguments{
 \item{topics}{Output of \code{\link{find_topics}} that contains the STM object.}

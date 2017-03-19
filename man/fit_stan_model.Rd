@@ -4,8 +4,8 @@
 \alias{fit_stan_model}
 \title{Estimate function effects via HMC}
 \usage{
-fit_stan_model(gene_table, inits, iters = 1000, chains = 1,
-  return_fit = FALSE, verbose = FALSE)
+fit_stan_model(gene_table, inits, prior = c("t", "laplace"), t_df = c(5, 5,
+  5), iters = 1000, chains = 1, return_fit = FALSE, verbose = FALSE)
 }
 \arguments{
 \item{gene_table}{A gene_table formatted via \code{\link{format_gene_table}}.}

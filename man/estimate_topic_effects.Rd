@@ -4,12 +4,10 @@
 \alias{estimate_topic_effects}
 \title{Estimate topic effects for a given covariate}
 \usage{
-estimate_topic_effects(covariate, topics, metadata, nsims = 100,
-  ui_level = 0.8)
+estimate_topic_effects(topics, metadata, formula, nsims = 100,
+  ui_level = 0.8, ...)
 }
 \arguments{
-\item{covariate}{String corresponding to the name of the covariate of interest found in metadata.}
-
 \item{topics}{STM object containing the topic information}
 
 \item{metadata}{Dataframe or matrix of metadata. If the STM was fit with covariate information, this must point to the same metadata used in the STM.}
@@ -17,6 +15,8 @@ estimate_topic_effects(covariate, topics, metadata, nsims = 100,
 \item{nsims}{(optional) Number of simulations to perform for inferring covariate effects.}
 
 \item{ui_level}{With of uncertainty interval to report effects. Defaults to .95.}
+
+\item{covariate}{String corresponding to the name of the covariate of interest found in metadata.}
 }
 \value{
 A list containing
