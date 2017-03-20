@@ -200,16 +200,38 @@ sum_taxa_by_group <- function(otu_ids,taxa,otu_table,metadata,cov_list,group=c('
 }
 
 # rename taxa below rank to other
-rename_taxa_to_other <- function(otu_table,taxa,top_n=7,group=c('Phylum','Class','Order','Family','Genus')){
 
-  taxa <- as.data.frame(taxa[colnames(otu_table),])
+rename_taxa_to_other <- function(x,taxa,top_n=7,group=c('Phylum','Class','Order','Family','Genus'),type=c('otu_table','docs')){
+
+  type <- match.arg(type)
+
+  if (type == 'otu_table') taxa <- taxa[colnames(x),]
 
   for (g in group){
 
     taxa[,g] <- gsub('^[a-z]__','',taxa[,g])
     taxa_temp <- taxa[taxa[,g] != '',g]
     taxa_temp_ids <- rownames(taxa)[taxa[,g] != '']
-    group_df <- data.frame(count=colSums(otu_table[,taxa_temp_ids]),taxon=taxa_temp)
+
+    if (type == 'otu_table'){
+
+      group_df <- data.frame(count=colSums(x[,taxa_temp_ids]),taxon=taxa_temp)
+
+    }else{
+
+      taxa_temp_ids_total <- numeric(length(taxa_temp_ids))
+      names(taxa_temp_ids_total) <- taxa_temp_ids
+      for (d in seq_along(x)){
+
+        taxa_ids_in_doc <- taxa_temp_ids[taxa_temp_ids %in% colnames(x[[d]])]
+        taxa_temp_ids_total[taxa_ids_in_doc] <- taxa_temp_ids_total[taxa_ids_in_doc] + x[[d]][2,taxa_ids_in_doc]
+
+      }
+
+      group_df <- data.frame(count=taxa_temp_ids_total,taxon=taxa_temp)
+      group_df <- group_df[group_df$count > 0,]
+
+    }
     group_df <- with(group_df,aggregate(count,by=list(taxon=taxon),FUN=sum))
     taxa_top <- as.character(group_df[order(group_df$x,decreasing=TRUE),'taxon'][1:top_n])
 
@@ -220,3 +242,4 @@ rename_taxa_to_other <- function(otu_table,taxa,top_n=7,group=c('Phylum','Class'
   return(taxa)
 
 }
+
