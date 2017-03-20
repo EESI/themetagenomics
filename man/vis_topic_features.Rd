@@ -2,20 +2,89 @@
 % Please edit documentation in R/vis_topic_features.R
 \name{vis_topic_features}
 \alias{vis_topic_features}
-\title{Visualize principal components of topics over samples distribution.}
+\title{Visualize topics features}
 \usage{
-vis_topic_features(topics, otu_table, topic_effects, taxa, lambda_step = 0.01,
-  taxa_n = 30, top_n = 7, method = "huge")
+vis_topic_features(topics, topic_effects, taxa, taxa_n = 30, top_n = 7,
+  method = c("huge", "simple"), corr_thresh = 0.01, lambda_step = 0.01)
 }
 \arguments{
-\item{topics}{Output of \code{\link{find_topics}} that contains the STM object.}
+\item{topics}{Output of \code{\link{find_topics}} that contains the STM
+object.}
 
-\item{otu_table}{Taxonomy table used in STM.}
+\item{topic_effects}{Output of \code{\link{estimate_topic_effects}}.}
 
-\item{taxa}{Dataframe or matrix containing the taxonomy information.}
+\item{taxa}{Dataframe or matrix containing the taxonomy information
+associated with the vocabulary used during STM fitting.}
 
-\item{taxa_n}{(optional) Number of taxa to show in table. Defaults to 25.}
+\item{taxa_n}{(optional) Number of taxa to show in the frequency bar plot.
+Defaults to 30.}
+
+\item{top_n}{(optional) Number of taxonic groups to colorize in the frequency
+bar plot. Defaults to 7.}
+
+\item{method}{(optional) Method for estimating topic correlations links.
+Defaults to huge.}
+
+\item{corr_thresh}{(optional) Threshold to set correlations to 0 when method is
+set to simple. Defaults to .01.}
+
+\item{lambda_step}{(optional) Controls the step size for adjusting lambda in
+the relevancy calculation. Defaults to .01.}
 }
 \description{
-TBD
+Launch an interactive graphical interface to visualize topic model output for
+taxonimic abundance data. The interphase integrates STM output with LDAvis
+inpired ordination and frequency figures, as well a networkD3 diagram to
+display topic correlations.
+}
+\details{
+This function integrates the samples over topics (theta) and topics
+  over taxa distributions (beta) from the STM, the topic correlations from
+  the theta component, the covariate effects from the theta component, and
+  their relationship with the raw taxonomic abundances. The covariate effects
+  for each topic are shown as a scatterplot with error bars corresponding the
+  global approximation of uncertainty. If the covariate chosen is binary,
+  this reflects their mean difference. For continuous covariates, the points
+  represent the mean regression weights (i.e., the estimated slope of the
+  covariate). Colors indicate whether a given point's uncertainty interval
+  did not enclose 0, where the interval is set by the user.
+
+  The ordination figure maintains the color coding just decribed. The
+  ordination is performed on beta via either PCoA (using either
+  Jensen-Shannon, Euclidean, Hellinger, Bray-Curtis, Jaccard, or Chi-squared
+  distance) or t-SNE. The latter iterates through decreasing perplexity
+  values (starting at 30) until the algorithm succeeds. Either the top 2 or 3
+  axes can be shown. The radius of the topic points corresponds to the topic
+  frequencies marginalized over taxa.
+
+  The bar plot behaves in accordance with LDAvis. When no topics are chosen,
+  the overall taxa frequencies across topics are shown. These frequencies do
+  not equal the abundances found in the initial abundance table. Instead,
+  they show the marginal topic distribution multiplied by beta. These two
+  distributions are compared via Kullback-Liebler divergence and then
+  weighted by the overall frequency of a given taxa, which determins the
+  order in which the taxa are shown. The coloration of the bars indiciates
+  the taxonomic group the inidividual taxa belong to. The groups shown are
+  determined based on how abundant that group was in the raw abundance table.
+  When a topic is selected, the relative frequency of a given taxa in that
+  topic is shown in red.
+
+  Lambda controls relevance of taxa within a topic
+}
+\references{
+Roberts, M.E., Stewart, B.M., Tingley, D., Lucas, C.,
+Leder-Luis, J., Gadarian, S.K., Albertson, B., & Rand, D.G. (2014).
+Structural topic models for open-ended survey responses. Am. J. Pol. Sci. 58,
+1064–1082.
+
+Sievert, C., & Shirley, K. (2014). LDAvis: A method for
+visualizing and interpreting topics. Proc. Work. Interact. Lang. Learn. Vis.
+Interfaces.
+
+Zhao, T., & Liu., H. (2012) The huge Package for
+High-dimensional Undirected Graph Estimation in R. Journal of Machine
+Learning Research.
+}
+\seealso{
+\code{\link{networkD3}}, \code{\link{huge}}, \code{\link{topicCorr}}
 }

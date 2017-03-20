@@ -1,18 +1,85 @@
 #' @import ggplot2 shiny plotly
 NULL
 
-#' Visualize principal components of topics over samples distribution.
+#' Visualize topics features
 #'
-#' TBD
+#' Launch an interactive graphical interface to visualize topic model output for
+#' taxonimic abundance data. The interphase integrates STM output with LDAvis
+#' inpired ordination and frequency figures, as well a networkD3 diagram to
+#' display topic correlations.
 #'
-#' @param topics Output of \code{\link{find_topics}} that contains the STM object.
-#' @param otu_table Taxonomy table used in STM.
-#' @param taxa Dataframe or matrix containing the taxonomy information.
-#' @param taxa_n (optional) Number of taxa to show in table. Defaults to 25.
+#' @param topics Output of \code{\link{find_topics}} that contains the STM
+#'   object.
+#' @param topic_effects Output of \code{\link{estimate_topic_effects}}.
+#' @param taxa Dataframe or matrix containing the taxonomy information
+#'   associated with the vocabulary used during STM fitting.
+#' @param taxa_n (optional) Number of taxa to show in the frequency bar plot.
+#'   Defaults to 30.
+#' @param top_n (optional) Number of taxonic groups to colorize in the frequency
+#'   bar plot. Defaults to 7.
+#' @param method (optional) Method for estimating topic correlations links.
+#'   Defaults to huge.
+#' @param corr_thresh (optional) Threshold to set correlations to 0 when method is
+#'   set to simple. Defaults to .01.
+#' @param lambda_step (optional) Controls the step size for adjusting lambda in
+#'   the relevancy calculation. Defaults to .01.
+#'
+#' @details This function integrates the samples over topics (theta) and topics
+#'   over taxa distributions (beta) from the STM, the topic correlations from
+#'   the theta component, the covariate effects from the theta component, and
+#'   their relationship with the raw taxonomic abundances. The covariate effects
+#'   for each topic are shown as a scatterplot with error bars corresponding the
+#'   global approximation of uncertainty. If the covariate chosen is binary,
+#'   this reflects their mean difference. For continuous covariates, the points
+#'   represent the mean regression weights (i.e., the estimated slope of the
+#'   covariate). Colors indicate whether a given point's uncertainty interval
+#'   did not enclose 0, where the interval is set by the user.
+#'
+#'   The ordination figure maintains the color coding just decribed. The
+#'   ordination is performed on beta via either PCoA (using either
+#'   Jensen-Shannon, Euclidean, Hellinger, Bray-Curtis, Jaccard, or Chi-squared
+#'   distance) or t-SNE. The latter iterates through decreasing perplexity
+#'   values (starting at 30) until the algorithm succeeds. Either the top 2 or 3
+#'   axes can be shown. The radius of the topic points corresponds to the topic
+#'   frequencies marginalized over taxa.
+#'
+#'   The bar plot behaves in accordance with LDAvis. When no topics are chosen,
+#'   the overall taxa frequencies across topics are shown. These frequencies do
+#'   not equal the abundances found in the initial abundance table. Instead,
+#'   they show the marginal topic distribution multiplied by beta. These two
+#'   distributions are compared via Kullback-Liebler divergence and then
+#'   weighted by the overall frequency of a given taxa, which determins the
+#'   order in which the taxa are shown. The coloration of the bars indiciates
+#'   the taxonomic group the inidividual taxa belong to. The groups shown are
+#'   determined based on how abundant that group was in the raw abundance table.
+#'   When a topic is selected, the relative frequency of a given taxa in that
+#'   topic is shown in red.
+#'
+#'   Lambda controls relevance of taxa within a topic
+#'
+#'
+#'
+#' @references
+#' Roberts, M.E., Stewart, B.M., Tingley, D., Lucas, C.,
+#' Leder-Luis, J., Gadarian, S.K., Albertson, B., & Rand, D.G. (2014).
+#' Structural topic models for open-ended survey responses. Am. J. Pol. Sci. 58,
+#' 1064–1082.
+#'
+#' Sievert, C., & Shirley, K. (2014). LDAvis: A method for
+#' visualizing and interpreting topics. Proc. Work. Interact. Lang. Learn. Vis.
+#' Interfaces.
+#'
+#' Zhao, T., & Liu., H. (2012) The huge Package for
+#' High-dimensional Undirected Graph Estimation in R. Journal of Machine
+#' Learning Research.
+#'
+#' @seealso \code{\link{networkD3}}, \code{\link{huge}}, \code{\link{topicCorr}}
 #'
 #' @export
 
-vis_topic_features <- function(topics,topic_effects,taxa,taxa_n=30,top_n=7,method='huge'){
+vis_topic_features <- function(topics,topic_effects,taxa,taxa_n=30,top_n=7,method=c('huge','simple'),corr_thresh=.01,lambda_step=.01){
+
+  method <- match.arg(method)
 
   fit <- topics$fit
   K <- fit$settings$dim$K
@@ -22,12 +89,11 @@ vis_topic_features <- function(topics,topic_effects,taxa,taxa_n=30,top_n=7,metho
   taxa <- rename_taxa_to_other(topics$docs,taxa,top_n=top_n,type='docs')
   rownames(taxa) <- taxon
 
-  corr <- stm::topicCorr(fit,method=method)
+  corr <- stm::topicCorr(fit,method=method,cutoff=corr_thresh)
 
   colors_order <- sort(as.character(c(-1,0,1)))
   colors <- c('gray','indianred3','dodgerblue3','indianred4','dodgerblue4','gray15')
   names(colors) <- c('0','1','-1','2','-2','00')
-  col_scale <- "color=d3.scaleLinear()\n.domain([-1,0,1])\n.range(['blue','gray','red']);"
 
   covariates <- lapply(names(topic_effects),identity)
   names(covariates) <- tolower(names(topic_effects))
@@ -112,9 +178,42 @@ vis_topic_features <- function(topics,topic_effects,taxa,taxa_n=30,top_n=7,metho
                stringsAsFactors=FALSE)
   }
 
+  lambda_seq <- seq(0,1,by=lambda_step) # 0.01
+  tinfo <- lapply(as.list(lambda_seq),find_relevance)
+  tinfo <- unique(do.call('rbind', tinfo))
+  tinfo$Total <- term_freq[match(tinfo$Term,taxon)]
+  rownames(term_topic_freq) <- paste0('T',seq_len(K))
+  colnames(term_topic_freq) <- taxon
+  tinfo$Freq <- term_topic_freq[as.matrix(tinfo[c('Category','Term')])]
+  tinfo <- rbind(default[,-7],tinfo)
+
+  # last, to compute the areas of the circles when a term is highlighted
+  # we must gather all unique terms that could show up (for every combination
+  # of topic and value of lambda) and compute its distribution over topics.
+
+  # unique terms across all topics and all values of lambda
+  ut <- sort(unique(tinfo$Term))
+  # indices of unique terms in the taxon
+  m <- sort(match(ut,taxon))
+  # term-topic frequency table
+  tmp <- term_topic_freq[,m]
+
+  # round down infrequent term occurrences so that we can send sparse
+  # data to the browser:
+  r <- row(tmp)[tmp >= 0.5]
+  c <- col(tmp)[tmp >= 0.5]
+  dd <- data.frame(Term=taxon[m][c],
+                   Topic=paste0('T',r),
+                   Freq=round(tmp[cbind(r,c)]),
+                   stringsAsFactors=FALSE)
+
+  # Normalize token frequencies:
+  dd[,'Freq'] <- dd[,'Freq']/term_freq[match(dd[,'Term'],taxon)]
+  token_table <- dd[order(dd[, 1],dd[, 2]),]
+
   max_freq <- as.integer(max(term_freq))
 
-
+  new_order <- default
 
 
   shinyApp(
@@ -150,7 +249,7 @@ vis_topic_features <- function(topics,topic_effects,taxa,taxa_n=30,top_n=7,metho
                               selected='jsd')),
         column(1,style='padding: 25px 0px;',actionButton('reset','Reset')),
         column(2,numericInput('k_in',label=strong('Topic Number'),value=0,min=0,max=K,step=1)),
-        column(3,sliderInput('lambda',label=strong('Lambda'),min=0,max=1,value=.1,step=.01)),
+        column(3,sliderInput('lambda',label=strong('Lambda'),min=0,max=1,value=1,step=lambda_step)),
         column(2,selectInput('taxon',label=strong('Taxon'),
                              choices=list('Phylum'='Phylum','Class'='Class','Order'='Order',
                                           'Family'='Family','Genus'='Genus')))
@@ -176,42 +275,33 @@ vis_topic_features <- function(topics,topic_effects,taxa,taxa_n=30,top_n=7,metho
 
     server = function(input,output,session){
 
-      TOKEN_TBL <- reactive({
+      REL <- reactive({
 
-        lambda_seq <- seq(0,1,by=input$lambda) # 0.01
-        tinfo <- lapply(as.list(lambda_seq),find_relevance)
-        tinfo <- unique(do.call('rbind', tinfo))
-        tinfo$Total <- term_freq[match(tinfo$Term,taxon)]
-        rownames(term_topic_freq) <- paste0('T',seq_len(K))
-        colnames(term_topic_freq) <- taxon
-        tinfo$Freq <- term_topic_freq[as.matrix(tinfo[c('Category','Term')])]
-        tinfo <- rbind(default[,-7],tinfo)
+        if (show_topic$k != 0){
 
-        # last, to compute the areas of the circles when a term is highlighted
-        # we must gather all unique terms that could show up (for every combination
-        # of topic and value of lambda) and compute its distribution over topics.
+          current_k <- paste0('T',show_topic$k)
 
-        # unique terms across all topics and all values of lambda
-        ut <- sort(unique(tinfo$Term))
-        # indices of unique terms in the taxon
-        m <- sort(match(ut,taxon))
-        # term-topic frequency table
-        tmp <- term_topic_freq[,m]
+          l <- input$lambda
 
-        # round down infrequent term occurrences so that we can send sparse
-        # data to the browser:
-        r <- row(tmp)[tmp >= 0.5]
-        c <- col(tmp)[tmp >= 0.5]
-        dd <- data.frame(Term=taxon[m][c],
-                         Topic=paste0('T',r),
-                         Freq=round(tmp[cbind(r,c)]),
-                         stringsAsFactors=FALSE)
+          tinfo_k <- subset(tinfo,Category == current_k)
+          rel_k <- l*tinfo_k$logprob + (1-l)*tinfo_k$loglift
+          new_order <- tinfo_k[order(rel_k,decreasing=TRUE)[1:taxa_n],]
+          new_order$Term <- as.character.factor(new_order$Term)
+          new_order$Taxon <- taxa[new_order$Term,input$taxon]
+          new_order$Term <- factor(new_order$Term,levels=rev(new_order$Term),ordered=TRUE)
 
-        # Normalize token frequencies:
-        dd[,'Freq'] <- dd[,'Freq']/term_freq[match(dd[,'Term'],taxon)]
-        token_table <- dd[order(dd[, 1],dd[, 2]),]
+        }else{
 
-        token_table
+          new_order <- default
+          new_order$Taxon <- taxa[as.character.factor(new_order$Term),input$taxon]
+
+        }
+
+        print(show_topic$k)
+        print(new_order)
+
+
+        new_order
 
       })
 
@@ -421,47 +511,27 @@ vis_topic_features <- function(topics,topic_effects,taxa,taxa_n=30,top_n=7,metho
 
      output$bar <- renderPlot({
 
-
        if (show_topic$k != 0){
 
-
-         current_k <- paste0('T',show_topic$k)
-
-         token_ss <- subset(TOKEN_TBL(),Topic == current_k)
-         top_taxa <- term_freq[token_ss$Term]
-         top_taxa_topic <- token_ss$Freq*top_taxa
-         top_taxa_order <- order(top_taxa_topic,decreasing=TRUE)[1:taxa_n]
-         token_ss <- data.frame(token_ss,
-                                Freq_overall=as.integer(top_taxa),
-                                Freq_topic=as.integer(top_taxa_topic))[top_taxa_order,]
-         token_ss$Term <- factor(token_ss$Term,levels=rev(token_ss$Term),ordered=TRUE)
-         token_ss$Taxon <- taxa[token_ss$Term,input$taxon]
-
-         ggplot(data=token_ss) +
-           geom_bar(aes(Term,Freq_overall,fill=Taxon),stat='identity',color='white',alpha=.6) +
-           geom_bar(aes(Term,Freq_topic),stat='identity',fill='darkred',color='white') +
-           coord_flip() +
-           labs(x='',y='Frequency',fill='') +
-           theme(axis.text.x=element_text(angle=-90,hjust=0,vjust=.5),
-                 legend.position='bottom') +
-           ylim(0,max_freq) +
-           viridis::scale_fill_viridis(discrete=TRUE) +
-           guides(fill=guide_legend(nrow=2))
+         p_bar <- ggplot(data=REL()) +
+           geom_bar(aes(Term,Total,fill=Taxon),stat='identity',color='white',alpha=.6) +
+           geom_bar(aes(Term,Freq),stat='identity',fill='darkred',color='white')
 
        }else{
 
-         def <- data.frame(default,Taxon=taxa[default$Term,input$taxon])
-         ggplot(data=def) +
-           geom_bar(aes(Term,Freq,fill=Taxon),stat='identity',color='white',alpha=1) +
-           coord_flip() +
-           labs(x='',y='Frequency',fill='') +
-           theme(axis.text.x=element_text(angle=-90,hjust=0,vjust=.5),
-                 legend.position='bottom') +
-           ylim(0,max_freq) +
-           viridis::scale_fill_viridis(discrete=TRUE) +
-           guides(fill=guide_legend(nrow=2))
+         p_bar <- ggplot(data=REL()) +
+           geom_bar(aes(Term,Total,fill=Taxon),stat='identity',color='white',alpha=1)
 
        }
+
+       p_bar +
+         coord_flip() +
+         labs(x='',y='Frequency',fill='') +
+         theme(axis.text.x=element_text(angle=-90,hjust=0,vjust=.5),
+               legend.position='bottom') +
+         #ylim(0,max_freq) +
+         viridis::scale_fill_viridis(discrete=TRUE) +
+         guides(fill=guide_legend(nrow=2))
 
      })
 
