@@ -6,3 +6,5 @@ jsd <- function(p,q) {
 
   return(dis)
 }
+
+norm10 <- function(x) (x-min(x))/(max(x)-min(x))
