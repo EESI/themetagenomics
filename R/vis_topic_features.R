@@ -12,14 +12,14 @@ NULL
 #'
 #' @export
 
-vis_topic_features <- function(topics,otu_table,topic_effects,taxa,lambda_step=.01,taxa_n=30,top_n=7,method='huge'){
+vis_topic_features <- function(topics,topic_effects,taxa,taxa_n=30,top_n=7,method='huge'){
 
   fit <- topics$fit
   K <- fit$settings$dim$K
   vocab <- fit$vocab
   taxa <- taxa[vocab,]
   taxon <- paste0(pretty_taxa_names(taxa),' (',vocab,')')
-  taxa <- rename_taxa_to_other(otu_table,taxa,top_n=top_n)
+  taxa <- rename_taxa_to_other(topics$docs,taxa,top_n=top_n,type='docs')
   rownames(taxa) <- taxon
 
   corr <- stm::topicCorr(fit,method=method)
@@ -27,7 +27,7 @@ vis_topic_features <- function(topics,otu_table,topic_effects,taxa,lambda_step=.
   colors_order <- sort(as.character(c(-1,0,1)))
   colors <- c('gray','indianred3','dodgerblue3','indianred4','dodgerblue4','gray15')
   names(colors) <- c('0','1','-1','2','-2','00')
-  col_scale <- sprintf("color=d3.scaleLinear()\n.domain([1,%s])\n.range(['blue','red']);",K)
+  col_scale <- "color=d3.scaleLinear()\n.domain([-1,0,1])\n.range(['blue','gray','red']);"
 
   covariates <- lapply(names(topic_effects),identity)
   names(covariates) <- tolower(names(topic_effects))
@@ -104,7 +104,6 @@ vis_topic_features <- function(topics,otu_table,topic_effects,taxa,lambda_step=.
   find_relevance <- function(i){
     relevance <- i*log(beta) + (1 - i)*log(lift)
     idx <- apply(relevance,2,function(x) order(x,decreasing=TRUE)[seq_len(taxa_n)])
-    # for matrices, we pick out elements by their row/column index
     indices <- cbind(c(idx),topic_seq)
     data.frame(Term=taxon[idx],
                Category=category,
@@ -122,7 +121,15 @@ vis_topic_features <- function(topics,otu_table,topic_effects,taxa,lambda_step=.
 
     ui <- fluidPage(
 
-      titlePanel('Topics Features'),
+      titlePanel('Topic Features'),
+
+      fixedRow(
+        column(1,''),
+        column(10,htmlOutput('text1')),
+        column(1,'')
+      ),
+
+      br(),
 
       fixedRow(
         column(2,selectInput('choose', label='Covariate',
@@ -130,14 +137,10 @@ vis_topic_features <- function(topics,otu_table,topic_effects,taxa,lambda_step=.
         column(10,plotlyOutput('est',height='200px'))
       ),
 
-      fixedRow(
-        column(2,''),
-        column(8,htmlOutput('text1')),
-        column(2,'')
-      ),
+      br(),
 
       fixedRow(
-        column(1,radioButtons('dim',label=strong('Dimensions'),
+        column(1,radioButtons('dim',label=strong('Dim'),
                               choices=list('2D'='2d','3D'='3d'),
                               selected='2d')),
         column(3,selectInput('dist',label=strong('Method'),
@@ -145,23 +148,25 @@ vis_topic_features <- function(topics,otu_table,topic_effects,taxa,lambda_step=.
                                            'Hellinger'='hellinger','Chi Squared'='chi2','Jensen Shannon'='jsd',
                                            't-SNE'='tsne'),
                               selected='jsd')),
-        column(1,actionButton('reset','Reset')),
+        column(1,style='padding: 25px 0px;',actionButton('reset','Reset')),
         column(2,numericInput('k_in',label=strong('Topic Number'),value=0,min=0,max=K,step=1)),
-        column(3,sliderInput('lambda',label=strong('Lambda'),min=0,max=1,value=1)),
+        column(3,sliderInput('lambda',label=strong('Lambda'),min=0,max=1,value=.1,step=.01)),
         column(2,selectInput('taxon',label=strong('Taxon'),
                              choices=list('Phylum'='Phylum','Class'='Class','Order'='Order',
                                           'Family'='Family','Genus'='Genus')))
       ),
 
       fixedRow(
-        column(6,plotlyOutput('ord')),
-        column(6,plotOutput('bar'))
+        column(6,offset=0,height='600px',plotlyOutput('ord')),
+        column(6,offset=0,height='600px',plotOutput('bar'))
       ),
 
+      br(),
+
       fixedRow(
-        column(2,''),
-        column(8,htmlOutput('text2')),
-        column(2,'')
+        column(1,''),
+        column(10,htmlOutput('text2')),
+        column(1,'')
       ),
 
       networkD3::forceNetworkOutput('corr')
@@ -253,20 +258,24 @@ vis_topic_features <- function(topics,otu_table,topic_effects,taxa,lambda_step=.
 
 
      output$text1 <- renderUI({
-       HTML(sprintf("The check box on the <b>left</b> sets whether to ignore zeros for the best fit lines and whether raw counts or
-                    relative abundances will be shown. The scatter plots <b>below</b> show the top %s taxa in terms of their
-                    probability in the topics over taxa distributions versus %s. Each point represents the abundance of that taxa
-                    in that sample. Each point is colored based on the probability of that sample occuring in the chosen topic. The
-                    large scatter plot shows all %s taxa combined.",
-                    taxa_n,EST()$covariate,taxa_n))
+
+       ui_interval <- paste0(100-2*as.numeric(gsub('%','',colnames(topic_effects[[EST()$covariate]][['est']])[2])),'%')
+
+       HTML(sprintf("The scatter plot shows the weight esimates and %s uncertainty intervals for the
+                    %s-topic proportion effect. In all figures, red and blue implie positive and negative weights with
+                    interavls that do not enclose 0, respectively, whereas gray colored weights do enclose 0.
+                    Different covariates can be chosen via the selection box (upper-left).
+                    The next row shows the ordination of the topics over taxa distribution (left) and the frequencies of
+                    the top %s taxa (in terms of saliency) across all topics. By selecting a topic, the relative
+                    frequencies of the taxa within that topic are shown in red. The ordination figure can be shown in
+                    either 2D or 3D and the ordination method can be adjusted. Lambda adjusts the relevance calculation.
+                    Choosing the taxon adjusts the group coloring for the bar plot. Clicking Reset resets the topic selection.",
+                    ui_interval,taxa_n,tolower(EST()$covariate),taxa_n))
      })
 
      output$text2 <- renderUI({
-       HTML(sprintf("The check box on the <b>left</b> sets whether to ignore zeros for the best fit lines and whether raw counts or
-                    relative abundances will be shown. The scatter plots <b>below</b> show the top %s taxa in terms of their
-                    probability in the topics over taxa distributions versus %s. Each point represents the abundance of that taxa
-                    in that sample. Each point is colored based on the probability of that sample occuring in the chosen topic. The
-                    large scatter plot shows all %s taxa combined.",
+       HTML(sprintf("Below shows topic correlations from the samples over topics distribution. Links suggests positive
+                    correlation between two topics.",
                     taxa_n,EST()$covariate,taxa_n))
      })
 
@@ -367,6 +376,7 @@ vis_topic_features <- function(topics,otu_table,topic_effects,taxa,lambda_step=.
                       paper_bgcolor='rgb(243, 243, 243)',
                       plot_bgcolor='rgb(243, 243, 243)')
 
+
        }
 
        p1
@@ -380,17 +390,12 @@ vis_topic_features <- function(topics,otu_table,topic_effects,taxa,lambda_step=.
 
        s <- event_data('plotly_click',source='ord_click')
 
-       cat(sprintf('\n\n\ncurvenumber: %s\tpointnumber: %s\n\n\n',s$curveNumber + 1,s$pointNumber + 1))
-
        if (is.null(s)){
 
          show_topic$k <- 0
          updateNumericInput(session,'k_in',value=0)
 
        }else{
-
-         # s_sig <- colors_order[s$curveNumber + 1]
-         # s_topic <- subset(EST()$df0,sig == s_sig)[s$pointNumber + 1,'topic']
 
          t_idx <- s$pointNumber + 1
          updateNumericInput(session,'k_in',value=t_idx)
@@ -463,10 +468,11 @@ vis_topic_features <- function(topics,otu_table,topic_effects,taxa,lambda_step=.
 
      output$corr <- networkD3::renderForceNetwork({
 
-       effects_rank <- topic_effects[[EST()$covariate]][['rank']]
        effects_sig <- topic_effects[[EST()$covariate]][['sig']]
 
        K <- nrow(corr$posadj)
+
+       suppressMessages({
        g <- igraph::graph.adjacency(corr$posadj,mode='undirected',
                                     weighted=TRUE,diag=FALSE)
 
@@ -475,33 +481,37 @@ vis_topic_features <- function(topics,otu_table,topic_effects,taxa,lambda_step=.
 
        g_d3 <- networkD3::igraph_to_networkD3(g,group=members)
 
-       g_d3$nodes$group <- effects_rank
-       g_d3$nodes$sig <- ifelse(1:K %in% effects_sig,50,1)
-       g_d3$links <- g_d3$links
+       g_d3$links$edge_width <- 50*sapply(seq_len(nrow(g_d3$links)),function(r) corr$poscor[g_d3$links$source[r]+1,g_d3$links$target[r]+1])
+       g_d3$nodes$color <- 25*ifelse(1:K %in% effects_sig,1,0)*sign(topic_effects[[EST()$covariate]]$est[,1])
+       g_d3$nodes$node_size <- 25*norm10(c(0,abs(topic_effects[[EST()$covariate]]$est[,1])))[-1]
        g_d3$nodes$name <- paste0('T',g_d3$nodes$name)
 
        networkD3::forceNetwork(Links=g_d3$links,Nodes=g_d3$nodes,
                                Source='source',Target='target',
-                               NodeID='name',Group='group',
-                               Nodesize='sig',
-                               charge=-50,
-                               height=400,
-                               width=400,
-                               fontSize=20,
-                               opacity=.8,
+                               charge=-120,
+                               opacity=.7,
+                               fontSize=12,
                                zoom=TRUE,
-                               colourScale=networkD3::JS(col_scale))
+                               bounded=TRUE,
+                               NodeID='name',
+                               fontFamily='sans-serif',
+                               opacityNoHover=.7,
+                               Group='color',
+                               Value='edge_width',
+                               Nodesize='node_size',
+                               linkColour='#000000',
+                               linkWidth=networkD3::JS('function(d) {return d.value;}'),
+                               radiusCalculation=networkD3::JS('d.nodesize'),
+                               colourScale=networkD3::JS("color=d3.scaleLinear()\n.domain([-1,0,1])\n.range(['blue','gray','red']);"))
+
+       })
 
      })
 
 
-
-
-
  }
 
-
-   )
+ )
 
 }
 
