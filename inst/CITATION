@@ -1,0 +1,21 @@
+citHeader('To cite themetagenomics for publications, please use:')
+
+citEntry(
+  entry='Article',
+  title = 'TBD',
+  author = personList(as.person('Stephen Woloszynek'),
+                      as.person('Joshua Chang Mell'),
+                      as.person('Gideon Simpson'),
+                      as.person('Gail Rosen')),
+  journal = 'TBD',
+  year = '2017',
+  volume = 'TBD',
+  number = 'TBD',
+  pages = 'TBD',
+  url = 'TBD',
+  doi = 'TBD',
+  textVersion = paste('Woloszynek, S., Mell, J.C., Simpson, G., and Rosen, G. (2017)',
+                      'TBD.',
+                      'TBD, TBD(TBD), TBD.',
+                      'TBD.')
+)
