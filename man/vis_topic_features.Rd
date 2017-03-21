@@ -25,8 +25,8 @@ bar plot. Defaults to 7.}
 \item{method}{(optional) Method for estimating topic correlations links.
 Defaults to huge.}
 
-\item{corr_thresh}{(optional) Threshold to set correlations to 0 when method is
-set to simple. Defaults to .01.}
+\item{corr_thresh}{(optional) Threshold to set correlations to 0 when method
+is set to simple. Defaults to .01.}
 
 \item{lambda_step}{(optional) Controls the step size for adjusting lambda in
 the relevancy calculation. Defaults to .01.}
@@ -38,19 +38,19 @@ inpired ordination and frequency figures, as well a networkD3 diagram to
 display topic correlations.
 }
 \details{
-This function integrates the samples over topics (theta) and topics
-  over taxa distributions (beta) from the STM, the topic correlations from
-  the theta component, the covariate effects from the theta component, and
+This function integrates the samples over topics p(s|k) and topics
+  over taxa distributions (k|t) from the STM, the topic correlations from the
+  p(s|k) component, the covariate effects from the p(s|k) component, and
   their relationship with the raw taxonomic abundances. The covariate effects
   for each topic are shown as a scatterplot with error bars corresponding the
   global approximation of uncertainty. If the covariate chosen is binary,
   this reflects their mean difference. For continuous covariates, the points
   represent the mean regression weights (i.e., the estimated slope of the
-  covariate). Colors indicate whether a given point's uncertainty interval
-  did not enclose 0, where the interval is set by the user.
+  covariate). Colors indicate whether a given point was above (red) or below
+  (blue) and did not enclose 0 at a user defined uncertainty interval.
 
   The ordination figure maintains the color coding just decribed. The
-  ordination is performed on beta via either PCoA (using either
+  ordination is performed on p(k|t) via either PCoA (using either
   Jensen-Shannon, Euclidean, Hellinger, Bray-Curtis, Jaccard, or Chi-squared
   distance) or t-SNE. The latter iterates through decreasing perplexity
   values (starting at 30) until the algorithm succeeds. Either the top 2 or 3
@@ -58,33 +58,48 @@ This function integrates the samples over topics (theta) and topics
   frequencies marginalized over taxa.
 
   The bar plot behaves in accordance with LDAvis. When no topics are chosen,
-  the overall taxa frequencies across topics are shown. These frequencies do
-  not equal the abundances found in the initial abundance table. Instead,
-  they show the marginal topic distribution multiplied by beta. These two
-  distributions are compared via Kullback-Liebler divergence and then
-  weighted by the overall frequency of a given taxa, which determins the
-  order in which the taxa are shown. The coloration of the bars indiciates
-  the taxonomic group the inidividual taxa belong to. The groups shown are
-  determined based on how abundant that group was in the raw abundance table.
-  When a topic is selected, the relative frequency of a given taxa in that
-  topic is shown in red.
+  the overall taxa frequencies are shown. These frequencies do not equal the
+  abundances found in the initial abundance table. Instead, they show p(k|t)
+  multiplied by the marginal topic distribution (in counts). To determine the
+  initial order in which taxa are shown, these two distributions are compared
+  via Kullback-Liebler divergence and then weighted by the overall taxa
+  frequency. The coloration of the bars indiciates the taxonomic group the
+  inidividual taxa belong to. The groups shown are determined based on the
+  abundance of that group in the raw abundance table. When a topic is
+  selected, the relative frequency of a given taxa in that topic is shown in
+  red.
 
-  Lambda controls relevance of taxa within a topic
+  Lambda controls relevance of taxa within a topic, which in turn is used to
+  adjust the order in which the taxa are shown when a topic is selected.
+  Relevence is essentially a weighted sum between the probability of taxa in
+  a given topic and the probability of taxa in a given topic relative to the
+  overall frequency of that taxa. Lambda controls the relative weighting such
+  that
+
+        r = L x log p(t|k) + L x log p(t|k)/p(x).
+
+  The correlation graph shows the topic correlations from p(s|k) ~
+  MVN(mu,sigma). Again, the coloration described above is conserved. The size
+  of the nodes reflects the magnitude of the covariate regression weight,
+  whereas the width of the edges represents the value of the positive
+  correlation between the connected nodes. By default, the graph estimates
+  are determined using the the huge package, which first performs a
+  nonparanormal transformation of p(s|k), followed by a Meinhuasen and
+  Buhlman procedure. Alternatively, by choosing the simple method, the
+  correlations are simply a thresholded MAP estimate  of p(s|k).
 }
 \references{
-Roberts, M.E., Stewart, B.M., Tingley, D., Lucas, C.,
-Leder-Luis, J., Gadarian, S.K., Albertson, B., & Rand, D.G. (2014).
-Structural topic models for open-ended survey responses. Am. J. Pol. Sci. 58,
-1064–1082.
+Roberts, M.E., Stewart, B.M., Tingley, D., Lucas, C., Leder-Luis,
+J., Gadarian, S.K., Albertson, B., & Rand, D.G. (2014). Structural topic
+models for open-ended survey responses. Am. J. Pol. Sci. 58, 1064–1082.
 
-Sievert, C., & Shirley, K. (2014). LDAvis: A method for
-visualizing and interpreting topics. Proc. Work. Interact. Lang. Learn. Vis.
-Interfaces.
+Sievert, C., & Shirley, K. (2014). LDAvis: A method for visualizing and
+interpreting topics. Proc. Work. Interact. Lang. Learn. Vis. Interfaces.
 
-Zhao, T., & Liu., H. (2012) The huge Package for
-High-dimensional Undirected Graph Estimation in R. Journal of Machine
-Learning Research.
+Zhao, T., & Liu., H. (2012) The huge Package for High-dimensional Undirected
+Graph Estimation in R. Journal of Machine Learning Research.
 }
 \seealso{
-\code{\link{networkD3}}, \code{\link{huge}}, \code{\link{topicCorr}}
+\code{\link{networkD3}}, \code{\link{huge}}, \code{\link{topicCorr}},
+\code{\link{Rtsne}}
 }
