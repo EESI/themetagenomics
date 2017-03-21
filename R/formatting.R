@@ -201,9 +201,11 @@ sum_taxa_by_group <- function(otu_ids,taxa,otu_table,metadata,cov_list,group=c('
 
 # rename taxa below rank to other
 
-rename_taxa_to_other <- function(x,taxa,top_n=7,group=c('Phylum','Class','Order','Family','Genus'),type=c('otu_table','docs')){
+rename_taxa_to_other <- function(x,taxa,top_n=7,group=c('Phylum','Class','Order','Family','Genus'),type=c('otu_table','docs'),as_factor=FALSE){
 
   type <- match.arg(type)
+
+  taxa <- as.data.frame(taxa)
 
   if (type == 'otu_table') taxa <- taxa[colnames(x),]
 
@@ -236,6 +238,8 @@ rename_taxa_to_other <- function(x,taxa,top_n=7,group=c('Phylum','Class','Order'
     taxa_top <- as.character(group_df[order(group_df$x,decreasing=TRUE),'taxon'][1:top_n])
 
     taxa[,g] <- ifelse(taxa[,g] %in% taxa_top,taxa[,g],'Other')
+
+    if (as_factor) taxa[,g] <- factor(taxa[,g],levels=unique(taxa[,g]),ordered=TRUE)
 
   }
 
