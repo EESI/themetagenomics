@@ -35,24 +35,55 @@
 #' \item{vocab}{The vocabulary}
 #' @export
 
-find_topics <- function(K,otu_table,rows_are_taxa,formula,metadata,control=list(),...){
+find_topics <- function(K,otu_table,rows_are_taxa,formula,metadata,refs,control=list(),...){
 
   if (!missing(formula)){
-    if (missing(metadata)){
-      stop('Must provide metadata if a formula is given.\n')
-    }else{
-      err <- try(model.frame(formula,data=metadata,na.action=na.fail),silent=TRUE)
-      if (class(err) == 'try-error'){
-        stop('NA values in metadata. Please remove (see function prepare_data).')
+
+    if (missing(metadata)) stop('Must provide metadata if a formula is given.\n')
+
+    err <- try(model.frame(formula,data=metadata,na.action=na.fail),silent=TRUE)
+    if (class(err) == 'try-error') stop('NA values in metadata. Please remove (see function prepare_data).')
+
+    metadata <- as.data.frame(unclass(err))
+    rownames(metadata) <- rownames(err)
+
+    classes <- sapply(metadata,class)
+
+    if (sum(classes == 'factor') > 0){
+
+      if (missing(refs)){
+        warning('References are recommended for factors. Using the first level(s).')
+        refs <- unlist(lapply(metadata[,classes == 'factor'],function(x) levels(x)[1]))
       }
+
+      if (sum(classes == 'factor') != length(refs)) stop('A reference is required for each factor.')
+
+      ref_check <- all(sapply(seq_along(refs), function(i) refs[i] %in% lapply(metadata[,classes == 'factor'],levels)[[i]]))
+      if (!ref_check) stop('Reference(s) not found in factor(s).')
+
+      j <- 1
+      for (i in seq_along(classes)){
+
+        if (classes[i] == 'factor'){
+          metadata[,i] <- relevel(as.factor(metadata[,i]),ref=refs[j])
+          j <- j+1
+        }
+
+      }
+
+      modelframe <- create_modelframe(formula,refs,metadata)
+
     }
+
   }else{
+
     formula <- NULL
     metadata <- NULL
+    modelframe <- NULL
+
   }
 
   if (rows_are_taxa == TRUE) otu_table <- t(otu_table)
-
 
   user_control_params <- names(control)
   control <- control[user_control_params %in% c('gamma.enet','gamma.ic.k','gamma.ic.k',
@@ -68,9 +99,9 @@ find_topics <- function(K,otu_table,rows_are_taxa,formula,metadata,control=list(
   docs <- lapply(seq_len(nrow(otu_table)), function(i) format_to_docs(otu_table[i,],vocab))
   names(docs) <- rownames(otu_table)
 
-  fit <- stm_wrapper(K=K,docs=docs,vocab=vocab,formula,metadata,control=control,...)
+  fit <- stm_wrapper(K=K,docs=docs,vocab=vocab,formula,metadata=metadata,control=control,...)
 
-  return(list(fit=fit,docs=docs,vocab=vocab))
+  return(list(fit=fit,docs=docs,vocab=vocab,modelframe=modelframe))
 
 }
 

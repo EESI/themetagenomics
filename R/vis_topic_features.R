@@ -93,6 +93,8 @@ vis_topic_features <- function(topics,topic_effects,taxa,taxa_n=30,top_n=7,metho
 
   method <- match.arg(method)
 
+  topic_effects <- topic_effects$topic_effects
+
   fit <- topics$fit
   K <- fit$settings$dim$K
   vocab <- fit$vocab

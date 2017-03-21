@@ -247,3 +247,48 @@ rename_taxa_to_other <- function(x,taxa,top_n=7,group=c('Phylum','Class','Order'
 
 }
 
+create_modelframe <- function(formula,refs,metadata){
+
+  rnames <- rownames(metadata)
+
+  metadata <- as.data.frame(unclass(model.frame(formula,data=metadata)))
+  term_names <- colnames(metadata)
+
+  cnames <- NULL
+  modelframe <- NULL
+  for (i in seq_along(term_names)){
+
+    term <- term_names[i]
+
+    if (class(metadata[,term]) != 'factor'){
+      tmp <- metadata[term]
+      tmp <- model.matrix(as.formula(paste0('~',term)),tmp)
+      cnames <- c(cnames,colnames(tmp)[-1])
+      modelframe <- cbind(modelframe,tmp[,-1])
+    }else{
+      tmp <- metadata[term]
+      tmp[[1]] <- relevel(tmp[[1]],ref=refs[1])
+      refs <- refs[-1]
+      mm <- model.matrix(as.formula(paste0('~',term)),tmp)
+      cnames <- c(cnames,colnames(mm)[-1])
+
+      modelframe <- data.frame(modelframe,
+                               lapply(seq_along(levels(tmp[[1]]))[-1],
+                                      function(j){
+                                        relevel(as.factor(ifelse(mm[,j] == 1,levels(tmp[[1]])[j],levels(tmp[[1]])[1])),ref=levels(tmp[[1]])[1])
+                                      }
+                               )
+      )
+
+    }
+
+  }
+
+  colnames(modelframe) <- cnames
+  rownames(modelframe) <- rnames
+
+  return(modelframe)
+
+}
+
+

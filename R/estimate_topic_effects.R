@@ -14,7 +14,7 @@
 #' \item{sig}{A vector of topic indexes for topics whose uncertainty intervals did not enclose 0.}
 #' @export
 
-estimate_topic_effects <- function(topics,metadata,formula,nsims=100,ui_level=.8,...){
+estimate_topic_effects <- function(topics,metadata,formula,refs,moderator,nsims=100,ui_level=.8,...){
 
   fit <- topics$fit
   K <- fit$settings$dim$K
@@ -24,25 +24,52 @@ estimate_topic_effects <- function(topics,metadata,formula,nsims=100,ui_level=.8
     if (is.null(formula)) stop('Please provide a formula.')
   }
 
-  formula <- as.formula(sprintf('1:%s %s',K,paste0(formula,collapse=' ')))
+  modelframe <- as.data.frame(unclass(model.frame(formula,metadata)))
+  classes <- sapply(modelframe,class)
+  multiclasses <- classes
+  multiclasses[which(sapply(modelframe,function(x) length(levels(x))) > 2)] <- 'multiclass'
 
-  estimated_effects <- stm::estimateEffect(formula,fit,metadata,uncertainty='Global')
+  if (sum(classes == 'factor') > 0){
+    if (missing(refs)){
+      warning('References are recommended for factors. Using the first level(s).')
+      refs <- unlist(lapply(modelframe[,classes == 'factor'],function(x) levels(x)[1]))
+    }
 
-  modelframe <- as.data.frame(unclass(estimated_effects$modelframe))
-  estimated_effects$modelframe <- modelframe
+    if (sum(classes == 'factor') != length(refs)) stop('A reference is required for each factor.')
+    ref_check <- all(sapply(seq_along(refs), function(i) refs[i] %in% lapply(modelframe[,classes == 'factor'],levels)[[i]]))
+    if (!ref_check) stop('Reference(s) not found in factor(s).')
 
-  # must provide binary convariate as either factor or character, even if 0-1, otherwise treated as continuous
+    j <- 1
+    for (i in seq_along(classes)){
+      if (classes[i] == 'factor'){
+        modelframe[,i] <- relevel(as.factor(modelframe[,i]),ref=refs[j])
+        j <- j+1
+      }
+    }
 
-  modelframe_classes <- sapply(modelframe,class)
-  if (NCOL(modelframe) == 0){
-    stop('modelframe has 0 dimensions.')
-  }else if (any(sapply(modelframe,function(x) length(levels(x))) > 2)){
-    stop('Recode multilevel factor as dummy variables.')
-  }else{
-    topic_effects <- estimate_topic_effects_backend(estimated_effects,nsims=nsims,ui_level=ui_level,...)
   }
 
-  return(topic_effects)
+  if (missing(moderator)){
+    if (sum(multiclasses == 'factor') == 1){
+      moderator <- colnames(modelframe)[multiclasses == 'factor']
+    }else if (sum(multiclasses == 'factor') > 1){
+      moderator <- colnames(modelframe)[multiclasses == 'factor'][1]
+      warning(sprintf('No moderator specified. Setting it to %s.',moderator))
+    }else{
+      moderator <- NULL
+    }
+  }
+
+  formula <- as.formula(sprintf('1:%s %s',K,paste0(formula,collapse=' ')))
+  estimated_effects <- stm::estimateEffect(formula,fit,modelframe,uncertainty='Global')
+
+  estimated_effects$modelframe_full <- topics$modelframe
+  estimated_effects$modelframe <- modelframe
+  estimated_effects$moderator <- moderator
+
+  topic_effects <- estimate_topic_effects_backend(estimated_effects,nsims=nsims,ui_level=ui_level,...)
+
+  return(list(topic_effects=topic_effects,modelframe=topics$modelframe))
 
 }
 
@@ -57,23 +84,50 @@ estimate_topic_effects_backend <- function(estimated_effects,nsims=100,ui_level=
   ui_levels <- matrix(0.0,K,2,dimnames=list(NULL,ui_interval))
 
   modelframe <- estimated_effects$modelframe
-  modelframe_classes <- sapply(modelframe,class)
-  cov_switch <- names(which(modelframe_classes == 'factor'))
+
+  cov_switch <- estimated_effects$moderator
   cov_switch_levels <- levels(modelframe[,cov_switch])
 
   simbetas <- stm:::simBetas(estimated_effects$parameters,nsims=nsims)
-  for (i in seq_along(simbetas)) colnames(simbetas[[i]]) <- c('Intercept',names(modelframe_classes))
+  for (i in seq_along(simbetas)) colnames(simbetas[[i]]) <- names(estimated_effects$parameter[[1]][[1]]$est)
 
+  # covariate_list <- vector(mode='list',length=ncol(simbetas[[1]])-1)
+  # names(covariate_list) <- colnames(simbetas[[1]])[-1]
 
-  covariate_list <- vector(mode='list',length=length(modelframe_classes))
-  names(covariate_list) <- names(modelframe_classes)
-  for (i in seq_along(modelframe_classes)){
+  covariate_list <- vector(mode='list',length=ncol(estimated_effects$modelframe_full))
+  names(covariate_list) <- colnames(estimated_effects$modelframe_full)
+
+  classes <- sapply(modelframe,class)
+  multiclasses <- classes
+  multiclasses[which(sapply(modelframe,function(x) length(levels(x))) > 2)] <- 'multiclass'
+  multiclasses <- sapply(seq_along(multiclasses), function(i) {
+
+    if (classes[i] == 'factor') {
+      j <- length(levels(modelframe[,i]))-1
+      class <- rep(classes[i],j)
+      multiclass <- rep(multiclasses[i],j)
+      lev <- levels(modelframe[,i])[-1]
+      ref <- levels(modelframe[,i])[1]
+    }else{
+      j <- 1
+      class <- rep(classes[i],j)
+      multiclass <- rep(multiclasses[i],j)
+      lev <- 2
+      ref <- 1
+    }
+
+    cbind(class,multiclass,lev,ref)
+
+  })
+  multiclasses <- do.call('rbind',multiclasses)
+
+  for (i in seq_len(nrow(multiclasses))){
 
     # freezes other covariates except target
 
-    cov_i <- names(modelframe_classes)[i]
+    cov_i <- rownames(multiclasses)[i]
 
-    if (modelframe_classes[i] == 'numeric'){
+    if (multiclasses[i,'class'] == 'numeric'){
 
       cthis <- stm:::produce_cmatrix(prep=estimated_effects,covariate=cov_i,
                                      method='continuous',npoints=npoints,
@@ -86,12 +140,12 @@ estimate_topic_effects_backend <- function(estimated_effects,nsims=100,ui_level=
       cdata_switch <- cthis_switch$cdata
       cmat_switch <- cthis_switch$cmatrix
 
-    }else if (modelframe_classes[i] == 'factor'){
+    }else if (multiclasses[i,'class'] == 'factor'){
 
       factor_levels <- levels(modelframe[,cov_i])
       cthis <- stm:::produce_cmatrix(prep=estimated_effects,covariate=cov_i,
                                      method='difference',
-                                     cov.value1=factor_levels[1],cov.value2=factor_levels[2])
+                                     cov.value1=multiclasses[i,'ref'],cov.value2=multiclasses[i,'lev'])
 
     }
 
@@ -100,11 +154,13 @@ estimate_topic_effects_backend <- function(estimated_effects,nsims=100,ui_level=
 
     fitted <- NA
     fitted_switch <- NA
-    if (modelframe_classes[i] == 'numeric'){
+    if (multiclasses[i,'class'] == 'numeric'){
+
       fitted <- lapply(seq_len(K),function(x) matrix(0.0,npoints,4,dimnames=list(NULL,c('estimate',ui_interval,'covariate'))))
       names(fitted) <- paste0('T',1:K)
       fitted_switch <- lapply(seq_len(K),function(x) matrix(0.0,npoints,4,dimnames=list(NULL,c('estimate',ui_interval,'covariate'))))
       names(fitted_switch) <- paste0('T',1:K)
+
     }
 
     est <- lapply(seq_len(K), function(x) matrix(0.0,1,3,dimnames=list('slope',c('estimate',ui_interval))))
@@ -112,7 +168,7 @@ estimate_topic_effects_backend <- function(estimated_effects,nsims=100,ui_level=
 
       sims <- cmat %*% t(simbetas[[j]])
 
-      if (modelframe_classes[i] == 'numeric'){
+      if (multiclasses[i,'class'] == 'numeric'){
 
         sims_switch <- cmat_switch %*% t(simbetas[[j]])
 
@@ -121,9 +177,9 @@ estimate_topic_effects_backend <- function(estimated_effects,nsims=100,ui_level=
         fitted[[j]][,] <- c(rowMeans(sims),t(apply(sims,1,function(x) quantile(x,c(ui_offset,1-ui_offset)))),cdata[,cov_i])
         fitted_switch[[j]][,] <- c(rowMeans(sims_switch),t(apply(sims_switch,1,function(x) quantile(x,c(ui_offset,1-ui_offset)))),cdata_switch[,cov_i])
 
-      }else if (modelframe_classes[i] == 'factor'){
+      }else if (multiclasses[i,'class'] == 'factor'){
 
-        diff <- sims[1,] - sims[2,]
+        diff <- sims[2,] - sims[1,]
         est[[j]][,] <- c(mean(diff),quantile(diff,c(ui_offset,1-ui_offset)))
 
       }

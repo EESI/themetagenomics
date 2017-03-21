@@ -12,7 +12,10 @@ NULL
 #' @param beta_min (optional) Minimum probability in topics over taxa distribution to set to 0.
 #' @param gene_min (optional) Mininum abundance for gene set table.
 
-vis_covariate_effects_binary <- function(topics,topic_effects,otu_table,taxa,metadata,taxa_n=7){
+vis_covariate_effects_binary <- function(topics,topic_effects,otu_table,taxa,taxa_n=7){
+
+  metadata <- topic_effects$modelframe
+  topic_effects <- topic_effects$topic_effects
 
   fit <- topics$fit
   K <- fit$settings$dim$K
@@ -26,8 +29,10 @@ vis_covariate_effects_binary <- function(topics,topic_effects,otu_table,taxa,met
   pretty_names <- pretty_taxa_names(taxa)
   taxa_other <- rename_taxa_to_other(otu_table,taxa,top_n=taxa_n)
 
-  covariates <- lapply(names(topic_effects),identity)
+  covariates <- colnames(metadata)
   names(covariates) <- tolower(names(topic_effects))
+  cov_f <- sapply(metadata,class) == 'factor'
+  covariates <- covariates[cov_f]
 
   est_range <- range(c(sapply(topic_effects, function(x) unlist(x$est))))
 
@@ -70,7 +75,7 @@ vis_covariate_effects_binary <- function(topics,topic_effects,otu_table,taxa,met
 
           covariate <- input$choose
 
-          cov_names <- c(unique(metadata[,covariate])[1],unique(metadata[,covariate])[2])
+          cov_names <- levels(unique(metadata[,covariate]))
           cov_ids <- list(rownames(otu_table)[metadata[,covariate] == cov_names[1]],rownames(otu_table)[metadata[,covariate] == cov_names[2]])
           names(cov_ids) <- cov_names
           cov_coverage <- c(sum(otu_table[cov_ids[[1]],]),sum(otu_table[cov_ids[[2]],]))
@@ -91,13 +96,10 @@ vis_covariate_effects_binary <- function(topics,topic_effects,otu_table,taxa,met
             geom_hline(yintercept=0,linetype=3) +
             geom_pointrange(size=2) +
             theme_minimal() +
-            ylim(est_range[1],est_range[2]) +
             labs(x='',y='Estimate') +
             scale_color_manual(values=c('gray','indianred3','dodgerblue3')) +
             scale_fill_brewer(type='qual',palette=6,direction=-1) +
-            theme(legend.position='none',
-                  axis.text.y=element_blank(),
-                  axis.ticks.y=element_blank())
+            theme(legend.position='none')
 
           df0 <- data.frame(otu=c('x','y'),
                             p=c(0,1),
@@ -141,6 +143,8 @@ vis_covariate_effects_binary <- function(topics,topic_effects,otu_table,taxa,met
                               sample=rep(colnames(otu_subset),each=nrow(otu_subset)),
                               covariate=metadata[colnames(otu_subset),EST()$covariate]),
                    silent=TRUE)
+
+        #browser()
 
         validate(need(!(class(df1) == 'try-error'),'Too many points filtered. Lower the minimum beta probability.'))
 

@@ -12,11 +12,17 @@ NULL
 #' @param beta_min (optional) Minimum probability in topics over taxa distribution to set to 0.
 #' @param gene_min (optional) Mininum count for gene set table.
 
-vis_covariate_effects_continuous <- function(topics,topic_effects,otu_table,taxa,metadata,lambda_step=.01,taxa_n=12){
+vis_covariate_effects_continuous <- function(topics,topic_effects,otu_table,taxa,moderator,lambda_step=.01,taxa_n=12){
 
-  cov_f <- sapply(topic_effects,function(x) all(is.na(x$fitted)))
-  covariates <- lapply(names(topic_effects),identity)
-  cov_fact <- unlist(covariates[cov_f])
+  metadata <- topic_effects$modelframe
+  topic_effects <- topic_effects$topic_effects
+
+  covariates <- colnames(metadata)
+  cov_f <- sapply(metadata,class) == 'factor'
+
+  # cov_f <- sapply(topic_effects,function(x) all(is.na(x$fitted)))
+  # covariates <- lapply(names(topic_effects),identity)
+  cov_fact <- moderator
   cov_cont <- covariates[!cov_f]
   names(cov_fact) <- tolower(cov_fact)
   names(cov_cont) <- tolower(unlist(cov_cont))
@@ -25,6 +31,7 @@ vis_covariate_effects_continuous <- function(topics,topic_effects,otu_table,taxa
   otu_table <- otu_table + 1
 
   fit <- topics$fit
+  vocab <- fit$vocab
   K <- fit$settings$dim$K
 
   doc_lengths <- sapply(topics$docs,function(x) sum(x[2,]))

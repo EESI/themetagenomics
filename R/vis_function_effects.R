@@ -23,6 +23,8 @@ vis_function_effects <- function(topics,topic_effects,function_effects,taxa,beta
 
   ui_interval <- paste0(round(100*c((1-ui_level)/2,1-(1-ui_level)/2),1),'%')
 
+  topic_effects <- topic_effects$topic_effects
+
   covariates <- lapply(names(topic_effects),identity)
   names(covariates) <- tolower(names(topic_effects))
   est_range <- range(c(sapply(topic_effects, function(x) unlist(x$est))))
