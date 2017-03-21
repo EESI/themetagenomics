@@ -19,24 +19,24 @@ NULL
 #'   bar plot. Defaults to 7.
 #' @param method (optional) Method for estimating topic correlations links.
 #'   Defaults to huge.
-#' @param corr_thresh (optional) Threshold to set correlations to 0 when method is
-#'   set to simple. Defaults to .01.
+#' @param corr_thresh (optional) Threshold to set correlations to 0 when method
+#'   is set to simple. Defaults to .01.
 #' @param lambda_step (optional) Controls the step size for adjusting lambda in
 #'   the relevancy calculation. Defaults to .01.
 #'
-#' @details This function integrates the samples over topics (theta) and topics
-#'   over taxa distributions (beta) from the STM, the topic correlations from
-#'   the theta component, the covariate effects from the theta component, and
+#' @details This function integrates the samples over topics p(s|k) and topics
+#'   over taxa distributions (k|t) from the STM, the topic correlations from the
+#'   p(s|k) component, the covariate effects from the p(s|k) component, and
 #'   their relationship with the raw taxonomic abundances. The covariate effects
 #'   for each topic are shown as a scatterplot with error bars corresponding the
 #'   global approximation of uncertainty. If the covariate chosen is binary,
 #'   this reflects their mean difference. For continuous covariates, the points
 #'   represent the mean regression weights (i.e., the estimated slope of the
-#'   covariate). Colors indicate whether a given point's uncertainty interval
-#'   did not enclose 0, where the interval is set by the user.
+#'   covariate). Colors indicate whether a given point was above (red) or below
+#'   (blue) and did not enclose 0 at a user defined uncertainty interval.
 #'
 #'   The ordination figure maintains the color coding just decribed. The
-#'   ordination is performed on beta via either PCoA (using either
+#'   ordination is performed on p(k|t) via either PCoA (using either
 #'   Jensen-Shannon, Euclidean, Hellinger, Bray-Curtis, Jaccard, or Chi-squared
 #'   distance) or t-SNE. The latter iterates through decreasing perplexity
 #'   values (starting at 30) until the algorithm succeeds. Either the top 2 or 3
@@ -44,36 +44,48 @@ NULL
 #'   frequencies marginalized over taxa.
 #'
 #'   The bar plot behaves in accordance with LDAvis. When no topics are chosen,
-#'   the overall taxa frequencies across topics are shown. These frequencies do
-#'   not equal the abundances found in the initial abundance table. Instead,
-#'   they show the marginal topic distribution multiplied by beta. These two
-#'   distributions are compared via Kullback-Liebler divergence and then
-#'   weighted by the overall frequency of a given taxa, which determins the
-#'   order in which the taxa are shown. The coloration of the bars indiciates
-#'   the taxonomic group the inidividual taxa belong to. The groups shown are
-#'   determined based on how abundant that group was in the raw abundance table.
-#'   When a topic is selected, the relative frequency of a given taxa in that
-#'   topic is shown in red.
+#'   the overall taxa frequencies are shown. These frequencies do not equal the
+#'   abundances found in the initial abundance table. Instead, they show p(k|t)
+#'   multiplied by the marginal topic distribution (in counts). To determine the
+#'   initial order in which taxa are shown, these two distributions are compared
+#'   via Kullback-Liebler divergence and then weighted by the overall taxa
+#'   frequency. The coloration of the bars indiciates the taxonomic group the
+#'   inidividual taxa belong to. The groups shown are determined based on the
+#'   abundance of that group in the raw abundance table. When a topic is
+#'   selected, the relative frequency of a given taxa in that topic is shown in
+#'   red.
 #'
-#'   Lambda controls relevance of taxa within a topic
+#'   Lambda controls relevance of taxa within a topic, which in turn is used to
+#'   adjust the order in which the taxa are shown when a topic is selected.
+#'   Relevence is essentially a weighted sum between the probability of taxa in
+#'   a given topic and the probability of taxa in a given topic relative to the
+#'   overall frequency of that taxa. Lambda controls the relative weighting such
+#'   that
 #'
+#'         r = L x log p(t|k) + L x log p(t|k)/p(x).
 #'
+#'   The correlation graph shows the topic correlations from p(s|k) ~
+#'   MVN(mu,sigma). Again, the coloration described above is conserved. The size
+#'   of the nodes reflects the magnitude of the covariate regression weight,
+#'   whereas the width of the edges represents the value of the positive
+#'   correlation between the connected nodes. By default, the graph estimates
+#'   are determined using the the huge package, which first performs a
+#'   nonparanormal transformation of p(s|k), followed by a Meinhuasen and
+#'   Buhlman procedure. Alternatively, by choosing the simple method, the
+#'   correlations are simply a thresholded MAP estimate  of p(s|k).
 #'
-#' @references
-#' Roberts, M.E., Stewart, B.M., Tingley, D., Lucas, C.,
-#' Leder-Luis, J., Gadarian, S.K., Albertson, B., & Rand, D.G. (2014).
-#' Structural topic models for open-ended survey responses. Am. J. Pol. Sci. 58,
-#' 1064–1082.
+#' @references Roberts, M.E., Stewart, B.M., Tingley, D., Lucas, C., Leder-Luis,
+#' J., Gadarian, S.K., Albertson, B., & Rand, D.G. (2014). Structural topic
+#' models for open-ended survey responses. Am. J. Pol. Sci. 58, 1064–1082.
 #'
-#' Sievert, C., & Shirley, K. (2014). LDAvis: A method for
-#' visualizing and interpreting topics. Proc. Work. Interact. Lang. Learn. Vis.
-#' Interfaces.
+#' Sievert, C., & Shirley, K. (2014). LDAvis: A method for visualizing and
+#' interpreting topics. Proc. Work. Interact. Lang. Learn. Vis. Interfaces.
 #'
-#' Zhao, T., & Liu., H. (2012) The huge Package for
-#' High-dimensional Undirected Graph Estimation in R. Journal of Machine
-#' Learning Research.
+#' Zhao, T., & Liu., H. (2012) The huge Package for High-dimensional Undirected
+#' Graph Estimation in R. Journal of Machine Learning Research.
 #'
-#' @seealso \code{\link{networkD3}}, \code{\link{huge}}, \code{\link{topicCorr}}
+#' @seealso \code{\link{networkD3}}, \code{\link{huge}}, \code{\link{topicCorr}},
+#' \code{\link{Rtsne}}
 #'
 #' @export
 
@@ -86,7 +98,7 @@ vis_topic_features <- function(topics,topic_effects,taxa,taxa_n=30,top_n=7,metho
   vocab <- fit$vocab
   taxa <- taxa[vocab,]
   taxon <- paste0(pretty_taxa_names(taxa),' (',vocab,')')
-  taxa <- rename_taxa_to_other(topics$docs,taxa,top_n=top_n,type='docs')
+  taxa <- rename_taxa_to_other(topics$docs,taxa,top_n=top_n,type='docs',as_factor=TRUE)
   rownames(taxa) <- taxon
 
   corr <- stm::topicCorr(fit,method=method,cutoff=corr_thresh)
@@ -135,14 +147,12 @@ vis_topic_features <- function(topics,topic_effects,taxa,taxa_n=30,top_n=7,metho
 
   beta <- t(beta)
 
-
   # compute the distinctiveness and saliency of the terms:
   # this determines the R terms that are displayed when no topic is selected
   topic_g_term <- beta/rowSums(beta)  # (W x K)
   kernel <- topic_g_term*log(t(t(topic_g_term)/topic_marg))
   distinctiveness <- rowSums(kernel)
   saliency <- term_marg*distinctiveness
-
 
   # Order the terms for the "default" view by decreasing saliency:
   default_terms <- taxon[order(saliency,decreasing=TRUE)][1:taxa_n]
@@ -163,8 +173,7 @@ vis_topic_features <- function(topics,topic_effects,taxa,taxa_n=30,top_n=7,metho
   category <- paste0('T',topic_seq)
   lift <- beta/term_marg
 
-
-  # Collect R most relevant terms for each topic/lambda combination
+  # Collect taxa_n most relevant terms for each topic/lambda combination
   # Note that relevance is re-computed in the browser, so we only need
   # to send each possible term/topic combination to the browser
   find_relevance <- function(i){
@@ -186,32 +195,6 @@ vis_topic_features <- function(topics,topic_effects,taxa,taxa_n=30,top_n=7,metho
   colnames(term_topic_freq) <- taxon
   tinfo$Freq <- term_topic_freq[as.matrix(tinfo[c('Category','Term')])]
   tinfo <- rbind(default[,-7],tinfo)
-
-  # last, to compute the areas of the circles when a term is highlighted
-  # we must gather all unique terms that could show up (for every combination
-  # of topic and value of lambda) and compute its distribution over topics.
-
-  # unique terms across all topics and all values of lambda
-  ut <- sort(unique(tinfo$Term))
-  # indices of unique terms in the taxon
-  m <- sort(match(ut,taxon))
-  # term-topic frequency table
-  tmp <- term_topic_freq[,m]
-
-  # round down infrequent term occurrences so that we can send sparse
-  # data to the browser:
-  r <- row(tmp)[tmp >= 0.5]
-  c <- col(tmp)[tmp >= 0.5]
-  dd <- data.frame(Term=taxon[m][c],
-                   Topic=paste0('T',r),
-                   Freq=round(tmp[cbind(r,c)]),
-                   stringsAsFactors=FALSE)
-
-  # Normalize token frequencies:
-  dd[,'Freq'] <- dd[,'Freq']/term_freq[match(dd[,'Term'],taxon)]
-  token_table <- dd[order(dd[, 1],dd[, 2]),]
-
-  max_freq <- as.integer(max(term_freq))
 
   new_order <- default
 
@@ -297,10 +280,6 @@ vis_topic_features <- function(topics,topic_effects,taxa,taxa_n=30,top_n=7,metho
 
         }
 
-        print(show_topic$k)
-        print(new_order)
-
-
         new_order
 
       })
@@ -326,26 +305,21 @@ vis_topic_features <- function(topics,topic_effects,taxa,taxa_n=30,top_n=7,metho
             geom_hline(yintercept=0,linetype=3) +
             geom_pointrange(size=2) +
             theme_minimal() +
-            ylim(est_range[1],est_range[2]) +
             labs(x='',y='Estimate') +
             scale_color_manual(values=c('gray','indianred3','dodgerblue3')) +
             scale_fill_brewer(type='qual',palette=6,direction=-1) +
-            theme(legend.position='none',
-                  axis.text.y=element_blank(),
-                  axis.ticks.y=element_blank())
+            theme(legend.position='none')
 
           list(p_est=p_est,k_levels=levels(df$topic),covariate=covariate,df0=df0)
 
         })
       })
 
-
       output$est <- renderPlotly({
 
         ggplotly(EST()$p_est,source='est_hover')
 
       })
-
 
      output$text1 <- renderUI({
 
@@ -368,7 +342,6 @@ vis_topic_features <- function(topics,topic_effects,taxa,taxa_n=30,top_n=7,metho
                     correlation between two topics.",
                     taxa_n,EST()$covariate,taxa_n))
      })
-
 
      output$ord <- renderPlotly({
 
@@ -412,6 +385,7 @@ vis_topic_features <- function(topics,topic_effects,taxa,taxa_n=30,top_n=7,metho
        df$colors <- colors[as.character(df$sig)]
 
        if (input$dim == '2d'){
+
          p1 <- plot_ly(df,source='ord_click')
          p1 <- add_trace(p1,
                  x=~Axis1,y=~Axis2,size=~marg,
@@ -444,16 +418,17 @@ vis_topic_features <- function(topics,topic_effects,taxa,taxa_n=30,top_n=7,metho
                      marker=list(size=150,symbol='circle',sizemode='diameter',line=list(width=3,color='#000000')))
 
          }
-
-
        }
+
        if (input$dim == '3d'){
+
          p1 <- plot_ly(df,source='ord_click',
                  x=~Axis1,y=~Axis2,z=~Axis3,size=~marg,
                  type='scatter3d',mode='markers',sizes=c(5,125),
                  color=I(df$colors),opacity=.5,
                  marker=list(symbol='circle',sizemode='diameter'),
                  text=~paste('<br>Topic:',topic),hoverinfo='text')
+
          p1 <- layout(p1,
                       showlegend=FALSE,
                       scene=list(
@@ -466,13 +441,11 @@ vis_topic_features <- function(topics,topic_effects,taxa,taxa_n=30,top_n=7,metho
                       paper_bgcolor='rgb(243, 243, 243)',
                       plot_bgcolor='rgb(243, 243, 243)')
 
-
        }
 
        p1
 
      })
-
 
      show_topic <- reactiveValues(k=0)
 
@@ -492,7 +465,6 @@ vis_topic_features <- function(topics,topic_effects,taxa,taxa_n=30,top_n=7,metho
          show_topic$k <- t_idx
 
        }
-
 
      })
 
@@ -529,12 +501,10 @@ vis_topic_features <- function(topics,topic_effects,taxa,taxa_n=30,top_n=7,metho
          labs(x='',y='Frequency',fill='') +
          theme(axis.text.x=element_text(angle=-90,hjust=0,vjust=.5),
                legend.position='bottom') +
-         #ylim(0,max_freq) +
-         viridis::scale_fill_viridis(discrete=TRUE) +
+         viridis::scale_fill_viridis(discrete=TRUE,drop=FALSE) +
          guides(fill=guide_legend(nrow=2))
 
      })
-
 
      output$corr <- networkD3::renderForceNetwork({
 
@@ -578,10 +548,8 @@ vis_topic_features <- function(topics,topic_effects,taxa,taxa_n=30,top_n=7,metho
 
      })
 
-
  }
 
  )
 
 }
-
