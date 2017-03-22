@@ -4,7 +4,7 @@
 \alias{vis_covariate_effects_binary}
 \title{Generate interactive binary covariate effect figure}
 \usage{
-vis_covariate_effects_binary(topics, topic_effects, otu_table, taxa, metadata,
+vis_covariate_effects_binary(topics, topic_effects, otu_table, taxa,
   taxa_n = 7)
 }
 \arguments{
