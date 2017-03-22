@@ -299,18 +299,20 @@ vis_topic_features <- function(topics,topic_effects,taxa,taxa_n=30,top_n=7,metho
                            lower=est_mat[,2],
                            upper=est_mat[,3],
                            sig=ifelse(1:K %in% topic_effects[[covariate]]$sig,'1','0'))
-          df0$sig <- as.character(sign(df0$est) * as.numeric(as.character.factor(df0$sig)))
+          df0$sig <- factor(as.character(sign(df0$est) * as.numeric(as.character.factor(df0$sig))),level=c('0','1','-1'),ordered=TRUE)
           df <- df0[order(topic_effects[[covariate]][['rank']]),]
           df$topic <- factor(df$topic,levels=df$topic,ordered=TRUE)
 
           p_est <- ggplot(df,aes(topic,y=est,ymin=lower,ymax=upper,color=sig)) +
-            geom_hline(yintercept=0,linetype=3) +
+            geom_hline(yintercept=0,linetype=3)
+          p_est <- p_est +
             geom_pointrange(size=2) +
             theme_minimal() +
             labs(x='',y='Estimate') +
             scale_color_manual(values=c('gray','indianred3','dodgerblue3')) +
             scale_fill_brewer(type='qual',palette=6,direction=-1) +
-            theme(legend.position='none')
+            theme(legend.position='none',
+                  axis.text.x=element_text(angle=-90,hjust=0,vjust=.5))
 
           list(p_est=p_est,k_levels=levels(df$topic),covariate=covariate,df0=df0)
 
@@ -523,14 +525,14 @@ vis_topic_features <- function(topics,topic_effects,taxa,taxa_n=30,top_n=7,metho
 
        g_d3 <- networkD3::igraph_to_networkD3(g,group=members)
 
-       g_d3$links$edge_width <- 50*sapply(seq_len(nrow(g_d3$links)),function(r) corr$poscor[g_d3$links$source[r]+1,g_d3$links$target[r]+1])
+       g_d3$links$edge_width <- 25*sapply(seq_len(nrow(g_d3$links)),function(r) corr$poscor[g_d3$links$source[r]+1,g_d3$links$target[r]+1])
        g_d3$nodes$color <- 25*ifelse(1:K %in% effects_sig,1,0)*sign(topic_effects[[EST()$covariate]]$est[,1])
        g_d3$nodes$node_size <- 25*norm10(c(0,abs(topic_effects[[EST()$covariate]]$est[,1])))[-1]
        g_d3$nodes$name <- paste0('T',g_d3$nodes$name)
 
        networkD3::forceNetwork(Links=g_d3$links,Nodes=g_d3$nodes,
                                Source='source',Target='target',
-                               charge=-120,
+                               charge=-200,
                                opacity=.7,
                                fontSize=12,
                                zoom=TRUE,

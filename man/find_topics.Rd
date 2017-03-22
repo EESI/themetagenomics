@@ -4,8 +4,8 @@
 \alias{find_topics}
 \title{Fit a topic model on an OTU table}
 \usage{
-find_topics(K, otu_table, rows_are_taxa, formula, metadata, control = list(),
-  ...)
+find_topics(K, otu_table, rows_are_taxa, formula, metadata, refs,
+  control = list(), ...)
 }
 \arguments{
 \item{K}{A positive integer indicating the number of topics to be estimated.}

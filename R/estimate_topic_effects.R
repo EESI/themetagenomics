@@ -1,4 +1,4 @@
-#' Estimate topic effects for a given covariate
+#' Estimate topic effects
 #'
 #' Given a covariate of interest, measure its relationship with the samples over topics distribution estimated by the STM.
 #'
@@ -69,12 +69,16 @@ estimate_topic_effects <- function(topics,metadata,formula,refs,moderator,nsims=
 
   topic_effects <- estimate_topic_effects_backend(estimated_effects,nsims=nsims,ui_level=ui_level,...)
 
-  return(list(topic_effects=topic_effects,modelframe=topics$modelframe))
+  out <- list(topic_effects=topic_effects,topics=topics,modelframe=topics$modelframe)
+  class(out) <- 'effects'
+  attr(out,'type') <- 'topics'
+
+  return(out)
 
 }
 
-#  Backend to extract effects for \code{\link{estimate_topic_effects}}.
-
+#' Backend to extract effects for \code{\link{estimate_topic_effects}}.
+#' @keywords internal
 estimate_topic_effects_backend <- function(estimated_effects,nsims=100,ui_level=.8,npoints=100){
 
   K <- length(estimated_effects$topics)
@@ -90,9 +94,6 @@ estimate_topic_effects_backend <- function(estimated_effects,nsims=100,ui_level=
 
   simbetas <- stm:::simBetas(estimated_effects$parameters,nsims=nsims)
   for (i in seq_along(simbetas)) colnames(simbetas[[i]]) <- names(estimated_effects$parameter[[1]][[1]]$est)
-
-  # covariate_list <- vector(mode='list',length=ncol(simbetas[[1]])-1)
-  # names(covariate_list) <- colnames(simbetas[[1]])[-1]
 
   covariate_list <- vector(mode='list',length=ncol(estimated_effects$modelframe_full))
   names(covariate_list) <- colnames(estimated_effects$modelframe_full)

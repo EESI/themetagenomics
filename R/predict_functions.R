@@ -32,6 +32,23 @@ predict_functions <- function(fit,reference_path,scalar=100,drop=TRUE,...){
     stop('Please provide a valid reference file.')
   }
 
+  class(predictions) <- 'functions'
+
   return(predictions)
 
 }
+
+#' Prevent object renaming in class functions
+#' @export
+`names<-.functions` <- function(object,value){
+  warning('functions-class objects cannot be renamed.')
+  return(object)
+}
+
+#' Prevent attribute renaming in class topics
+#' @export
+`attributes<-.functions` <- function(object,value){
+  warning('functions-class attributes cannot be renamed.')
+  return(object)
+}
+

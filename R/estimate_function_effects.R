@@ -48,6 +48,10 @@ estimate_function_effects <- function(functions,topics_subset,level=2,method='HM
 
   }
 
-  return(list(model=mm,gene_table=gene_table))
+  out <- list(model=mm,gene_table=gene_table)
+  class(out) <- 'effects'
+  attr(out,'type') <- 'functions'
+
+  return(out)
 
 }

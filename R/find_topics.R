@@ -101,12 +101,15 @@ find_topics <- function(K,otu_table,rows_are_taxa,formula,metadata,refs,control=
 
   fit <- stm_wrapper(K=K,docs=docs,vocab=vocab,formula,metadata=metadata,control=control,...)
 
-  return(list(fit=fit,docs=docs,vocab=vocab,modelframe=modelframe))
+  out <- list(fit=fit,docs=docs,vocab=vocab,otu_table=otu_table,modelframe=modelframe)
+  class(out) <- 'topics'
+
+  return(out)
 
 }
 
-#  An STM wrapper
-
+#' Wrapper for \code{\link{stm}}
+#' @keywords internal
 stm_wrapper <- function(K,docs,vocab,formula=NULL,metadata=NULL,sigma_prior=0,
                         model=NULL,iters=500,tol=1e-05,batches=1,seed=NULL,
                         verbose=FALSE,verbose_n=5,control=control){
@@ -130,4 +133,38 @@ stm_wrapper <- function(K,docs,vocab,formula=NULL,metadata=NULL,sigma_prior=0,
 
   return(fit)
 
+}
+
+#' Print summary for topics class
+#' @export
+print.topics <- function(topics_object,...){
+  cat(sprintf('A %s object containing a topic model with %s topics, %s samples and %s discrete taxa.\n',
+              class(topics_object),
+              topics_object$fit$settings$dim$K,
+              topics_object$fit$settings$dim$N,
+              topics_object$fit$settings$dim$V))
+}
+
+#' Predict taxonomic functions
+#' @export
+predict.topics <- function(topics_object,type=c('function'),...){
+  type <- match.arg(type)
+
+  if (type == 'function'){
+    predict_functions(topics_object$fit,...)
+  }
+}
+
+#' Prevent object renaming in class topics
+#' @export
+`names<-.topics` <- function(object,value){
+  warning('topics-class objects cannot be renamed.')
+  return(object)
+}
+
+#' Prevent attribute renaming in class topics
+#' @export
+`attributes<-.topics` <- function(object,value){
+  warning('topics-class attributes cannot be renamed.')
+  return(object)
 }

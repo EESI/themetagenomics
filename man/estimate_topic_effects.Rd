@@ -2,10 +2,10 @@
 % Please edit documentation in R/estimate_topic_effects.R
 \name{estimate_topic_effects}
 \alias{estimate_topic_effects}
-\title{Estimate topic effects for a given covariate}
+\title{Estimate topic effects}
 \usage{
-estimate_topic_effects(topics, metadata, formula, nsims = 100,
-  ui_level = 0.8, ...)
+estimate_topic_effects(topics, metadata, formula, refs, moderator,
+  nsims = 100, ui_level = 0.8, ...)
 }
 \arguments{
 \item{topics}{STM object containing the topic information}

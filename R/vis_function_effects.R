@@ -159,23 +159,22 @@ vis_function_effects <- function(topics,topic_effects,function_effects,taxa,beta
                            lower=est_mat[,2],
                            upper=est_mat[,3],
                            sig=ifelse(1:K %in% topic_effects[[covariate]][['sig']],'1','0'))[order(topic_effects[[covariate]][['rank']]),]
-          df$sig <- as.character(sign(df$est) * as.numeric(as.character.factor(df$sig)))
+          df$sig <- factor(as.character(sign(df$est) * as.numeric(as.character.factor(df$sig))),levels=c('0','1','-1'),ordered=TRUE)
           df$topic <- factor(df$topic,levels=df$topic,ordered=TRUE)
 
           bars <- c(which(max(df[df$sig == -1,'topic']) == levels(df$topic)) + .5,
                     which(min(df[df$sig == 1,'topic']) == levels(df$topic)) - .5)
 
           p_est <- ggplot(df,aes(topic,y=est,ymin=lower,ymax=upper,color=sig)) +
-            geom_hline(yintercept=0,linetype=3) +
+            geom_hline(yintercept=0,linetype=3)
+          p_est <- p_est +
             geom_pointrange(size=2) +
             theme_minimal() +
-            ylim(est_range[1],est_range[2]) +
             labs(x='',y='Estimate') +
             scale_color_manual(values=c('gray','indianred3','dodgerblue3')) +
             scale_fill_brewer(type='qual',palette=6,direction=-1) +
             theme(legend.position='none',
-                  axis.text.y=element_blank(),
-                  axis.ticks.y=element_blank())
+                  axis.text.x=element_text(angle=-90,hjust=0,vjust=.5))
 
 
           list(p_est=p_est,covariate=covariate,bars=bars,topic_ordered=topic_order)
