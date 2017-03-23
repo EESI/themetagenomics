@@ -8,11 +8,11 @@ NULL
 #' @param topics Output of \code{\link{find_topics}} that contains the STM object.
 #' @param topic_effects Output of \code{\link{estimate_topic_effects}} that contains regression weights.
 #' @param function_effects Output of \code{\link{estimate_function_effects}} that contains the results from either HMC or ML.
-#' @param taxa Dataframe or matrix containing the taxonomy information.
+#' @param tax_table Dataframe or matrix containing the taxonomy information.
 #' @param beta_min (optional) Minimum probability in topics over taxa distribution to set to 0.
 #' @param gene_min (optional) Mininum count for gene set table.
 
-vis_covariate_effects_continuous <- function(topics,topic_effects,otu_table,taxa,moderator,lambda_step=.01,taxa_n=12){
+vis_covariate_effects_continuous <- function(topics,topic_effects,otu_table,tax_table,lambda_step=.01,taxa_n=12){
 
   metadata <- topic_effects$modelframe
   topic_effects <- topic_effects$topic_effects
@@ -20,14 +20,14 @@ vis_covariate_effects_continuous <- function(topics,topic_effects,otu_table,taxa
   covariates <- colnames(metadata)
   cov_f <- sapply(metadata,class) == 'factor'
 
-  # cov_f <- sapply(topic_effects,function(x) all(is.na(x$fitted)))
-  # covariates <- lapply(names(topic_effects),identity)
-  cov_fact <- moderator
   cov_cont <- covariates[!cov_f]
+  cov_fact <- covariates[cov_f]
   names(cov_fact) <- tolower(cov_fact)
   names(cov_cont) <- tolower(unlist(cov_cont))
 
-  pretty_names <- pretty_taxa_names(taxa)
+  mod_fact <- names(topic_effects[[cov_cont[1]]]$fitted_switch)
+
+  pretty_names <- pretty_taxa_names(tax_table)
   otu_table <- otu_table + 1
 
   fit <- topics$fit
@@ -128,7 +128,7 @@ vis_covariate_effects_continuous <- function(topics,topic_effects,otu_table,taxa
       titlePanel('Topic-Covariate Effects'),
 
       fixedRow(
-        column(2,selectInput('choose', label='Covariate',
+        column(2,selectInput('choose_cov', label='Covariate',
                              choices=cov_cont,selected=cov_cont[[1]])),
         column(10,plotlyOutput('est',height='200px'))
       ),
@@ -142,16 +142,19 @@ vis_covariate_effects_continuous <- function(topics,topic_effects,otu_table,taxa
       plotlyOutput('theta'),
 
       fixedRow(
-        column(4,
+        column(3,
+               conditionalPanel(condition='output.show_mods',
+                               selectInput('choose_mod',label='Group',
+                                           choices=mod_fact,selected=mod_fact[[1]]))),
+        column(6,
+               conditionalPanel(condition='output.show',
+                                sliderInput('lambda',label=strong('Lambda'),min=0,max=1,value=1,step=lambda_step))),
+        column(3,
                conditionalPanel(condition='output.show',
                                 checkboxGroupInput('z',
                                                    label='',
                                                    c('Ignore zeros'=1,'Normalize'=2,'Split'=3),
-                                                   selected=c(1,2)))),
-        column(4,
-               conditionalPanel(condition='output.show',
-                                sliderInput('lambda',label=strong('Lambda'),min=0,max=1,value=1,step=lambda_step))),
-        column(4,'')
+                                                   selected=c(1,2))))
       ),
 
       plotlyOutput('ss'),
@@ -161,12 +164,25 @@ vis_covariate_effects_continuous <- function(topics,topic_effects,otu_table,taxa
     ),
 
 
-    server = function(input,output){
+    server = function(input,output,session){
+
+
+      current_mods <- reactiveValues(mods=mod_fact)
+
+      observeEvent(input$choose_cov,{
+
+        covariate <- input$choose_cov
+        mods <- names(topic_effects[[covariate]]$fitted_switch)
+        current_mods$mods <- mods
+        updateNumericInput(session,'k_in',value=mods)
+
+      })
+
 
       EST <- reactive({
         suppressWarnings({
 
-          covariate <- input$choose
+          covariate <- input$choose_cov
 
           df0 <- data.frame(p=c(0,max(theta)),
                             covariate=range(metadata[,covariate]))
@@ -239,7 +255,8 @@ vis_covariate_effects_continuous <- function(topics,topic_effects,otu_table,taxa
                                 otu=rownames(otu_subset),
                                 sample=rep(colnames(otu_subset),each=nrow(otu_subset)),
                                 covariate=metadata[colnames(otu_subset),EST()$covariate],
-                                switch=metadata[colnames(otu_subset),cov_fact])
+                                switch=metadata[colnames(otu_subset),input$choose_mod],
+                                stringsAsFactors=FALSE)
           df_temp$p <- theta[df_temp$sample,current_k]
           df_temp$taxon <- paste0(pretty_names[df_temp$otu],' (',df_temp$otu,')')
           df_temp$taxon <- factor(df_temp$taxon,levels=unique(df_temp$taxon),ordered=TRUE)
@@ -316,8 +333,8 @@ vis_covariate_effects_continuous <- function(topics,topic_effects,otu_table,taxa
           validate(need(!is.null(s),'Please choose a topic by clicking a point.'))
 
           k <- EST()$k_levels[s[['x']]]
-          topic_fitted <- topic_effects[[EST()$covariate]]$fitted[[k]]
-          topic_switch <- topic_effects[[EST()$covariate]]$fitted_switch[[k]]
+          topic_fitted <- topic_effects[[EST()$covariate]]$fitted[[input$choose_mod]][[k]]
+          topic_switch <- topic_effects[[EST()$covariate]]$fitted_switch[[input$choose_mod]][[k]]
 
           df_th <- data.frame(Value=theta[rownames(metadata),k],Covariate=metadata[,EST()$covariate])
           df_fit <- data.frame(topic_fitted)
@@ -326,23 +343,82 @@ vis_covariate_effects_continuous <- function(topics,topic_effects,otu_table,taxa
           colnames(df_switch) <- c('Value','Lower','Upper','Covariate')
           R <- range(c(df_th$Covariate,df_fit$covariate,df_switch$covariate))
 
-          p_theta <- ggplot() +
-            geom_point(data=df_th,aes(Covariate,Value),color='black',alpha=.7) +
-            geom_ribbon(data=df_switch,aes(x=Covariate,ymin=Lower,ymax=Upper),alpha=0.2,color='dodgerblue3') +
-            geom_line(data=df_switch,aes(Covariate,Value),color='dodgerblue3',size=1.45) +
-            geom_ribbon(data=df_fit,aes(x=Covariate,ymin=Lower,ymax=Upper),alpha=0.2,color='indianred3') +
-            geom_line(data=df_fit,aes(Covariate,Value),color='indianred3',size=1.45) +
-            xlim(R[1],R[2]) +
-            ylim(0,max(theta)) +
-            theme_classic() +
-            labs(x='',y='Theta') +
-            ggtitle(k)
-
-          ggplotly(p_theta)
+          p1 <- plot_ly(df_th,x=df_th$Covariate)
+          p1 <- add_trace(p1,
+                          x=~df_th$Covariate,y=~df_th$Value,
+                          type='scatter',mode='markers',
+                          marker=list(symbol='circle',opacity=.5,sizemode='diameter',size=10,color=I('gray')),
+                          showlegend=FALSE)
+          p1 <- add_lines(p1,
+                          x=~df_fit$Covariate,y=~df_fit$Lower,
+                          type='scatter',mode='lines',
+                          line=list(color='transparent'),
+                          showlegend=FALSE,
+                          name=input$choose_mod)
+          p1 <- add_lines(p1,
+                          x=~df_fit$Covariate,y=~df_fit$Upper,
+                          type='scatter',mode='lines',
+                          fill='tonexty',
+                          fillcolor='rgba(205,85,85,0.2)',
+                          line=list(color='transparent'),
+                          showlegend=FALSE,
+                          name=input$choose_mod)
+          p1 <- add_lines(p1,
+                          x=~df_fit$Covariate,y=~df_fit$Value,
+                          type='scatter',mode='lines',
+                          line = list(width=5,color = 'rgba(205,85,85,0.9)'),
+                          showlegend=TRUE,
+                          name=input$choose_mod)
+          p1 <- add_lines(p1,
+                          x=~df_switch$Covariate,y=~df_switch$Lower,
+                          type='scatter',mode='lines',
+                          line=list(color='transparent'),
+                          showlegend=FALSE,
+                          name='Reference/Control')
+          p1 <- add_lines(p1,
+                          x=~df_switch$Covariate,y=~df_switch$Upper,
+                          type='scatter',mode='lines',
+                          fill='tonexty',
+                          fillcolor='rgba(24,116,205,.2)',
+                          line=list(color='transparent'),
+                          showlegend=FALSE,
+                          name='Reference/Control')
+          p1 <- add_lines(p1,
+                          x=~df_switch$Covariate,y=~df_switch$Value,
+                          type='scatter',mode='lines',
+                          line=list(width=5,color='rgba(24,116,205,.9)'),
+                          showlegend=TRUE,
+                          name='Reference/Control')
+          p1 <- layout(p1,title=k,
+                       legend=list(orientation='h'),
+                       paper_bgcolor='rgb(255,255,255)',
+                       xaxis=list(title=sprintf('%s',EST()$covariate),
+                                    gridcolor='rgb(255,255,255)',
+                                    showgrid=TRUE,
+                                    showline=FALSE,
+                                    showticklabels=TRUE,
+                                    tickcolor='rgb(127,127,127)',
+                                    ticks='outside',
+                                    zeroline=FALSE),
+                       yaxis=list(title=sprintf('p(topic %s|sample)',k),
+                                    gridcolor='rgb(255,255,255)',
+                                    showgrid=TRUE,
+                                    showline=FALSE,
+                                    showticklabels=TRUE,
+                                    tickcolor='rgb(127,127,127)',
+                                    ticks='outside',
+                                    zeroline=FALSE))
+          p1
 
         })
 
       })
+
+      output$show_mods <- reactive({
+        s <- event_data('plotly_click',source='reg_est')
+        !is.null(s) & !is.null(mod_fact)
+      })
+      outputOptions(output,'show_mods',suspendWhenHidden=FALSE)
 
       output$show <- reactive({
         s <- event_data('plotly_click',source='reg_est')
@@ -379,9 +455,9 @@ vis_covariate_effects_continuous <- function(topics,topic_effects,otu_table,taxa
       })
 
 
-                     }
+   }
 
 
-                       )
+ )
 
-                   }
+}

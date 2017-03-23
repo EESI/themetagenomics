@@ -23,21 +23,21 @@ vis.effects <- function(effects_object,tax_table,type=c('topic','binary','contin
   if (type == 'topic'){
     vis_topic_features(topics=effects_object$topics,
                        topic_effects=effects_object,
-                       taxa=tax_table,...)
+                       tax_table=tax_table,...)
   }else if (type == 'binary'){
     vis_covariate_effects_binary(topics=effects_object$topics,
                                  topic_effects=effects_object,
                                  otu_table=effects_object$topics$otu_table,
-                                 taxa=tax_table,...)
+                                 tax_table=tax_table,...)
   }else if (type == 'continuous'){
     vis_covariate_effects_continuous(topics=effects_object$topics,
                                      topic_effects=effects_object,
                                      otu_table=effects_object$topics$otu_table,
-                                     taxa=tax_table,...)
+                                     tax_table=tax_table,...)
   }else{
     vis_function_effects(topics=effects_object$topics,
                          topic_effects=effects_object,
                          function_effects=effects_object$functions,
-                         taxa=tax_table,...)
+                         tax_table=tax_table,...)
   }
 }

@@ -14,7 +14,7 @@
 #' \item{sig}{A vector of topic indexes for topics whose uncertainty intervals did not enclose 0.}
 #' @export
 
-estimate_topic_effects <- function(topics,metadata,formula,refs,moderator,nsims=100,ui_level=.8,...){
+estimate_topic_effects <- function(topics,metadata,formula,refs,nsims=100,ui_level=.8,npoints=100,verbose=FALSE){
 
   fit <- topics$fit
   K <- fit$settings$dim$K
@@ -49,25 +49,15 @@ estimate_topic_effects <- function(topics,metadata,formula,refs,moderator,nsims=
 
   }
 
-  if (missing(moderator)){
-    if (sum(multiclasses == 'factor') == 1){
-      moderator <- colnames(modelframe)[multiclasses == 'factor']
-    }else if (sum(multiclasses == 'factor') > 1){
-      moderator <- colnames(modelframe)[multiclasses == 'factor'][1]
-      warning(sprintf('No moderator specified. Setting it to %s.',moderator))
-    }else{
-      moderator <- NULL
-    }
-  }
-
   formula <- as.formula(sprintf('1:%s %s',K,paste0(formula,collapse=' ')))
+
+  if (verbose) cat('Estimating regression weights with global uncertainty.\n')
   estimated_effects <- stm::estimateEffect(formula,fit,modelframe,uncertainty='Global')
 
-  estimated_effects$modelframe_full <- topics$modelframe
+  estimated_effects$modelframe_full <- topics$modelframe # maybe remove htis
   estimated_effects$modelframe <- modelframe
-  estimated_effects$moderator <- moderator
 
-  topic_effects <- estimate_topic_effects_backend(estimated_effects,nsims=nsims,ui_level=ui_level,...)
+  topic_effects <- estimate_topic_effects_backend(estimated_effects,nsims=nsims,ui_level=ui_level,npoints=npoints,verbose=verbose)
 
   out <- list(topic_effects=topic_effects,topics=topics,modelframe=topics$modelframe)
   class(out) <- 'effects'
@@ -79,7 +69,7 @@ estimate_topic_effects <- function(topics,metadata,formula,refs,moderator,nsims=
 
 #' Backend to extract effects for \code{\link{estimate_topic_effects}}.
 #' @keywords internal
-estimate_topic_effects_backend <- function(estimated_effects,nsims=100,ui_level=.8,npoints=100){
+estimate_topic_effects_backend <- function(estimated_effects,nsims=100,ui_level=.8,npoints=100,verbose=FALSE){
 
   K <- length(estimated_effects$topics)
 
@@ -88,112 +78,81 @@ estimate_topic_effects_backend <- function(estimated_effects,nsims=100,ui_level=
   ui_levels <- matrix(0.0,K,2,dimnames=list(NULL,ui_interval))
 
   modelframe <- estimated_effects$modelframe
+  modelframe_full <- estimated_effects$modelframe_full
 
-  cov_switch <- estimated_effects$moderator
-  cov_switch_levels <- levels(modelframe[,cov_switch])
-
+  if (verbose) cat('Simulating beta coeffiicents from MVN.\n')
   simbetas <- stm:::simBetas(estimated_effects$parameters,nsims=nsims)
   for (i in seq_along(simbetas)) colnames(simbetas[[i]]) <- names(estimated_effects$parameter[[1]][[1]]$est)
 
+  multiclasses <- create_multiclasses_table(modelframe,modelframe_full)
+  mods <- multiclasses[multiclasses[,'class'] == 'factor','full']
+
   covariate_list <- vector(mode='list',length=ncol(estimated_effects$modelframe_full))
   names(covariate_list) <- colnames(estimated_effects$modelframe_full)
-
-  classes <- sapply(modelframe,class)
-  multiclasses <- classes
-  multiclasses[which(sapply(modelframe,function(x) length(levels(x))) > 2)] <- 'multiclass'
-  multiclasses <- sapply(seq_along(multiclasses), function(i) {
-
-    if (classes[i] == 'factor') {
-      j <- length(levels(modelframe[,i]))-1
-      class <- rep(classes[i],j)
-      multiclass <- rep(multiclasses[i],j)
-      lev <- levels(modelframe[,i])[-1]
-      ref <- levels(modelframe[,i])[1]
-    }else{
-      j <- 1
-      class <- rep(classes[i],j)
-      multiclass <- rep(multiclasses[i],j)
-      lev <- 2
-      ref <- 1
-    }
-
-    cbind(class,multiclass,lev,ref)
-
-  })
-  multiclasses <- do.call('rbind',multiclasses)
-
   for (i in seq_len(nrow(multiclasses))){
 
-    # freezes other covariates except target
+    cov_i <- multiclasses[i,'full']
+    if (verbose) cat(sprintf('Making posterior predictions for %s.\n',cov_i))
 
-    cov_i <- rownames(multiclasses)[i]
+    if (multiclasses[i,'class'] == 'numeric' & length(mods) > 0){
 
-    if (multiclasses[i,'class'] == 'numeric'){
+      est <- matrix(0.0,K,3,dimnames=list(1:K,c('estimate',ui_interval)))
+      for (j in seq_len(K)) est[j,] <- c(mean(simbetas[[j]][,cov_i]),quantile(simbetas[[j]][,cov_i],c(ui_offset,1-ui_offset)))
 
-      cthis <- stm:::produce_cmatrix(prep=estimated_effects,covariate=cov_i,
-                                     method='continuous',npoints=npoints,
-                                     moderator=cov_switch,moderator.value=cov_switch_levels[2])
-
-      cthis_switch <- stm:::produce_cmatrix(prep=estimated_effects,covariate=cov_i,
-                                     method='continuous',npoints=npoints,
-                                     moderator=cov_switch,moderator.value=cov_switch_levels[1])
-
-      cdata_switch <- cthis_switch$cdata
-      cmat_switch <- cthis_switch$cmatrix
-
-    }else if (multiclasses[i,'class'] == 'factor'){
-
-      factor_levels <- levels(modelframe[,cov_i])
-      cthis <- stm:::produce_cmatrix(prep=estimated_effects,covariate=cov_i,
-                                     method='difference',
-                                     cov.value1=multiclasses[i,'ref'],cov.value2=multiclasses[i,'lev'])
-
-    }
-
-    cdata <- cthis$cdata
-    cmat <- cthis$cmatrix
-
-    fitted <- NA
-    fitted_switch <- NA
-    if (multiclasses[i,'class'] == 'numeric'){
-
+      # Preallocate lists
       fitted <- lapply(seq_len(K),function(x) matrix(0.0,npoints,4,dimnames=list(NULL,c('estimate',ui_interval,'covariate'))))
       names(fitted) <- paste0('T',1:K)
+      fitted <- lapply(seq_along(mods),function(x) fitted)
+      names(fitted) <- mods
       fitted_switch <- lapply(seq_len(K),function(x) matrix(0.0,npoints,4,dimnames=list(NULL,c('estimate',ui_interval,'covariate'))))
       names(fitted_switch) <- paste0('T',1:K)
+      fitted_switch <- lapply(seq_along(mods),function(x) fitted_switch)
+      names(fitted_switch) <- mods
 
-    }
+      for (mod in mods){
 
-    est <- lapply(seq_len(K), function(x) matrix(0.0,1,3,dimnames=list('slope',c('estimate',ui_interval))))
-    for (j in seq_len(K)){
+        if (verbose) cat(sprintf('Making posterior predictions for %s given %s.\n',cov_i,mod))
 
-      sims <- cmat %*% t(simbetas[[j]])
+        ppdx <- make_ppd_x(covariate=cov_i,mod=mod,modelframe_full=modelframe_full,npoints=npoints)
 
-      if (multiclasses[i,'class'] == 'numeric'){
+        for (j in seq_len(K)){
+          sims <- ppdx[[1]][[1]] %*% t(simbetas[[j]])
+          sims_switch <- ppdx[[1]][[2]] %*% t(simbetas[[j]])
 
-        sims_switch <- cmat_switch %*% t(simbetas[[j]])
+          fitted[[mod]][[j]][,] <- c(rowMeans(sims),
+                                     t(apply(sims,1,function(x) quantile(x,c(ui_offset,1-ui_offset)))),
+                                     ppdx[[1]][[1]][,cov_i])
+          fitted_switch[[mod]][[j]][,] <- c(rowMeans(sims_switch),
+                                            t(apply(sims_switch,1,function(x) quantile(x,c(ui_offset,1-ui_offset)))),
+                                            ppdx[[1]][[1]][,cov_i])
 
-        est[[j]][,] <- c(mean(simbetas[[j]][,cov_i]),quantile(simbetas[[j]][,cov_i],c(ui_offset,1-ui_offset)))
+        }
 
-        fitted[[j]][,] <- c(rowMeans(sims),t(apply(sims,1,function(x) quantile(x,c(ui_offset,1-ui_offset)))),cdata[,cov_i])
-        fitted_switch[[j]][,] <- c(rowMeans(sims_switch),t(apply(sims_switch,1,function(x) quantile(x,c(ui_offset,1-ui_offset)))),cdata_switch[,cov_i])
+      }
 
-      }else if (multiclasses[i,'class'] == 'factor'){
+    }else{
 
+      fitted <- NULL
+      fitted_switch <- NULL
+
+      ppdx <- make_ppd_x(covariate=cov_i,modelframe_full=modelframe_full,npoints=npoints)
+
+      for (j in seq_len(K)){
+
+        sims <- ppdx[[1]] %*% t(simbetas[[j]])
         diff <- sims[2,] - sims[1,]
-        est[[j]][,] <- c(mean(diff),quantile(diff,c(ui_offset,1-ui_offset)))
+        est[j,] <- c(mean(diff),quantile(diff,c(ui_offset,1-ui_offset)))
 
       }
 
     }
 
-    est_mat <- do.call('rbind',est)
-    rownames(est_mat) <- paste0('T',1:K)
-    rank <- dense_rank(est_mat[,1])
+    rownames(est) <- paste0('T',1:K)
+    rank <- dense_rank(est[,1])
     names(rank) <- paste0('T',1:K)
-    sig <- which(rowSums(sign(est_mat[,2:3])) != 0)
+    sig <- which(rowSums(sign(est[,2:3])) != 0)
 
-    covariate_list[[i]] <- list(est=est_mat,rank=rank,sig=sig,fitted=fitted,fitted_switch=fitted_switch)
+    covariate_list[[i]] <- list(est=est,rank=rank,sig=sig,fitted=fitted,fitted_switch=fitted_switch)
 
   }
 
