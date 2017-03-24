@@ -164,13 +164,6 @@ pretty_taxa_names <- function(x){
 
 }
 
-# dplyr dense_rank
-dense_rank <- function(x) {
-
-  r <- rank(x,na.last='keep')
-  match(r,sort(unique(r)))
-
-}
 
 # group_by summarize function for taxa without dplyr
 sum_taxa_by_group <- function(otu_ids,taxa,otu_table,metadata,cov_list,group=c('Phylum','Class','Order','Family','Genus'),sample_norm=FALSE){

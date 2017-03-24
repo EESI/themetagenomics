@@ -86,8 +86,6 @@ NULL
 #'
 #' @seealso \code{\link{networkD3}}, \code{\link{huge}}, \code{\link{topicCorr}},
 #' \code{\link{Rtsne}}
-#'
-#' @export
 
 vis_topic_features <- function(topics,topic_effects,tax_table,taxa_n=30,top_n=7,method=c('huge','simple'),corr_thresh=.01,lambda_step=.01){
 

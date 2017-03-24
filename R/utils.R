@@ -9,6 +9,13 @@ jsd <- function(p,q) {
 
 norm10 <- function(x) (x-min(x))/(max(x)-min(x))
 
+# dplyr dense_rank
+dense_rank <- function(x) {
+
+  r <- rank(x,na.last='keep')
+  match(r,sort(unique(r)))
+
+}
 
 create_modelframe <- function(formula,refs,metadata){
 
@@ -186,20 +193,4 @@ extract_spline_info <- function(formula,metadata,remove_only=FALSE){
 
   return(list(info=info,formula=formula_new))
 
-}
-
-
-create_spline_modelframe <- function(modelframe,spline_info,spline_idx,covariate,metadata){
-
-  spline_mat <- NULL
-  for (i in seq_along(spline_idx)){
-    spline_mat_i <- spline_info[[spline_idx[i] == covariate]][['expansion']][[1]]
-    colnames(spline_mat_i) <- paste0(sprintf('%s_%s%s_',covariate,
-                                             spline_info[[spline_idx[i] == covariate]][['spline']],
-                                             i),
-                                      seq_len(ncol(spline_mat_i)))
-    spline_mat <- cbind(spline_mat,spline_mat_i)
-  }
-
-  return(spline_mat)
 }

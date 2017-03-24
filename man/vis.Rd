@@ -2,7 +2,6 @@
 % Please edit documentation in R/vis.R
 \name{vis}
 \alias{vis}
-\alias{vis.topics}
 \title{Visualize effects object with Shiny}
 \usage{
 vis(effects_object, tax_table, type = c("topic", "binary", "continuous",

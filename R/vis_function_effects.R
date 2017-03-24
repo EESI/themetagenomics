@@ -11,8 +11,6 @@ NULL
 #' @param taxa Dataframe or matrix containing the taxonomy information.
 #' @param beta_min (optional) Minimum probability in topics over taxa distribution to set to 0.
 #' @param gene_min (optional) Mininum count for gene set table.
-#'
-#' @export
 
 vis_function_effects <- function(topics,topic_effects,function_effects,taxa,beta_min=1e-5,ui_level=.8,gene_min=10,pw_min=20){
 

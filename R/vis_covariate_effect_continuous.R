@@ -11,7 +11,6 @@ NULL
 #' @param tax_table Dataframe or matrix containing the taxonomy information.
 #' @param beta_min (optional) Minimum probability in topics over taxa distribution to set to 0.
 #' @param gene_min (optional) Mininum count for gene set table.
-
 vis_covariate_effects_continuous <- function(topics,topic_effects,otu_table,tax_table,lambda_step=.01,taxa_n=12){
 
   metadata <- topic_effects$modelframe
