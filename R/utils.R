@@ -55,99 +55,151 @@ create_modelframe <- function(formula,refs,metadata){
 }
 
 
-make_ppd_x <- function(covariate,mod,modelframe_full,npoints){
+make_ppd_x <- function(estimated_effects,covariate,mod,npoints=100){
 
-  if (class(modelframe_full[[covariate]]) == 'numeric'){
+  formula <- estimated_effects$formula
+  metadata <- estimated_effects$data
+  modelframe_full <- estimated_effects$modelframe_full
 
-    if (missing(mod)){
-      x <- matrix(0.0,nrow=npoints,ncol=ncol(modelframe_full) + 1,dimnames=list(NULL,c('Intercept',colnames(modelframe_full))))
-      x[,1] <- 1
-      for (i in 1:ncol(modelframe_full)){
-        if (colnames(modelframe_full)[i] == covariate){
-          x[,i+1] <- seq(min(modelframe_full[[i]]),max(modelframe_full[[i]]),length.out=npoints)
-        }else if (colnames(modelframe_full)[i] == 'numeric'){
-          x[,i+1] <- median(modelframe_full[[i]])
-        }else{
-          x[,i+1] <- sum(levels(modelframe_full[[i]])[2] == modelframe_full[[i]])/length(modelframe_full[[i]])
-        }
-      }
-
-      out <- list(x)
+  if (missing(covariate)){
+    if (check_for_splines(formula,metadata)){
+      modelframe <- model.matrix(formula,data=metadata)
+      ppd_idx <- which(labels(modelframe)[[2]] %in% colnames(modelframe_full))
+      modelframe[,ppd_idx] <- matrix(rep(colMeans(modelframe[,ppd_idx]),nrow(modelframe)),nrow(modelframe),byrow=TRUE)
+      return(list(modelframe))
     }else{
-      x <- matrix(0.0,nrow=npoints,ncol=ncol(modelframe_full) + 1,dimnames=list(NULL,c('Intercept',colnames(modelframe_full))))
-      x[,1] <- 1
-      for (i in 1:ncol(modelframe_full)){
-        if (colnames(modelframe_full)[i] == covariate){
-          x[,i+1] <- seq(min(modelframe_full[[i]]),max(modelframe_full[[i]]),length.out=npoints)
-        }else if (colnames(modelframe_full)[i] == mod){
-          x[,i+1] <- 1
-        }else if (colnames(modelframe_full)[i] == 'numeric'){
-          x[,i+1] <- median(modelframe_full[[i]])
-        }else{
-          x[,i+1] <- sum(levels(modelframe_full[[i]])[2] == modelframe_full[[i]])/length(modelframe_full[[i]])
-        }
-      }
-      x1 <- x
-      x2 <- x
-      x2[,mod] <- 0
-
-      out <- list(x1,x2)
-      names(out) <- c(mod,paste0('not',mod))
-      out <- list(out)
+      modelframe <- model.matrix(formula,data=metadata)
+      return(list(modelframe))
     }
-
-    names(out) <- covariate
-
-    return(out)
-
   }
 
-  if (class(modelframe_full[[covariate]]) == 'factor'){
-
-    x <- matrix(0.0,nrow=2,ncol=ncol(modelframe_full) + 1,dimnames=list(NULL,c('Intercept',colnames(modelframe_full))))
-    x[,1] <- 1
-    for (i in 1:ncol(modelframe_full)){
-      if (colnames(modelframe_full)[i] == covariate){
-        x[,i+1] <- c(0,1)
-      }else if (colnames(modelframe_full)[i] == 'numeric'){
-        x[,i+1] <- median(modelframe_full[[i]])
-      }else{
-        x[,i+1] <- sum(levels(modelframe_full[[i]])[2] == modelframe_full[[i]])/length(modelframe_full[[i]])
-      }
-    }
-
-    out <- list(x)
-    names(out) <- covariate
-
-    return(out)
-
+  if (attr(covariate,'baseclass') == 'factor'){
+    modelframe <- colMeans(model.matrix(formula,data=metadata))
+    modelframe <- rbind(modelframe,modelframe)
+    modelframe[1,covariate] <- 0
+    modelframe[2,covariate] <- 1
+    return(list(modelframe))
   }
+
+  if (attr(covariate,'multiclass') == 'spline'){
+    newdata <- metadata
+    newdata[[covariate]] <- seq(min(newdata[[covariate]]),max(newdata[[covariate]]),length.out=nrow(newdata))
+    modelframe <- model.matrix(formula,data=newdata)
+    ppd_idx <- which(labels(modelframe)[[2]] %in% colnames(modelframe_full))
+    modelframe[,ppd_idx] <- matrix(rep(colMeans(modelframe[,ppd_idx]),nrow(modelframe)),nrow(modelframe),byrow=TRUE)
+  }
+
+  if (attr(covariate,'baseclass') == 'numeric' & attr(covariate,'multiclass') != 'spline'){
+    newdata <- metadata
+    newdata[[covariate]] <- seq(min(newdata[[covariate]]),max(newdata[[covariate]]),length.out=nrow(newdata))
+    modelframe <- model.matrix(formula,data=newdata)
+    modelframe[,colnames(modelframe) != covariate] <- matrix(rep(colMeans(modelframe[,colnames(modelframe) != covariate]),
+                                                                 nrow(modelframe)),nrow(modelframe),byrow=TRUE)
+  }
+
+  if (!missing(mod)){
+    mf0 <- mf1 <- modelframe
+    mf0[,mod] <- 0
+    mf1[,mod] <- 1
+    modelframe <- list(mf0=mf0,mf1=mf1)
+  }else{
+    modelframe <- list(modelframe)
+  }
+  return(modelframe)
 
 }
 
-create_multiclasses_table <- function(modelframe,modelframe_full){
+create_multiclasses_table <- function(modelframe,modelframe_full,splines=NULL){
   classes <- sapply(modelframe,class)
   multiclasses <- classes
   multiclasses[which(sapply(modelframe,function(x) length(levels(x))) > 2)] <- 'multiclass'
+  multiclasses[splines] <- 'spline'
   multiclasses <- sapply(seq_along(multiclasses), function(i) {
 
     if (classes[i] == 'factor') {
       j <- length(levels(modelframe[,i]))-1
-      class <- rep(classes[i],j)
+      baseclass <- rep(classes[i],j)
       multiclass <- rep(multiclasses[i],j)
       lev <- levels(modelframe[,i])[-1]
       ref <- levels(modelframe[,i])[1]
     }else{
       j <- 1
-      class <- rep(classes[i],j)
+      baseclass <- rep(classes[i],j)
       multiclass <- rep(multiclasses[i],j)
       lev <- 2
       ref <- 1
     }
 
-    cbind(class,multiclass,lev,ref)
+    cbind(baseclass,multiclass,lev,ref)
 
   })
-  cbind(full=names(sapply(modelframe_full,class)),
+
+  out <- cbind(full=names(sapply(modelframe_full,class)),
         do.call('rbind',multiclasses))
+  rownames(out) <- NULL
+  out <- data.frame(out,stringsAsFactors=FALSE)
+
+  return(out)
+
+}
+
+check_for_splines <- function(formula,metadata){
+
+  vars <- terms(formula,data=metadata,
+                specials=c('s','bs','ns','poly'))
+
+  if (any(!sapply(attr(vars,'specials'),is.null))) return(TRUE) else return(FALSE)
+
+}
+
+extract_spline_info <- function(formula,metadata,remove_only=FALSE){
+
+  vars <- terms(formula,data=metadata,
+                specials=c('s','bs','ns','poly'))
+  splines <- attr(vars,'special')
+  splines <- splines[!sapply(splines,is.null)]
+
+  vars_old <- labels(vars)
+  vars_new <- all.vars(formula,unique=FALSE)
+  rhs <- as.character(formula)[2]
+
+  for (i in seq_along(vars_old)){
+    rhs <- gsub(vars_old[i],vars_new[i],rhs,fixed=TRUE)
+  }
+
+  formula_new <- as.formula(paste0('~',rhs))
+
+  if (remove_only) return(formula_new)
+
+  info <- vector(mode='list',length=length(unlist(splines)))
+  j <- 1
+  for (s in names(splines)){
+    for (i in seq_along(splines[[s]])){
+      info[[j]] <- list(
+        var=vars_new[i],
+        spline=s,
+        expansion=model.frame(as.formula(paste0('~',vars_old[i])),data=metadata)
+      )
+      j <- j + 1
+    }
+  }
+
+  return(list(info=info,formula=formula_new))
+
+}
+
+
+create_spline_modelframe <- function(modelframe,spline_info,spline_idx,covariate,metadata){
+
+  spline_mat <- NULL
+  for (i in seq_along(spline_idx)){
+    spline_mat_i <- spline_info[[spline_idx[i] == covariate]][['expansion']][[1]]
+    colnames(spline_mat_i) <- paste0(sprintf('%s_%s%s_',covariate,
+                                             spline_info[[spline_idx[i] == covariate]][['spline']],
+                                             i),
+                                      seq_len(ncol(spline_mat_i)))
+    spline_mat <- cbind(spline_mat,spline_mat_i)
+  }
+
+  return(spline_mat)
 }

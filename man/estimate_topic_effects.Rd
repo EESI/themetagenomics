@@ -4,8 +4,8 @@
 \alias{estimate_topic_effects}
 \title{Estimate topic effects}
 \usage{
-estimate_topic_effects(topics, metadata, formula, refs, moderator,
-  nsims = 100, ui_level = 0.8, ...)
+estimate_topic_effects(topics, metadata, formula, refs, nsims = 100,
+  ui_level = 0.8, npoints = 100, verbose = FALSE)
 }
 \arguments{
 \item{topics}{STM object containing the topic information}

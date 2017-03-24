@@ -4,7 +4,7 @@
 \alias{vis_covariate_effects_binary}
 \title{Generate interactive binary covariate effect figure}
 \usage{
-vis_covariate_effects_binary(topics, topic_effects, otu_table, taxa,
+vis_covariate_effects_binary(topics, topic_effects, otu_table, tax_table,
   taxa_n = 7)
 }
 \arguments{
@@ -12,7 +12,7 @@ vis_covariate_effects_binary(topics, topic_effects, otu_table, taxa,
 
 \item{topic_effects}{Output of \code{\link{estimate_topic_effects}} that contains regression weights.}
 
-\item{taxa}{Dataframe or matrix containing the taxonomy information.}
+\item{tax_table}{Dataframe or matrix containing the taxonomy information.}
 
 \item{function_effects}{Output of \code{\link{estimate_function_effects}} that contains the results from either HMC or ML.}
 

@@ -17,6 +17,8 @@ prepare_data <- function(otu_table,rows_are_taxa,taxa,metadata,formula,drop=TRUE
     if (missing(metadata)){
       stop('Must provide metadata if a formula is given.\n')
     }else{
+      splines <- check_for_splines(formula,metadata)
+      if (splines) formula <- extract_spline_info(formula,metadata,remove_only=TRUE)
       metadata <- model.frame(formula,data=metadata,na.action=na.omit)
     }
   }

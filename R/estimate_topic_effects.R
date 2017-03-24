@@ -24,7 +24,16 @@ estimate_topic_effects <- function(topics,metadata,formula,refs,nsims=100,ui_lev
     if (is.null(formula)) stop('Please provide a formula.')
   }
 
-  modelframe <- as.data.frame(unclass(model.frame(formula,metadata)))
+  splines <- check_for_splines(formula,metadata)
+  if (splines){
+    spline_info <- extract_spline_info(formula,metadata)
+    modelframe <- as.data.frame(unclass(model.frame(spline_info$formula,metadata)))
+  }else{
+    spline_info <- NULL
+    modelframe <- as.data.frame(unclass(model.frame(formula,metadata)))
+  }
+  rownames(modelframe) <- rownames(metadata)
+
   classes <- sapply(modelframe,class)
   multiclasses <- classes
   multiclasses[which(sapply(modelframe,function(x) length(levels(x))) > 2)] <- 'multiclass'
@@ -46,7 +55,6 @@ estimate_topic_effects <- function(topics,metadata,formula,refs,nsims=100,ui_lev
         j <- j+1
       }
     }
-
   }
 
   formula <- as.formula(sprintf('1:%s %s',K,paste0(formula,collapse=' ')))
@@ -56,8 +64,10 @@ estimate_topic_effects <- function(topics,metadata,formula,refs,nsims=100,ui_lev
 
   estimated_effects$modelframe_full <- topics$modelframe # maybe remove htis
   estimated_effects$modelframe <- modelframe
+  estimated_effects$splines <- spline_info$info
 
-  topic_effects <- estimate_topic_effects_backend(estimated_effects,nsims=nsims,ui_level=ui_level,npoints=npoints,verbose=verbose)
+  topic_effects <- estimate_topic_effects_backend(estimated_effects,fit$theta,
+                                                  nsims=nsims,ui_level=ui_level,npoints=npoints,verbose=verbose)
 
   out <- list(topic_effects=topic_effects,topics=topics,modelframe=topics$modelframe)
   class(out) <- 'effects'
@@ -69,7 +79,7 @@ estimate_topic_effects <- function(topics,metadata,formula,refs,nsims=100,ui_lev
 
 #' Backend to extract effects for \code{\link{estimate_topic_effects}}.
 #' @keywords internal
-estimate_topic_effects_backend <- function(estimated_effects,nsims=100,ui_level=.8,npoints=100,verbose=FALSE){
+estimate_topic_effects_backend <- function(estimated_effects,theta,nsims=100,ui_level=.8,npoints=100,verbose=FALSE){
 
   K <- length(estimated_effects$topics)
 
@@ -77,71 +87,105 @@ estimate_topic_effects_backend <- function(estimated_effects,nsims=100,ui_level=
   ui_interval <- paste0(c(ui_offset,1-ui_offset)*100,'%')
   ui_levels <- matrix(0.0,K,2,dimnames=list(NULL,ui_interval))
 
-  modelframe <- estimated_effects$modelframe
-  modelframe_full <- estimated_effects$modelframe_full
-
   if (verbose) cat('Simulating beta coeffiicents from MVN.\n')
   simbetas <- stm:::simBetas(estimated_effects$parameters,nsims=nsims)
   for (i in seq_along(simbetas)) colnames(simbetas[[i]]) <- names(estimated_effects$parameter[[1]][[1]]$est)
 
-  multiclasses <- create_multiclasses_table(modelframe,modelframe_full)
-  mods <- multiclasses[multiclasses[,'class'] == 'factor','full']
+  spline_info <- estimated_effects$splines
+  if (!is.null(spline_info)) spline_idx <- sapply(spline_info,function(x) x$var) else spline_idx <- NULL
+
+  multiclasses <- create_multiclasses_table(estimated_effects$modelframe,estimated_effects$modelframe_full,spline_idx)
+  mods <- multiclasses[multiclasses$baseclass == 'factor','full']
 
   covariate_list <- vector(mode='list',length=ncol(estimated_effects$modelframe_full))
   names(covariate_list) <- colnames(estimated_effects$modelframe_full)
   for (i in seq_len(nrow(multiclasses))){
 
-    cov_i <- multiclasses[i,'full']
+    fitted <- NULL
+    fitted_switch <- NULL
+    est <- matrix(0.0,K,3,dimnames=list(1:K,c('estimate',ui_interval)))
+
+    cov_i <- multiclasses$full[i]
+    attr(cov_i,'baseclass') <- multiclasses$baseclass[i]
+    attr(cov_i,'multiclass') <- multiclasses$multiclass[i]
+
     if (verbose) cat(sprintf('Making posterior predictions for %s.\n',cov_i))
 
-    if (multiclasses[i,'class'] == 'numeric' & length(mods) > 0){
-
-      est <- matrix(0.0,K,3,dimnames=list(1:K,c('estimate',ui_interval)))
+    if (multiclasses$multiclass[i] == 'spline'){
+      ppd <- make_ppd_x(estimated_effects,npoints=100)[[1]]
+      for (k in seq_len(K)){
+        ppd_beta <- ppd %*% t(simbetas[[k]])
+        spearman <- vector(mode='double',length=ncol(ppd_beta))
+        for (j in seq_len(ncol(ppd_beta))){
+          spearman[j] <- cor(ppd_beta[,j],theta[,k],method='spearman')
+        }
+        est[k,] <- c(mean(spearman),quantile(spearman,c(ui_offset,1-ui_offset)))
+      }
+    }else{
       for (j in seq_len(K)) est[j,] <- c(mean(simbetas[[j]][,cov_i]),quantile(simbetas[[j]][,cov_i],c(ui_offset,1-ui_offset)))
+    }
 
-      # Preallocate lists
-      fitted <- lapply(seq_len(K),function(x) matrix(0.0,npoints,4,dimnames=list(NULL,c('estimate',ui_interval,'covariate'))))
-      names(fitted) <- paste0('T',1:K)
-      fitted <- lapply(seq_along(mods),function(x) fitted)
-      names(fitted) <- mods
-      fitted_switch <- lapply(seq_len(K),function(x) matrix(0.0,npoints,4,dimnames=list(NULL,c('estimate',ui_interval,'covariate'))))
-      names(fitted_switch) <- paste0('T',1:K)
-      fitted_switch <- lapply(seq_along(mods),function(x) fitted_switch)
-      names(fitted_switch) <- mods
+    if (multiclasses$baseclass[i] == 'factor'){
+      ppd <- make_ppd_x(estimated_effects,covariate=cov_i,npoints=100)[[1]]
+      for (k in seq_len(K)){
+        ppd_beta <- ppd %*% t(simbetas[[k]])
+        diff <- ppd_beta[2,] - ppd_beta[1,]                                               ### check this ###
+        est[k,] <- c(mean(diff),quantile(diff,c(ui_offset,1-ui_offset)))
+      }
+    }
 
-      for (mod in mods){
+    if (multiclasses$baseclass[i] == 'numeric'){
 
-        if (verbose) cat(sprintf('Making posterior predictions for %s given %s.\n',cov_i,mod))
+      cov_vals <- seq(min(estimated_effects$data[[cov_i]]),max(estimated_effects$data[[cov_i]]),length.out=length(estimated_effects$data[[cov_i]]))
 
-        ppdx <- make_ppd_x(covariate=cov_i,mod=mod,modelframe_full=modelframe_full,npoints=npoints)
+      if (length(mods) > 0){
 
-        for (j in seq_len(K)){
-          sims <- ppdx[[1]][[1]] %*% t(simbetas[[j]])
-          sims_switch <- ppdx[[1]][[2]] %*% t(simbetas[[j]])
+        # Preallocate lists
+        fitted <- lapply(seq_len(K),function(x) matrix(0.0,npoints,4,dimnames=list(NULL,c('estimate',ui_interval,'covariate'))))
+        names(fitted) <- paste0('T',1:K)
+        fitted <- lapply(seq_along(mods),function(x) fitted)
+        names(fitted) <- mods
+        fitted_switch <- lapply(seq_len(K),function(x) matrix(0.0,npoints,4,dimnames=list(NULL,c('estimate',ui_interval,'covariate'))))
+        names(fitted_switch) <- paste0('T',1:K)
+        fitted_switch <- lapply(seq_along(mods),function(x) fitted_switch)
+        names(fitted_switch) <- mods
 
-          fitted[[mod]][[j]][,] <- c(rowMeans(sims),
-                                     t(apply(sims,1,function(x) quantile(x,c(ui_offset,1-ui_offset)))),
-                                     ppdx[[1]][[1]][,cov_i])
-          fitted_switch[[mod]][[j]][,] <- c(rowMeans(sims_switch),
-                                            t(apply(sims_switch,1,function(x) quantile(x,c(ui_offset,1-ui_offset)))),
-                                            ppdx[[1]][[1]][,cov_i])
+        for (mod in mods){
+
+          if (verbose) cat(sprintf('Making posterior predictions for %s given %s.\n',cov_i,mod))
+
+          ppd <- make_ppd_x(estimated_effects,covariate=cov_i,mod=mod,npoints=100)
+
+          for (k in seq_len(K)){
+            sims <- ppd[[1]] %*% t(simbetas[[k]])
+            sims_switch <- ppd[[2]] %*% t(simbetas[[k]])
+            fitted[[mod]][[k]] <- cbind(rowMeans(sims),
+                                        t(apply(sims,1,function(x) quantile(x,c(ui_offset,1-ui_offset)))),
+                                        cov_vals)
+            fitted_switch[[mod]][[k]] <- cbind(rowMeans(sims_switch),
+                                               t(apply(sims_switch,1,function(x) quantile(x,c(ui_offset,1-ui_offset)))),
+                                               cov_vals)
+          }
 
         }
 
-      }
+      }else{
 
-    }else{
+        # Preallocate lists
+        fitted <- lapply(seq_len(K),function(x) matrix(0.0,npoints,4,dimnames=list(NULL,c('estimate',ui_interval,'covariate'))))
+        names(fitted) <- paste0('T',1:K)
+        fitted <- list(fitted)
 
-      fitted <- NULL
-      fitted_switch <- NULL
+        if (verbose) cat(sprintf('Making posterior predictions for %s given %s.\n',cov_i,mod))
 
-      ppdx <- make_ppd_x(covariate=cov_i,modelframe_full=modelframe_full,npoints=npoints)
+        ppd <- make_ppd_x(estimated_effects,covariate=cov_i,npoints=100)[[1]]
 
-      for (j in seq_len(K)){
-
-        sims <- ppdx[[1]] %*% t(simbetas[[j]])
-        diff <- sims[2,] - sims[1,]
-        est[j,] <- c(mean(diff),quantile(diff,c(ui_offset,1-ui_offset)))
+        for (k in seq_len(K)){
+          sims <- ppd %*% t(simbetas[[k]])
+          fitted[[mod]][[k]] <- cbind(rowMeans(sims),
+                                      t(apply(sims,1,function(x) quantile(x,c(ui_offset,1-ui_offset)))),
+                                      cov_vals)
+        }
 
       }
 

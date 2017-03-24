@@ -4,7 +4,7 @@
 \alias{vis_topic_features}
 \title{Visualize topics features}
 \usage{
-vis_topic_features(topics, topic_effects, taxa, taxa_n = 30, top_n = 7,
+vis_topic_features(topics, topic_effects, tax_table, taxa_n = 30, top_n = 7,
   method = c("huge", "simple"), corr_thresh = 0.01, lambda_step = 0.01)
 }
 \arguments{
@@ -12,9 +12,6 @@ vis_topic_features(topics, topic_effects, taxa, taxa_n = 30, top_n = 7,
 object.}
 
 \item{topic_effects}{Output of \code{\link{estimate_topic_effects}}.}
-
-\item{taxa}{Dataframe or matrix containing the taxonomy information
-associated with the vocabulary used during STM fitting.}
 
 \item{taxa_n}{(optional) Number of taxa to show in the frequency bar plot.
 Defaults to 30.}
@@ -30,6 +27,9 @@ is set to simple. Defaults to .01.}
 
 \item{lambda_step}{(optional) Controls the step size for adjusting lambda in
 the relevancy calculation. Defaults to .01.}
+
+\item{taxa}{Dataframe or matrix containing the taxonomy information
+associated with the vocabulary used during STM fitting.}
 }
 \description{
 Launch an interactive graphical interface to visualize topic model output for

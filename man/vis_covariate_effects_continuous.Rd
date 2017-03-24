@@ -4,15 +4,15 @@
 \alias{vis_covariate_effects_continuous}
 \title{Generate interactive continuous covariate effect figure}
 \usage{
-vis_covariate_effects_continuous(topics, topic_effects, otu_table, taxa,
-  moderator, lambda_step = 0.01, taxa_n = 12)
+vis_covariate_effects_continuous(topics, topic_effects, otu_table, tax_table,
+  lambda_step = 0.01, taxa_n = 12)
 }
 \arguments{
 \item{topics}{Output of \code{\link{find_topics}} that contains the STM object.}
 
 \item{topic_effects}{Output of \code{\link{estimate_topic_effects}} that contains regression weights.}
 
-\item{taxa}{Dataframe or matrix containing the taxonomy information.}
+\item{tax_table}{Dataframe or matrix containing the taxonomy information.}
 
 \item{function_effects}{Output of \code{\link{estimate_function_effects}} that contains the results from either HMC or ML.}
 

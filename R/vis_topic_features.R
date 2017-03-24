@@ -89,7 +89,7 @@ NULL
 #'
 #' @export
 
-vis_topic_features <- function(topics,topic_effects,taxa,taxa_n=30,top_n=7,method=c('huge','simple'),corr_thresh=.01,lambda_step=.01){
+vis_topic_features <- function(topics,topic_effects,tax_table,taxa_n=30,top_n=7,method=c('huge','simple'),corr_thresh=.01,lambda_step=.01){
 
   method <- match.arg(method)
 
@@ -98,7 +98,7 @@ vis_topic_features <- function(topics,topic_effects,taxa,taxa_n=30,top_n=7,metho
   fit <- topics$fit
   K <- fit$settings$dim$K
   vocab <- fit$vocab
-  taxa <- taxa[vocab,]
+  taxa <- tax_table[vocab,]
   taxon <- paste0(pretty_taxa_names(taxa),' (',vocab,')')
   taxa <- rename_taxa_to_other(topics$docs,taxa,top_n=top_n,type='docs',as_factor=TRUE)
   rownames(taxa) <- taxon

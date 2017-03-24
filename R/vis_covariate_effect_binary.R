@@ -8,11 +8,11 @@ NULL
 #' @param topics Output of \code{\link{find_topics}} that contains the STM object.
 #' @param topic_effects Output of \code{\link{estimate_topic_effects}} that contains regression weights.
 #' @param function_effects Output of \code{\link{estimate_function_effects}} that contains the results from either HMC or ML.
-#' @param taxa Dataframe or matrix containing the taxonomy information.
+#' @param tax_table Dataframe or matrix containing the taxonomy information.
 #' @param beta_min (optional) Minimum probability in topics over taxa distribution to set to 0.
 #' @param gene_min (optional) Mininum abundance for gene set table.
 
-vis_covariate_effects_binary <- function(topics,topic_effects,otu_table,taxa,taxa_n=7){
+vis_covariate_effects_binary <- function(topics,topic_effects,otu_table,tax_table,taxa_n=7){
 
   metadata <- topic_effects$modelframe
   topic_effects <- topic_effects$topic_effects
@@ -26,8 +26,8 @@ vis_covariate_effects_binary <- function(topics,topic_effects,otu_table,taxa,tax
   otu_table <- otu_table + 1
   ra_table <- otu_table/rowSums(otu_table)
 
-  pretty_names <- pretty_taxa_names(taxa)
-  taxa_other <- rename_taxa_to_other(otu_table,taxa,top_n=taxa_n)
+  pretty_names <- pretty_taxa_names(tax_table)
+  taxa_other <- rename_taxa_to_other(otu_table,tax_table,top_n=taxa_n)
 
   covariates <- colnames(metadata)
   names(covariates) <- tolower(names(topic_effects))
@@ -120,6 +120,14 @@ vis_covariate_effects_binary <- function(topics,topic_effects,otu_table,taxa,tax
 
       })
 
+      show_slider <- reactiveValues(k=FALSE)
+
+      observeEvent(event_data('plotly_click',source='reg_est'),{
+
+        show_slider$k <- TRUE
+
+      })
+
       DF1 <- reactive({
         suppressWarnings({
 
@@ -175,7 +183,7 @@ vis_covariate_effects_binary <- function(topics,topic_effects,otu_table,taxa,tax
 
 
       output$show <- reactive({
-        length(DF1()) > 0
+        show_slider$k
       })
       outputOptions(output,'show',suspendWhenHidden=FALSE)
 

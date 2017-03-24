@@ -44,8 +44,14 @@ find_topics <- function(K,otu_table,rows_are_taxa,formula,metadata,refs,control=
     err <- try(model.frame(formula,data=metadata,na.action=na.fail),silent=TRUE)
     if (class(err) == 'try-error') stop('NA values in metadata. Please remove (see function prepare_data).')
 
-    metadata <- as.data.frame(unclass(err))
-    rownames(metadata) <- rownames(err)
+    # metadata <- as.data.frame(unclass(err))
+    # rownames(metadata) <- rownames(err)
+
+    # new
+    rnames <- rownames(metadata)
+    metadata <- as.data.frame(unclass(metadata))
+    rownames(metadata) <- rnames
+    # /new
 
     classes <- sapply(metadata,class)
 
@@ -71,7 +77,18 @@ find_topics <- function(K,otu_table,rows_are_taxa,formula,metadata,refs,control=
 
       }
 
-      modelframe <- create_modelframe(formula,refs,metadata)
+      # modelframe <- create_modelframe(formula,refs,metadata)
+
+      # new
+      splines <- check_for_splines(formula,metadata)
+      if (splines){
+        spline_info <- extract_spline_info(formula,metadata)
+        modelframe <- create_modelframe(spline_info$formula,refs,metadata)
+      }else{
+        spline_info <- NULL
+        modelframe <- create_modelframe(formula,refs,metadata)
+      }
+      # /new
 
     }
 
@@ -101,7 +118,8 @@ find_topics <- function(K,otu_table,rows_are_taxa,formula,metadata,refs,control=
 
   fit <- stm_wrapper(K=K,docs=docs,vocab=vocab,formula,metadata=metadata,control=control,...)
 
-  out <- list(fit=fit,docs=docs,vocab=vocab,otu_table=otu_table,modelframe=modelframe)
+  out <- list(fit=fit,docs=docs,vocab=vocab,otu_table=otu_table,
+              modelframe=modelframe,spline_info=spline_info$info)
   class(out) <- 'topics'
 
   return(out)
