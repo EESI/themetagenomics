@@ -321,7 +321,7 @@ vis_topic_features <- function(topics,topic_effects,tax_table,taxa_n=30,top_n=7,
 
       output$est <- renderPlotly({
 
-        ggplotly(EST()$p_est,source='est_hover')
+        ggplotly(EST()$p_est,source='est_hover',tooltip=c('topic','est','lower','upper'))
 
       })
 
@@ -413,13 +413,19 @@ vis_topic_features <- function(topics,topic_effects,tax_table,taxa_n=30,top_n=7,
          if (!is.null(h)){
            k <- EST()$k_levels[h[['x']]]
 
-           df_update <- df[df$topic == k,]
-           if (df_update$sig == '1') df_update$sig <- '2' else if(df_update$sig== '-1') df_update$sig <- '-2' else df_update$sig<- '00'
-           df_update$colors <- colors[df_update$sig]
+           if (length(k) > 0){
+             df_update <- df[df$topic == k,]
 
-           p1 <- add_markers(p1,
-                     x=df_update$Axis1,y=df_update$Axis2,opacity=.8,color=I(df_update$color),
-                     marker=list(size=150,symbol='circle',sizemode='diameter',line=list(width=3,color='#000000')))
+
+             if (df_update$sig == '1') df_update$sig <- '2' else if(df_update$sig== '-1') df_update$sig <- '-2' else df_update$sig<- '00'
+             df_update$colors <- colors[df_update$sig]
+
+             p1 <- add_markers(p1,
+                               x=df_update$Axis1,y=df_update$Axis2,opacity=.8,color=I(df_update$color),
+                               marker=list(size=150,symbol='circle',sizemode='diameter',line=list(width=3,color='#000000')))
+           }
+
+           p1
 
          }
        }
@@ -516,7 +522,7 @@ vis_topic_features <- function(topics,topic_effects,tax_table,taxa_n=30,top_n=7,
 
        K <- nrow(corr$posadj)
 
-       suppressMessages({
+       suppressWarnings({suppressMessages({
        g <- igraph::graph.adjacency(corr$posadj,mode='undirected',
                                     weighted=TRUE,diag=FALSE)
 
@@ -548,7 +554,7 @@ vis_topic_features <- function(topics,topic_effects,tax_table,taxa_n=30,top_n=7,
                                radiusCalculation=networkD3::JS('d.nodesize'),
                                colourScale=networkD3::JS("color=d3.scaleLinear()\n.domain([-1,0,1])\n.range(['blue','gray','red']);"))
 
-       })
+       })})
 
      })
 
