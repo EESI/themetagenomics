@@ -1,18 +1,39 @@
 #' @import ggplot2 shiny plotly
 NULL
 
-#' Generate interactive functional effect heatmap
+#' @describeIn vis Generate interactive graphical interface for gene functions
 #'
-#' TBD
+#'   This function integrates the taxa over topics p(t|k) and gene functions over topics p(g|k) distributions,
+#'   along with and the covariate effects from the p(s|k) component. The covariate effects
+#'   for each topic are shown as a scatterplot of posterior weights with error bars corresponding the
+#'   global approximation of uncertainty. If the covariate chosen is binary,
+#'   this reflects the mean difference between levels. For continuous covariates, the points
+#'   represent the mean regression weights (i.e., the posterior slope estimate of the
+#'   covariate). Colors indicate whether a given point was positive (red) or negative
+#'   (blue) and did not enclose 0 at a user defined uncertainty interval.
 #'
-#' @param topics Output of \code{\link{find_topics}} that contains the STM object.
-#' @param topic_effects Output of \code{\link{estimate_topic_effects}} that contains regression weights.
-#' @param function_effects Output of \code{\link{estimate_function_effects}} that contains the results from either HMC or ML.
-#' @param taxa Dataframe or matrix containing the taxonomy information.
-#' @param beta_min (optional) Minimum probability in topics over taxa distribution to set to 0.
-#' @param gene_min (optional) Mininum count for gene set table.
+#'   The upper heatmap shows p(t|k), clustered via Wards method on a user chosen distance metric. Topics are ranked
+#'   to right based on the weights from the aforementioned scatterplot. The lower heatmap shows the weights for the
+#'   pathway-topic interaction from the multilevel Bayesian model. Positive and negative weight estimates that do
+#'   not enclose zero at a chosen uncertainty level are marked with red and blue crosses, respectively. The pathway
+#'   ordering is done via Wards method on Euclidean distance.
+#'   Upon selected a cell within the pathway-topic heatmap, a table of genes is returned, ranking the genes in terms of
+#'   abundance that belong to a given pathway-topic combination.
+#'
+#' @inheritParams vis.binary
+#' @param function_effects Output of \code{\link{estimate_function_effects}}
+#'   that contains the results from either HMC or ML.
+#' @param beta_min (optional) Minimum probability in topics over taxa
+#'   distribution to set to 0. Defaults to 1e-5.
+#' @param gene_min (optional) Mininum count for gene set table. Defaults to 10.
+#' @param pw_min (optional) Maximium number of pathways to show in heatmap. for Defaults to 20.
 
-vis_function_effects <- function(topics,topic_effects,function_effects,taxa,beta_min=1e-5,ui_level=.8,gene_min=10,pw_min=20){
+vis.functions <- function(functions_object,beta_min=1e-5,ui_level=.8,gene_min=10,pw_min=20){
+
+  topics <- functions_object$topics
+  topic_effects <- functions_object$topic_effects
+  function_effects <- functions_object$function_effects
+  tax_table <- functions_object$topics$tax_table
 
   if (!(ui_level %in% c(.99,.95,.9,.5))){
     warning(sprintf('ui_level must be .5, .8, .9, .95, or .99 -- defaulting to .8.'))
@@ -21,13 +42,11 @@ vis_function_effects <- function(topics,topic_effects,function_effects,taxa,beta
 
   ui_interval <- paste0(round(100*c((1-ui_level)/2,1-(1-ui_level)/2),1),'%')
 
-  topic_effects <- topic_effects$topic_effects
-
   covariates <- lapply(names(topic_effects),identity)
   names(covariates) <- tolower(names(topic_effects))
   est_range <- range(c(sapply(topic_effects, function(x) unlist(x$est))))
 
-  pretty_names <- pretty_taxa_names(taxa)
+  pretty_names <- pretty_taxa_names(tax_table)
 
   fit <- topics$fit
   K <- fit$settings$dim$K
@@ -218,7 +237,7 @@ vis_function_effects <- function(topics,topic_effects,function_effects,taxa,beta
         df <- data.frame(probability=matrix(logbeta,ncol=1),
                          otu=rownames(logbeta),
                          topic=rep(colnames(logbeta),each=nrow(logbeta)))
-        df$taxon <- pretty_taxa_names(taxa[df$otu,])
+        df$taxon <- pretty_taxa_names(tax_table[df$otu,])
         df$taxon <- paste0(df$taxon,' (',df$otu,')')
 
         df$topic <- factor(df$topic,levels=EST()$topic_order,ordered=TRUE)

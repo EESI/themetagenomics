@@ -1,20 +1,42 @@
 #' @import ggplot2 shiny plotly
 NULL
 
-#' Generate interactive continuous covariate effect figure
+#' @describeIn vis Generate interactive graphical interface for continuous covariates
 #'
-#' TBD
+#'   This function integrates the samples over topics p(t|s) and the topics
+#'   over taxa p(k|t) distributions from the STM, binary and continuous covariate effects from the p(s|k) component, and
+#'   their relationship with the raw taxonomic abundances. The covariate effects
+#'   for each topic are shown as a scatterplot of posterior weights with error bars corresponding the
+#'   global approximation of uncertainty. If the covariate chosen is binary,
+#'   this reflects the mean difference between levels. For continuous covariates, the points
+#'   represent the mean regression weights (i.e., the posterior slope estimate of the
+#'   covariate). If, however, a spline or polynomial expansion was used, then the figure shows the estimated  Spearman rank
+#'   correlation between \eqn{\hat\theta} from the posterior predictive distribution and \eqn{\theta} for a given topic k.
+#'   Colors indicate whether a given point was positive (red) or negative
+#'   (blue) and did not enclose 0 at a user defined uncertainty interval.
 #'
-#' @param topics Output of \code{\link{find_topics}} that contains the STM object.
-#' @param topic_effects Output of \code{\link{estimate_topic_effects}} that contains regression weights.
-#' @param function_effects Output of \code{\link{estimate_function_effects}} that contains the results from either HMC or ML.
-#' @param tax_table Dataframe or matrix containing the taxonomy information.
-#' @param beta_min (optional) Minimum probability in topics over taxa distribution to set to 0.
-#' @param gene_min (optional) Mininum count for gene set table.
-vis_covariate_effects_continuous <- function(topics,topic_effects,otu_table,tax_table,lambda_step=.01,taxa_n=12){
+#'   Selecting a topic estimate generates three panels. The top panel shows the posterior predictive estimate of the
+#'   selected continuous covariate. If binary covariates were present in the model formula, then the continuous effect
+#'   given the binary covariate is shown as two regression lines, along with their corresponding uncertainty intervals.
+#'   The points show the true p(k|s) values determined by the STM as a function of the selected continuous covariate.
+#'   The middle panel then shows the raw abundances (or relative abundances) of most relavent taxa. Relavence can be
+#'   control by adjusting \eqn{\lambda} where \deqn{r = \lambda x log p(t|k) + \lambda x log p(t|k)/p(x)}. If binary
+#'   covariates were provided in the model formula, selected split will split the regressions based on the selected
+#'   covariate. Each figure overlays a linear best fit (red) and loess fit (red) to facilitate intepretation. The bottom
+#'   panel shows these taxa combined.
+#'
+#' @inheritParams vis.binary
+#' @param lambda_step (optional) Value designating the lambda stepsize for calculating taxa relevance. Recommended to be
+#'   between .01 and .1. Defaults to .1.
+#' @param taxa_reg_n (optional) Number of most relevant taxa within topic to regress. Defaults to 8.
 
-  metadata <- topic_effects$modelframe
-  topic_effects <- topic_effects$topic_effects
+vis.continuous <- function(continuous_object,lambda_step=.1,taxa_reg_n=8){
+
+  topics <- continuous_object$topics
+  topic_effects <- continuous_object$topic_effects
+  otu_table <- continuous_object$topics$otu_table
+  tax_table <- continuous_object$topics$tax_table
+  metadata <- continuous_object$modelframe
 
   covariates <- colnames(metadata)
   cov_f <- sapply(metadata,class) == 'factor'
@@ -77,9 +99,9 @@ vis_covariate_effects_continuous <- function(topics,topic_effects,otu_table,tax_
   saliency <- term_marg*distinctiveness
 
   # Order the terms for the "default" view by decreasing saliency:
-  default_terms <- vocab[order(saliency,decreasing=TRUE)][1:taxa_n]
+  default_terms <- vocab[order(saliency,decreasing=TRUE)][1:taxa_reg_n]
   counts <- as.integer(term_freq[match(default_terms,vocab)])
-  taxa_n_rev <- rev(seq_len(taxa_n))
+  taxa_n_rev <- rev(seq_len(taxa_reg_n))
 
   default <- data.frame(Term=default_terms,
                         logprob=taxa_n_rev,
@@ -90,16 +112,16 @@ vis_covariate_effects_continuous <- function(topics,topic_effects,otu_table,tax_
                         stringsAsFactors=FALSE)
   default$Term <- factor(default$Term,levels=rev(default$Term),ordered=TRUE)
 
-  topic_seq <- rep(seq_len(K),each=taxa_n)
+  topic_seq <- rep(seq_len(K),each=taxa_reg_n)
   category <- paste0('T',topic_seq)
   lift <- beta/term_marg
 
-  # Collect taxa_n most relevant terms for each topic/lambda combination
+  # Collect taxa_reg_n most relevant terms for each topic/lambda combination
   # Note that relevance is re-computed in the browser, so we only need
   # to send each possible term/topic combination to the browser
   find_relevance <- function(i){
     relevance <- i*log(beta) + (1 - i)*log(lift)
-    idx <- apply(relevance,2,function(x) order(x,decreasing=TRUE)[seq_len(taxa_n)])
+    idx <- apply(relevance,2,function(x) order(x,decreasing=TRUE)[seq_len(taxa_reg_n)])
     indices <- cbind(c(idx),topic_seq)
     data.frame(Term=vocab[idx],
                Category=category,
@@ -245,7 +267,7 @@ vis_covariate_effects_continuous <- function(topics,topic_effects,otu_table,tax_
 
           tinfo_k <- subset(tinfo,Category == current_k)
           rel_k <- l*tinfo_k$logprob + (1-l)*tinfo_k$loglift
-          new_order <- tinfo_k[order(rel_k,decreasing=TRUE)[1:taxa_n],]
+          new_order <- tinfo_k[order(rel_k,decreasing=TRUE)[1:taxa_reg_n],]
           new_order$Term <- as.character.factor(new_order$Term)
 
           otu_subset <- t(TAB()$table[,new_order$Term])
@@ -289,7 +311,7 @@ vis_covariate_effects_continuous <- function(topics,topic_effects,otu_table,tax_
                                     probability in the topics over taxa distributions versus %s. Each point represents the abundance of that taxa
                                     in that sample. Each point is colored based on the probability of that sample occuring in the chosen topic. The
                                     large scatter plot shows all %s taxa combined.",
-                                    taxa_n,EST()$covariate,taxa_n))
+                                    taxa_reg_n,EST()$covariate,taxa_reg_n))
                      })
                    }
                        )

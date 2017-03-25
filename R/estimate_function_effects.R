@@ -18,7 +18,7 @@
 #'   (HMC).
 #' @export
 
-estimate_function_effects <- function(functions,topics_subset,level=2,method='HML',...){
+est.functions <- function(functions,topics_subset,level=2,method='HML',...){
 
   fxn_table <- functions$fxn_table
   fxn_meta <- functions$fxn_meta

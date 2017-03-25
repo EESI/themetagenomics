@@ -4,20 +4,21 @@
 \alias{prepare_data}
 \title{Prepare data for pipeline}
 \usage{
-prepare_data(otu_table, rows_are_taxa, taxa, metadata, formula, drop = TRUE)
+prepare_data(otu_table, rows_are_taxa, tax_table, metadata, formula, refs,
+  cn_normalize = TRUE, drop = TRUE)
 }
 \arguments{
 \item{otu_table}{OTU table.}
 
 \item{rows_are_taxa}{Logical flag.}
 
-\item{taxa}{Taxa table.}
-
 \item{metadata}{Metadata.}
 
 \item{formula}{Formula for covariates.}
 
 \item{drop}{Drop empty.}
+
+\item{taxa}{Taxa table.}
 }
 \description{
 TBD

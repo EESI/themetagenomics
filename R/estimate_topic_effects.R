@@ -14,14 +14,17 @@
 #' \item{sig}{A vector of topic indexes for topics whose uncertainty intervals did not enclose 0.}
 #' @export
 
-estimate_topic_effects <- function(topics,metadata,formula,refs,nsims=100,ui_level=.8,npoints=100,verbose=FALSE){
+est.topics <- function(topics,metadata,formula,refs,nsims=100,ui_level=.8,npoints=100,verbose=FALSE){
 
   fit <- topics$fit
   K <- fit$settings$dim$K
 
   if (missing(formula)){
+    metadata <- topics$metadata
+    if (is.null(metadata)) stop('Please provide metadata')
     formula <- fit$settings$covariates$formula
     if (is.null(formula)) stop('Please provide a formula.')
+    if (missing(refs)) refs <- topics$refs
   }
 
   splines <- check_for_splines(formula,metadata)
@@ -66,8 +69,8 @@ estimate_topic_effects <- function(topics,metadata,formula,refs,nsims=100,ui_lev
   estimated_effects$modelframe <- modelframe
   estimated_effects$splines <- spline_info$info
 
-  topic_effects <- estimate_topic_effects_backend(estimated_effects,fit$theta,
-                                                  nsims=nsims,ui_level=ui_level,npoints=npoints,verbose=verbose)
+  topic_effects <- est.topics_backend(estimated_effects,fit$theta,
+                                      nsims=nsims,ui_level=ui_level,npoints=npoints,verbose=verbose)
 
   out <- list(topic_effects=topic_effects,topics=topics,modelframe=topics$modelframe)
   class(out) <- 'effects'
@@ -79,7 +82,7 @@ estimate_topic_effects <- function(topics,metadata,formula,refs,nsims=100,ui_lev
 
 #' Backend to extract effects for \code{\link{estimate_topic_effects}}.
 #' @keywords internal
-estimate_topic_effects_backend <- function(estimated_effects,theta,nsims=100,ui_level=.8,npoints=100,verbose=FALSE){
+est.topics_backend <- function(estimated_effects,theta,nsims=100,ui_level=.8,npoints=100,verbose=FALSE){
 
   K <- length(estimated_effects$topics)
 

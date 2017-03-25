@@ -4,7 +4,7 @@
 \alias{cnn}
 \title{Normalize an OTU table by 16S rRNA copy number}
 \usage{
-cnn(otu_table, rows_are_taxa, copy_numbers, drop = TRUE)
+cnn(otu_table, rows_are_taxa, copy_numbers, drop = TRUE, verbose = FALSE)
 }
 \arguments{
 \item{otu_table}{Phyloseq object or OTU table as a data frame or matrix with

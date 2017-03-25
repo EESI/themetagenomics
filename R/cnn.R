@@ -16,7 +16,7 @@
 #' @return A normalized, rounded (to nearest integer) OTU table.
 #' @export
 
-cnn <- function(otu_table,rows_are_taxa,copy_numbers,drop=TRUE){
+cnn <- function(otu_table,rows_are_taxa,copy_numbers,drop=TRUE,verbose=FALSE){
 
   if (missing(copy_numbers)){
 
@@ -56,8 +56,10 @@ cnn <- function(otu_table,rows_are_taxa,copy_numbers,drop=TRUE){
     norm_table <- norm_table[,colSums(norm_table)>0]
     norm_table <- norm_table[rowSums(norm_table)>0,]
 
-    cat(sprintf('Dropped %s empty OTU columns.\n',ncol(otu_table)-ncol(norm_table)))
-    cat(sprintf('Dropped %s empty sample rows.\n',nrow(otu_table)-nrow(norm_table)))
+    if (verbose){
+      cat(sprintf('Dropped %s empty OTU columns.\n',ncol(otu_table)-ncol(norm_table)))
+      cat(sprintf('Dropped %s empty sample rows.\n',nrow(otu_table)-nrow(norm_table)))
+    }
   }
 
   return(norm_table)

@@ -34,73 +34,18 @@
 #' \item{docs}{The documents}
 #' \item{vocab}{The vocabulary}
 #' @export
+find_topics <- function(themetadata_object,K,control=list(),...) UseMethod('find_topics')
 
-find_topics <- function(K,otu_table,rows_are_taxa,formula,metadata,refs,control=list(),...){
+#' @export
+find_topics.themetadata <- function(themetadata_object,K,control=list(),...){
 
-  if (!missing(formula)){
-
-    if (missing(metadata)) stop('Must provide metadata if a formula is given.\n')
-
-    err <- try(model.frame(formula,data=metadata,na.action=na.fail),silent=TRUE)
-    if (class(err) == 'try-error') stop('NA values in metadata. Please remove (see function prepare_data).')
-
-    # metadata <- as.data.frame(unclass(err))
-    # rownames(metadata) <- rownames(err)
-
-    # new
-    rnames <- rownames(metadata)
-    metadata <- as.data.frame(unclass(metadata))
-    rownames(metadata) <- rnames
-    # /new
-
-    classes <- sapply(metadata,class)
-
-    if (sum(classes == 'factor') > 0){
-
-      if (missing(refs)){
-        warning('References are recommended for factors. Using the first level(s).')
-        refs <- unlist(lapply(metadata[,classes == 'factor'],function(x) levels(x)[1]))
-      }
-
-      if (sum(classes == 'factor') != length(refs)) stop('A reference is required for each factor.')
-
-      ref_check <- all(sapply(seq_along(refs), function(i) refs[i] %in% lapply(metadata[,classes == 'factor'],levels)[[i]]))
-      if (!ref_check) stop('Reference(s) not found in factor(s).')
-
-      j <- 1
-      for (i in seq_along(classes)){
-
-        if (classes[i] == 'factor'){
-          metadata[,i] <- relevel(as.factor(metadata[,i]),ref=refs[j])
-          j <- j+1
-        }
-
-      }
-
-      # modelframe <- create_modelframe(formula,refs,metadata)
-
-      # new
-      splines <- check_for_splines(formula,metadata)
-      if (splines){
-        spline_info <- extract_spline_info(formula,metadata)
-        modelframe <- create_modelframe(spline_info$formula,refs,metadata)
-      }else{
-        spline_info <- NULL
-        modelframe <- create_modelframe(formula,refs,metadata)
-      }
-      # /new
-
-    }
-
-  }else{
-
-    formula <- NULL
-    metadata <- NULL
-    modelframe <- NULL
-
-  }
-
-  if (rows_are_taxa == TRUE) otu_table <- t(otu_table)
+  otu_table <- themetadata_object$otu_table
+  tax_table <- themetadata_object$tax_table
+  formula <- themetadata_object$formula
+  metadata <- themetadata_object$metadata
+  modelframe <- themetadata_object$modelframe
+  spline_info <- themetadata_object$splineinfo
+  refs <- themetadata_object$refs
 
   user_control_params <- names(control)
   control <- control[user_control_params %in% c('gamma.enet','gamma.ic.k','gamma.ic.k',
@@ -118,7 +63,7 @@ find_topics <- function(K,otu_table,rows_are_taxa,formula,metadata,refs,control=
 
   fit <- stm_wrapper(K=K,docs=docs,vocab=vocab,formula,metadata=metadata,control=control,...)
 
-  out <- list(fit=fit,docs=docs,vocab=vocab,otu_table=otu_table,
+  out <- list(fit=fit,docs=docs,vocab=vocab,otu_table=otu_table,tax_table=tax_table,metadata=metadata,refs=refs,
               modelframe=modelframe,spline_info=spline_info$info)
   class(out) <- 'topics'
 

@@ -12,31 +12,9 @@
 #' @export
 est <- function(object,...) UseMethod('est')
 
-#' @export
-est.topics <- function(object,...){
-  estimate_topic_effects(object,...)
-}
-
-#' @export
-est.functions <- function(object,...){
-  estimate_function_effects(object,...)
-}
-
+#' Print summary for effects class resulting from topics
 #' @export
 print.effects <- function(effects_object,...){
-
-  if (attributes(topic_effects)[['type']] == 'topics'){
-    print_effects_topics(effects_object)
-  }else if (attributes(topic_effects)[['type']] == 'functions'){
-    print_effects_functions(effects_object)
-  }
-
-
-}
-
-#' Print summary for effects class resulting from topics
-#' @keywords internal
-print_effects_topics <- function(effects_object){
   cat(sprintf('An %s object containing topic model effects information.\n',class(effects_object)))
 
   cat(sprintf('\n%s total covariate(s):\n',ncol(effects_object$modelframe)))
@@ -75,8 +53,8 @@ print_effects_topics <- function(effects_object){
 }
 
 #' Print summary for effects class resulting from functions
-#' @keywords internal
-print_effects_functions <- function(effects_object){
+#' @export
+print.functions <- function(functions_object,...){
   # placeholder
 }
 

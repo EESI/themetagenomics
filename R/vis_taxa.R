@@ -1,45 +1,24 @@
 #' @import ggplot2 shiny plotly
 NULL
 
-#' Visualize topics features
+#' @describeIn vis Generate interactive graphical interface for taxa
 #'
-#' Launch an interactive graphical interface to visualize topic model output for
-#' taxonimic abundance data. The interphase integrates STM output with LDAvis
-#' inpired ordination and frequency figures, as well a networkD3 diagram to
-#' display topic correlations.
-#'
-#' @param topics Output of \code{\link{find_topics}} that contains the STM
-#'   object.
-#' @param topic_effects Output of \code{\link{estimate_topic_effects}}.
-#' @param taxa Dataframe or matrix containing the taxonomy information
-#'   associated with the vocabulary used during STM fitting.
-#' @param taxa_n (optional) Number of taxa to show in the frequency bar plot.
-#'   Defaults to 30.
-#' @param top_n (optional) Number of taxonic groups to colorize in the frequency
-#'   bar plot. Defaults to 7.
-#' @param method (optional) Method for estimating topic correlations links.
-#'   Defaults to huge.
-#' @param corr_thresh (optional) Threshold to set correlations to 0 when method
-#'   is set to simple. Defaults to .01.
-#' @param lambda_step (optional) Controls the step size for adjusting lambda in
-#'   the relevancy calculation. Defaults to .01.
-#'
-#' @details This function integrates the samples over topics p(s|k) and topics
-#'   over taxa distributions (k|t) from the STM, the topic correlations from the
+#'   This function integrates the samples over topics p(s|k) and topics
+#'   over taxa p(k|t) distributions from the STM, the topic correlations from the
 #'   p(s|k) component, the covariate effects from the p(s|k) component, and
 #'   their relationship with the raw taxonomic abundances. The covariate effects
-#'   for each topic are shown as a scatterplot with error bars corresponding the
+#'   for each topic are shown as a scatterplot of posterior weights with error bars corresponding the
 #'   global approximation of uncertainty. If the covariate chosen is binary,
-#'   this reflects their mean difference. For continuous covariates, the points
-#'   represent the mean regression weights (i.e., the estimated slope of the
-#'   covariate). Colors indicate whether a given point was above (red) or below
+#'   this reflects the mean difference between levels. For continuous covariates, the points
+#'   represent the mean regression weights (i.e., the posterior slope estimate of the
+#'   covariate). Colors indicate whether a given point was positive (red) or negative
 #'   (blue) and did not enclose 0 at a user defined uncertainty interval.
 #'
 #'   The ordination figure maintains the color coding just decribed. The
 #'   ordination is performed on p(k|t) via either PCoA (using either
 #'   Jensen-Shannon, Euclidean, Hellinger, Bray-Curtis, Jaccard, or Chi-squared
 #'   distance) or t-SNE. The latter iterates through decreasing perplexity
-#'   values (starting at 30) until the algorithm succeeds. Either the top 2 or 3
+#'   values (starting at 30) until the algorithm succeeds. The top 2 or 3
 #'   axes can be shown. The radius of the topic points corresponds to the topic
 #'   frequencies marginalized over taxa.
 #'
@@ -55,43 +34,41 @@ NULL
 #'   selected, the relative frequency of a given taxa in that topic is shown in
 #'   red.
 #'
-#'   Lambda controls relevance of taxa within a topic, which in turn is used to
+#'   \eqn{\lambda} controls relevance of taxa within a topic, which in turn is used to
 #'   adjust the order in which the taxa are shown when a topic is selected.
 #'   Relevence is essentially a weighted sum between the probability of taxa in
 #'   a given topic and the probability of taxa in a given topic relative to the
-#'   overall frequency of that taxa. Lambda controls the relative weighting such
-#'   that
-#'
-#'         r = L x log p(t|k) + L x log p(t|k)/p(x).
-#'
-#'   The correlation graph shows the topic correlations from p(s|k) ~
-#'   MVN(mu,sigma). Again, the coloration described above is conserved. The size
-#'   of the nodes reflects the magnitude of the covariate regression weight,
+#'   overall frequency of that taxa. Adjusting \eqn{\lambda} influences the relative weighting such
+#'   that \deqn{r = \lambda x log p(t|k) + \lambda x log p(t|k)/p(x)}.
+#'   The correlation graph shows the topic correlations from \eqn{p(s|k) ~ MVN(mu,sigma)}.
+#'   Again, the coloration described above is conserved. The size
+#'   of the nodes reflects the magnitude of the covariate posterior regression weight,
 #'   whereas the width of the edges represents the value of the positive
 #'   correlation between the connected nodes. By default, the graph estimates
 #'   are determined using the the huge package, which first performs a
 #'   nonparanormal transformation of p(s|k), followed by a Meinhuasen and
 #'   Buhlman procedure. Alternatively, by choosing the simple method, the
-#'   correlations are simply a thresholded MAP estimate  of p(s|k).
-#'
-#' @references Roberts, M.E., Stewart, B.M., Tingley, D., Lucas, C., Leder-Luis,
-#' J., Gadarian, S.K., Albertson, B., & Rand, D.G. (2014). Structural topic
-#' models for open-ended survey responses. Am. J. Pol. Sci. 58, 1064–1082.
-#'
-#' Sievert, C., & Shirley, K. (2014). LDAvis: A method for visualizing and
-#' interpreting topics. Proc. Work. Interact. Lang. Learn. Vis. Interfaces.
-#'
-#' Zhao, T., & Liu., H. (2012) The huge Package for High-dimensional Undirected
-#' Graph Estimation in R. Journal of Machine Learning Research.
-#'
-#' @seealso \code{\link{networkD3}}, \code{\link{huge}}, \code{\link{topicCorr}},
-#' \code{\link{Rtsne}}
+#'   correlations are simply a thresholded MAP estimate of p(s|k).
 
-vis_topic_features <- function(topics,topic_effects,tax_table,taxa_n=30,top_n=7,method=c('huge','simple'),corr_thresh=.01,lambda_step=.01){
+#' @inheritParams vis.binary
+#' @param taxa_bar_n (optional) Number of taxa to show in the frequency bar plot.
+#'   Defaults to 30.
+#' @param top_n (optional) Number of taxonic groups to colorize in the frequency
+#'   bar plot. Defaults to 7.
+#' @param method (optional) Method for estimating topic correlations links.
+#'   Defaults to huge.
+#' @param corr_thresh (optional) Threshold to set correlations to 0 when method
+#'   is set to simple. Defaults to .01.
+#' @param lambda_step (optional) Controls the step size for adjusting lambda in
+#'   the relevancy calculation. Defaults to .01.
+
+vis.taxa <- function(taxa_object,taxa_bar_n=30,top_n=7,method=c('huge','simple'),corr_thresh=.01,lambda_step=.01){
+
+  topics <- taxa_object$topics
+  topic_effects <- taxa_object$topic_effects
+  tax_table <- taxa_object$topics$tax_table
 
   method <- match.arg(method)
-
-  topic_effects <- topic_effects$topic_effects
 
   fit <- topics$fit
   K <- fit$settings$dim$K
@@ -155,9 +132,9 @@ vis_topic_features <- function(topics,topic_effects,tax_table,taxa_n=30,top_n=7,
   saliency <- term_marg*distinctiveness
 
   # Order the terms for the "default" view by decreasing saliency:
-  default_terms <- taxon[order(saliency,decreasing=TRUE)][1:taxa_n]
+  default_terms <- taxon[order(saliency,decreasing=TRUE)][1:taxa_bar_n]
   counts <- as.integer(term_freq[match(default_terms,taxon)])
-  taxa_n_rev <- rev(seq_len(taxa_n))
+  taxa_n_rev <- rev(seq_len(taxa_bar_n))
 
   default <- data.frame(Term=default_terms,
                         logprob=taxa_n_rev,
@@ -169,16 +146,16 @@ vis_topic_features <- function(topics,topic_effects,tax_table,taxa_n=30,top_n=7,
   default$Taxon <- taxa[default$Term,'Phylum']
   default$Term <- factor(default$Term,levels=rev(default$Term),ordered=TRUE)
 
-  topic_seq <- rep(seq_len(K),each=taxa_n)
+  topic_seq <- rep(seq_len(K),each=taxa_bar_n)
   category <- paste0('T',topic_seq)
   lift <- beta/term_marg
 
-  # Collect taxa_n most relevant terms for each topic/lambda combination
+  # Collect taxa_bar_n most relevant terms for each topic/lambda combination
   # Note that relevance is re-computed in the browser, so we only need
   # to send each possible term/topic combination to the browser
   find_relevance <- function(i){
     relevance <- i*log(beta) + (1 - i)*log(lift)
-    idx <- apply(relevance,2,function(x) order(x,decreasing=TRUE)[seq_len(taxa_n)])
+    idx <- apply(relevance,2,function(x) order(x,decreasing=TRUE)[seq_len(taxa_bar_n)])
     indices <- cbind(c(idx),topic_seq)
     data.frame(Term=taxon[idx],
                Category=category,
@@ -268,7 +245,7 @@ vis_topic_features <- function(topics,topic_effects,tax_table,taxa_n=30,top_n=7,
 
           tinfo_k <- subset(tinfo,Category == current_k)
           rel_k <- l*tinfo_k$logprob + (1-l)*tinfo_k$loglift
-          new_order <- tinfo_k[order(rel_k,decreasing=TRUE)[1:taxa_n],]
+          new_order <- tinfo_k[order(rel_k,decreasing=TRUE)[1:taxa_bar_n],]
           new_order$Term <- as.character.factor(new_order$Term)
           new_order$Taxon <- taxa[new_order$Term,input$taxon]
           new_order$Term <- factor(new_order$Term,levels=rev(new_order$Term),ordered=TRUE)
@@ -336,13 +313,13 @@ vis_topic_features <- function(topics,topic_effects,tax_table,taxa_n=30,top_n=7,
                     frequencies of the taxa within that topic are shown in red. The ordination figure can be shown in
                     either 2D or 3D and the ordination method can be adjusted. Lambda adjusts the relevance calculation.
                     Choosing the taxon adjusts the group coloring for the bar plot. Clicking Reset resets the topic selection.",
-                    ui_interval,taxa_n,tolower(EST()$covariate),taxa_n))
+                    ui_interval,taxa_bar_n,tolower(EST()$covariate),taxa_bar_n))
      })
 
      output$text2 <- renderUI({
        HTML(sprintf("Below shows topic correlations from the samples over topics distribution. Links suggests positive
                     correlation between two topics.",
-                    taxa_n,EST()$covariate,taxa_n))
+                    taxa_bar_n,EST()$covariate,taxa_bar_n))
      })
 
      output$ord <- renderPlotly({
