@@ -2,10 +2,10 @@
 % Please edit documentation in R/predict_functions.R
 \name{attributes<-.functions}
 \alias{attributes<-.functions}
-\title{Prevent attribute renaming in class topics}
+\title{Prevent attribute renaming in class functions}
 \usage{
 attributes.functions(object) <- value
 }
 \description{
-Prevent attribute renaming in class topics
+Prevent attribute renaming in class functions
 }

@@ -44,7 +44,7 @@ find_topics.themetadata <- function(themetadata_object,K,control=list(),...){
   formula <- themetadata_object$formula
   metadata <- themetadata_object$metadata
   modelframe <- themetadata_object$modelframe
-  spline_info <- themetadata_object$splineinfo
+  splineinfo <- themetadata_object$splineinfo
   refs <- themetadata_object$refs
 
   user_control_params <- names(control)
@@ -64,7 +64,7 @@ find_topics.themetadata <- function(themetadata_object,K,control=list(),...){
   fit <- stm_wrapper(K=K,docs=docs,vocab=vocab,formula,metadata=metadata,control=control,...)
 
   out <- list(fit=fit,docs=docs,vocab=vocab,otu_table=otu_table,tax_table=tax_table,metadata=metadata,refs=refs,
-              modelframe=modelframe,spline_info=spline_info$info)
+              modelframe=modelframe,spline_info=splineinfo$info) # change to splineinfo but check other f() first
   class(out) <- 'topics'
 
   return(out)
@@ -106,16 +106,6 @@ print.topics <- function(topics_object,...){
               topics_object$fit$settings$dim$K,
               topics_object$fit$settings$dim$N,
               topics_object$fit$settings$dim$V))
-}
-
-#' Predict taxonomic functions
-#' @export
-predict.topics <- function(topics_object,type=c('function'),...){
-  type <- match.arg(type)
-
-  if (type == 'function'){
-    predict_functions(topics_object$fit,...)
-  }
 }
 
 #' Prevent object renaming in class topics

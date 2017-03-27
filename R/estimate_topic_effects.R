@@ -14,17 +14,17 @@
 #' \item{sig}{A vector of topic indexes for topics whose uncertainty intervals did not enclose 0.}
 #' @export
 
-est.topics <- function(topics,metadata,formula,refs,nsims=100,ui_level=.8,npoints=100,verbose=FALSE){
+est.topics <- function(topics_object,metadata,formula,refs,nsims=100,ui_level=.8,npoints=100,verbose=FALSE){
 
-  fit <- topics$fit
+  fit <- topics_object$fit
   K <- fit$settings$dim$K
 
   if (missing(formula)){
-    metadata <- topics$metadata
+    metadata <- topics_object$metadata
     if (is.null(metadata)) stop('Please provide metadata')
     formula <- fit$settings$covariates$formula
     if (is.null(formula)) stop('Please provide a formula.')
-    if (missing(refs)) refs <- topics$refs
+    if (missing(refs)) refs <- topics_object$refs
   }
 
   splines <- check_for_splines(formula,metadata)
@@ -65,11 +65,11 @@ est.topics <- function(topics,metadata,formula,refs,nsims=100,ui_level=.8,npoint
   if (verbose) cat('Estimating regression weights with global uncertainty.\n')
   estimated_effects <- stm::estimateEffect(formula,fit,modelframe,uncertainty='Global')
 
-  estimated_effects$modelframe_full <- topics$modelframe # maybe remove htis
+  estimated_effects$modelframe_full <- topics_object$modelframe # maybe remove htis
   estimated_effects$modelframe <- modelframe
   estimated_effects$splines <- spline_info$info
 
-  topic_effects <- est.topics_backend(estimated_effects,fit$theta,
+  topic_effects <- est_topics_backend(estimated_effects,fit$theta,
                                       nsims=nsims,ui_level=ui_level,npoints=npoints,verbose=verbose)
 
   out <- list(topic_effects=topic_effects,topics=topics,modelframe=topics$modelframe)
@@ -82,7 +82,7 @@ est.topics <- function(topics,metadata,formula,refs,nsims=100,ui_level=.8,npoint
 
 #' Backend to extract effects for \code{\link{estimate_topic_effects}}.
 #' @keywords internal
-est.topics_backend <- function(estimated_effects,theta,nsims=100,ui_level=.8,npoints=100,verbose=FALSE){
+est_topics_backend <- function(estimated_effects,theta,nsims=100,ui_level=.8,npoints=100,verbose=FALSE){
 
   K <- length(estimated_effects$topics)
 

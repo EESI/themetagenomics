@@ -4,19 +4,19 @@
 \alias{est.functions}
 \title{Estimate the predicted function-topic effects}
 \usage{
-\method{est}{functions}(functions, topics_subset, level = 2, method = "HML",
-  ...)
+\method{est}{functions}(functions_object, topics_subset, level = 2,
+  method = "HMC", ...)
 }
 \arguments{
-\item{functions}{List containing the output of
-\code{\link{predict_functions}}.}
-
 \item{topics_subset}{Vector of intergers corresponding to a subset of topics
 to be evaluated. Recommended to be < 25.}
 
 \item{level}{(optional) The gene category level to evalulate. Defaults to 2.}
 
 \item{method}{(optional) String indicating either ML or HMC. Defaults to ML.}
+
+\item{functions}{List containing the output of
+\code{\link{predict_functions}}.}
 
 \item{verbose}{(optional) Logical to print progress. Defaults to TRUE.}
 }

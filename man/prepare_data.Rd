@@ -5,7 +5,7 @@
 \title{Prepare data for pipeline}
 \usage{
 prepare_data(otu_table, rows_are_taxa, tax_table, metadata, formula, refs,
-  cn_normalize = TRUE, drop = TRUE)
+  cn_normalize = TRUE, drop = TRUE, verbose = FALSE)
 }
 \arguments{
 \item{otu_table}{OTU table.}

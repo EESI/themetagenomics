@@ -18,10 +18,10 @@
 #'   (HMC).
 #' @export
 
-est.functions <- function(functions,topics_subset,level=2,method='HML',...){
+est.functions <- function(functions_object,topics_subset,level=2,method='HMC',...){
 
-  fxn_table <- functions$fxn_table
-  fxn_meta <- functions$fxn_meta
+  fxn_table <- functions_object$fxn_table
+  fxn_meta <- functions_object$fxn_meta
 
   if (missing(topics_subset) & nrow(fxn_table) <= 25){
     topics_subset <- 1:nrow(fxn_table)
@@ -32,10 +32,10 @@ est.functions <- function(functions,topics_subset,level=2,method='HML',...){
 
   fxn_meta <- lapply(fxn_meta,function(x) x[colnames(fxn_table)])
 
-  functions$fxn_table <- fxn_table
-  functions$fxn_meta <- fxn_meta
+  functions_object$fxn_table <- fxn_table
+  functions_object$fxn_meta <- fxn_meta
 
-  gene_table <- format_gene_table(functions,level=level)
+  gene_table <- format_gene_table(functions_object,level=level)
 
   if (method == 'ML'){
 
@@ -51,7 +51,25 @@ est.functions <- function(functions,topics_subset,level=2,method='HML',...){
   out <- list(model=mm,gene_table=gene_table)
   class(out) <- 'effects'
   attr(out,'type') <- 'functions'
+  attr(out,'method') <- method
 
   return(out)
+
+}
+
+est.effects <- function(effects_object,iters,chains=1,return_fit=TRUE,verbose=FALSE){
+
+  if (attr(effects_object,'type') != 'functions')
+    stop('Effects object must contain functional infrormation.')
+
+  if (attr(effects_object,'method') != 'HMC')
+    stop('Model must have been fit via HMC.')
+
+  mm <- restart_stan_model(fit=effects_object$model$fit,gene_table=effects_object$gene_table,iters=iters,chains=chains,return_fit=return_fit,verbose=verbose)
+
+  out <- list(model=mm,gene_table=effects_object$gene_table)
+  class(out) <- 'effects'
+  attr(out,'type') <- 'functions'
+  attr(out,'method') <- attr(effects_object,'method')
 
 }

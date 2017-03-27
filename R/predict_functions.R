@@ -18,7 +18,9 @@
 #' \item{pi_meta}{matrix of method specific metadata}
 #' @export
 
-predict_functions <- function(fit,reference_path,scalar=100,drop=TRUE,...){
+predict.topics <- function(topics_object,reference_path,scalar=100,drop=TRUE,...){
+
+  fit <- topics_object$fit
 
   beta <- round(scalar*exp(fit$beta$logbeta[[1]]))
   rownames(beta) <- paste0('T',1:nrow(beta))
@@ -45,7 +47,7 @@ predict_functions <- function(fit,reference_path,scalar=100,drop=TRUE,...){
   return(object)
 }
 
-#' Prevent attribute renaming in class topics
+#' Prevent attribute renaming in class functions
 #' @export
 `attributes<-.functions` <- function(object,value){
   warning('functions-class attributes cannot be renamed.')

@@ -17,7 +17,7 @@ fit_ml_model(gene_table, iters = 1000, return_fit = FALSE,
 \item{verbose}{(optional) Logical to print progress.}
 
 \item{inits}{List of values for parameter initialization. If omitted, values
-are generated via \code{\link{lme4::glmer.nb}}}
+are generated via \link[lme4]{glmer.nb}}
 
 \item{chains}{(optional) Number of chains for HMC. Defaults to 1.}
 }
