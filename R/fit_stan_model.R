@@ -1,5 +1,4 @@
-#' @importFrom lme4 glmer.nb glmer
-#' @importFrom rstan stan
+#' @import lme4 rstan Rcpp
 #' @importFrom stats4 summary
 NULL
 
@@ -29,9 +28,31 @@ NULL
 #' with more iterations.}
 #' @export
 
-fit_stan_model <- function(gene_table,inits,prior=c('t','laplace'),t_df=c(5,5,5),iters=1000,chains=1,return_fit=FALSE,verbose=FALSE){
+fit_stan_model <- function(gene_table,inits,prior=c('t','normal','laplace'),t_df=c(7,7,7),iters=300,warmup=iters/2,chains=1,return_fit=TRUE,verbose=FALSE){
 
-  prior <- match.arg(prior)
+  prior <- match.arg(prior,several.ok=TRUE)
+
+  lambda_params <- c('','','')
+  lambda_rhat <- vector(mode='character')
+  priors <- c('b_pw ~ student_t(7,0,b_pw_sigma);\n',
+              'b_topic ~ student_t(7,0,b_topic_sigma);\n',
+              'b_pwxtopic ~ student_t(7,0,b_pwxtopic_sigma);\n')
+  priors_level <- c('pw','topic','pwxtopic')
+  for (i in seq_along(prior)){
+    if (prior[i] == 't'){
+      priors[i] <- sprintf('b_%s ~ student_t(%s,0,b_%s_sigma);\n',priors_level[i],t_df[1],priors_level[i])
+      t_df <- t_df[-1]
+    }else if (prior[i] == 'normal'){
+      priors[i] <- sprintf('b_%s ~ normal(0,b_%s_sigma);\n',priors_level[i],priors_level[i])
+    }else if (prior[i] == 'laplace'){
+      lambda_params[i] <- sprintf('real lambda_%s;\n',priors_level[i],priors_level[i])
+      lambda_rhat <- c(lambda_rhat,sprintf('lambda_%s',priors_level[i]))
+      priors[i] <- sprintf('lambda_%s ~ chi_square(1);\nb_%s ~ double_exponential(0,b_%s_sigma/lambda_%s);\n',
+                           priors_level[i],priors_level[i],priors_level[i],priors_level[i])
+    }
+  }
+
+  cat(sprintf('Setting regression coefficient priors to\n%s\n',paste0(priors,collapse='')))
 
   stan_dat <- list(N=nrow(gene_table),
                    J=length(unique(gene_table$pw)),
@@ -44,17 +65,6 @@ fit_stan_model <- function(gene_table,inits,prior=c('t','laplace'),t_df=c(5,5,5)
                    pwxtopic_full=as.factor(gene_table$pw):as.factor(gene_table$topic),
                    pwxtopic=as.integer(as.factor(gene_table$pw):as.factor(gene_table$topic)),
                    y=gene_table$count)
-
-  if (prior == 't'){
-    param_sub <- '\n'
-    model_sub <- sprintf('b_pwxtopic ~ student_t(%s,0,b_pwxtopic_sigma);\n',t_df[3])
-  } else if (prior == 'laplace'){
-    param_sub <- 'real nu;\n'
-    model_sub <- 'b_pwxtopic ~ double_exponential(nu,b_pwxtopic_sigma);\n    nu ~ chi_square(1);\n'
-  }
-
-
-  cat(stan_code)
 
   stan_code <- sprintf('
   data{
@@ -73,33 +83,38 @@ fit_stan_model <- function(gene_table,inits,prior=c('t','laplace'),t_df=c(5,5,5)
     vector[J] b_pw;
     vector[K] b_topic;
     vector[I] b_pwxtopic;
-    %s
     real mu;
 
     real<lower=0,upper=100> b_pw_sigma;
     real<lower=0,upper=100> b_topic_sigma;
     real<lower=0,upper=100> b_pwxtopic_sigma;
 
+    %s // lambda_pw
+    %s // lambda_topic
+    %s // lambda_pwxtopic
+
     real<lower=0> phi;
   }
   model{
-    real theta;
+    vector[N] theta;
 
     phi ~ exponential(1.25);
 
     mu ~ normal(0,5);
-    b_pw ~ student_t(%s,0,b_pw_sigma);
-    b_topic ~ student_t(%s,0,b_topic_sigma);
-    %s
+
+    %s // b_pw
+    %s // b_topic
+    %s // b_pwxtopic
 
     b_pw_sigma ~ normal(0,2.5);
     b_topic_sigma ~ normal(0,2.5);
     b_pwxtopic_sigma ~ normal(0,2.5);
 
-    for (n in 1:N){
-      theta = mu + b_pw[pw[n]] + b_topic[topic[n]] + b_pwxtopic[pwxtopic[n]];
-      y[n] ~ neg_binomial_2_log(theta,phi);
-    }
+    for (n in 1:N)
+      theta[n] = mu + b_pw[pw[n]] + b_topic[topic[n]] + b_pwxtopic[pwxtopic[n]];
+
+    y ~ neg_binomial_2_log(theta,phi);
+
   }
   generated quantities{
     real theta;
@@ -112,7 +127,7 @@ fit_stan_model <- function(gene_table,inits,prior=c('t','laplace'),t_df=c(5,5,5)
       log_lik[n] = neg_binomial_2_log_lpmf(y[n]|theta,phi);
     }
   }
-  ',param_sub,t_df[1],t_df[2],model_sub)
+    ',lambda_params[1],lambda_params[2],lambda_params[3],priors[1],priors[2],priors[3])
 
   stan_table <- data.frame(y=stan_dat$y,
                            pw=stan_dat$pw,
@@ -123,7 +138,7 @@ fit_stan_model <- function(gene_table,inits,prior=c('t','laplace'),t_df=c(5,5,5)
 
   if (missing(inits)){
 
-    if (verbose) cat('Generating initial values.\n')
+    if (verbose) cat('Generating initial values via ML.\n')
 
     mm_init <- glmer.nb(y ~ (1|pw) + (1|topic) + (1|pwxtopic),
                         data=stan_table,
@@ -177,15 +192,16 @@ fit_stan_model <- function(gene_table,inits,prior=c('t','laplace'),t_df=c(5,5,5)
 
   if (verbose) cat('Fitting model via HMC.\n')
 
-  fit <- stan(model_code=stan_code,data=stan_dat,
+  fit <- rstan::stan(model_code=stan_code,data=stan_dat,
                      pars=c('theta'),include=FALSE,
                      init=inits,
+                     warmup=warmup,
                      iter=iters,chains=chains,
                      verbose=verbose)
 
-  if (verbose) cat('Extracting summary.\n')
+  if (verbose) cat('Extracting summary (this often takes some time).\n')
 
-  summary_pars <- c('mu','phi','b_pw_sigma','b_topic_sigma','b_pwxtopic_sigma','b_pw','b_topic','b_pwxtopic','yhat')
+  summary_pars <- c('mu','phi',lambda_rhat,'b_pw_sigma','b_topic_sigma','b_pwxtopic_sigma','b_pw','b_topic','b_pwxtopic','yhat')
   extract_summary <- vector(mode='list',length=length(summary_pars))
   names(extract_summary) <- summary_pars
   for (i in seq_along(extract_summary)){
@@ -224,7 +240,8 @@ fit_stan_model <- function(gene_table,inits,prior=c('t','laplace'),t_df=c(5,5,5)
     out[['data']] <- stan_dat
   }
 
-  rhat <- summary(fit,pars=c('mu','phi','b_pw','b_topic','b_pwxtopic'))[['summary']][,'Rhat'] > 1.1
+  rhat_params <- c('mu','phi',lambda_rhat,'b_pw','b_topic','b_pwxtopic','b_pw_sigma','b_topic_sigma','b_pwxtopic_sigma')
+  rhat <- summary(fit,pars=rhat_params)[['summary']][,'Rhat'] > 1.1
   rhat_count <- sum(rhat)
   if (rhat_count > 0){
 
