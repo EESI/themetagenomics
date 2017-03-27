@@ -113,7 +113,7 @@ format_gene_table <- function(functions,level,pw_targets,keep){
   for (i in seq_len(level-1)){
     gene_filter[[i]] <- unlist(lapply(pw_targets[[i]],function(pw) names(which(sapply(category_level[[i]], function(x) any(x %in% pw))))))
   }
-  gene_filter <- Reduce(intersect, gene_filter)
+  gene_filter <- Reduce(intersect,gene_filter)
 
   if (!is.null(gene_filter)){
     category_level_tmp <- names(category_level[[level]])
@@ -133,7 +133,7 @@ format_gene_table <- function(functions,level,pw_targets,keep){
     for (k in seq_len(K)){
       j2 <- j2 + length(genes)
       gene_table[j1:j2,1] <- k
-      gene_table[j1:j2,2] <- pw_targets[[level]][i]
+      gene_table[j1:j2,2] <- names(gene_targets)[i]
       gene_table[j1:j2,3] <- genes
       gene_table[j1:j2,4] <- description[genes]
       gene_table[j1:j2,5] <- gene_counts[k,genes]
