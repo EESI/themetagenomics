@@ -11,7 +11,8 @@
 #'
 #' @export
 
-prepare_data <- function(otu_table,rows_are_taxa,tax_table,metadata,formula,refs,cn_normalize=TRUE,drop=TRUE){
+prepare_data <- function(otu_table,rows_are_taxa,tax_table,metadata,formula,refs,
+                         cn_normalize=TRUE,drop=TRUE,verbose=FALSE){
 
   slots <- list(otu_table=NULL,
                 tax_table=NULL,
@@ -53,19 +54,19 @@ prepare_data <- function(otu_table,rows_are_taxa,tax_table,metadata,formula,refs
     }
   }
 
-  cat('Checking row and column names.\n')
+  if (verbose) cat('Checking row and column names.\n')
   if (sum(rownames(otu_table) %in% colnames(metadata)) > sum(rownames(otu_table) %in% rownames(metadata))){
-    cat('Transposing metadata to reorient sample IDs.\n')
+    if (verbose) cat('Transposing metadata to reorient sample IDs.\n')
     metadata <- t(metadata)
   }
   if (sum(colnames(otu_table) %in% colnames(tax_table)) > sum(colnames(otu_table) %in% rownames(metadata))){
-    cat('Transposing tax_table to reorient taxa IDs.\n')
+    if (verbose) cat('Transposing tax_table to reorient taxa IDs.\n')
     tax_table <- t(tax_table)
   }
 
   classes <- sapply(metadata,class)
   if (miss$metadata) classes_counts <- c('n'=0,'c'=0,'f'=0) else classes_counts <- c('n'=sum(classes=='numeric'),'c'=sum(classes=='character'),'f'=sum(classes=='factor'))
-  cat(sprintf('\nStarting stats:
+  if (verbose) cat(sprintf('\nStarting stats:
               N otu_table samples: %s
               N otu_table taxa: %s\n
               N metadata numeric %s
@@ -93,7 +94,7 @@ prepare_data <- function(otu_table,rows_are_taxa,tax_table,metadata,formula,refs
   splines <- check_for_splines(formula,metadata)
   if (splines) formula_tmp <- extract_spline_info(formula,metadata,remove_only=TRUE)
   if (!miss$metadata){
-    if (any(is.na(metadata))) cat('Removing NA values in metadata.\n')
+    if (verbose) if (any(is.na(metadata))) cat('Removing NA values in metadata.\n')
     metadata <- model.frame(formula_tmp,data=metadata,na.action=na.omit)
   }
 
@@ -109,7 +110,7 @@ prepare_data <- function(otu_table,rows_are_taxa,tax_table,metadata,formula,refs
   if (!miss$tax_table) if (any(is.na(tax_table))) stop('NA values in tax_table. Please correct.\n')
 
   if (cn_normalize){
-    cat('Performing copy number normalization.\n')
+    if (verbose)  cat('Performing copy number normalization.\n')
     otu_table <- cnn(otu_table,FALSE,drop=FALSE)
   }
 
@@ -122,7 +123,7 @@ prepare_data <- function(otu_table,rows_are_taxa,tax_table,metadata,formula,refs
 
   classes <- sapply(metadata,class)
   if(any(classes == 'character')){
-    cat('Converting character covariates to factors.\n')
+    if (verbose) cat('Converting character covariates to factors.\n')
     metadata <- as.data.frame(unclass(metadata))
   }
   classes <- sapply(metadata,class)
@@ -137,7 +138,7 @@ prepare_data <- function(otu_table,rows_are_taxa,tax_table,metadata,formula,refs
       ref_check <- all(sapply(seq_along(refs), function(i) refs[i] %in% lapply(metadata[,classes == 'factor'],levels)[[i]]))
       if (!ref_check) stop('Reference(s) not found in factor(s).')
 
-      cat('Setting reference levels for factors.\n')
+      if (verbose) cat('Setting reference levels for factors.\n')
       j <- 1
       for (i in seq_along(classes)){
         if (classes[i] == 'factor'){
@@ -158,7 +159,7 @@ prepare_data <- function(otu_table,rows_are_taxa,tax_table,metadata,formula,refs
 
   classes <- sapply(metadata,class)
   if (miss$metadata) classes_counts <- c('n'=0,'c'=0,'f'=0) else classes_counts <- c('n'=sum(classes=='numeric'),'c'=sum(classes=='character'),'f'=sum(classes=='factor'))
-  cat(sprintf('\nFinal stats:
+  if (verbose) cat(sprintf('\nFinal stats:
               N otu_table samples: %s
               N otu_table taxa: %s\n
               N metadata numeric %s
@@ -197,4 +198,18 @@ prepare_data <- function(otu_table,rows_are_taxa,tax_table,metadata,formula,refs
 
   return(slots)
 
+}
+
+#' Prevent object renaming in class themetadata
+#' @export
+`names<-.themetadata` <- function(object,value){
+  warning('themetadata-class objects cannot be renamed.')
+  return(object)
+}
+
+#' Prevent attribute renaming in class themetadata
+#' @export
+`attributes<-.themetadata` <- function(object,value){
+  warning('themetadata-class attributes cannot be renamed.')
+  return(object)
 }
