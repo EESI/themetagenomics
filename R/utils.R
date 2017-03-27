@@ -9,6 +9,8 @@ jsd <- function(p,q) {
 
 norm10 <- function(x) (x-min(x))/(max(x)-min(x))
 
+normz <- function(x) (x-mean(x))/sd(x)
+
 # dplyr dense_rank
 dense_rank <- function(x) {
 
