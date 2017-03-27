@@ -12,10 +12,9 @@ License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true
 Depends:
-  R (>= 3.3.3)
-Imports: 
-  stm (>= 1.1.4),
+  R (>= 3.3.3),
   Rcpp (>= 0.12.8)
+Imports: 
 Suggests:
   ggplot2,
   huge,
@@ -29,6 +28,7 @@ Suggests:
   rstan (>= 2.14.1),
   Rtsne,
   shiny,
+  stm (>= 1.1.4),
   vegan,
   viridis
 LinkingTo: Rcpp
