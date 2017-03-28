@@ -32,11 +32,31 @@
 vis <- function(effects_object,type=c('taxa','binary','continuous','functions'),...) UseMethod('vis')
 
 #' @export
-vis.effects <- function(effects_object,type=c('taxa','binary','continuous','functions'),...){
+vis.effects <- function(effects_object1,effects_object2,type=c('taxa','binary','continuous','functions'),...){
 
   type <- match.arg(type)
-  class(effects_object) <- type
 
-  vis(effects_object,...)
+  if (type == 'functions' | !missing(effects_object2)){
+
+    effects_objects <- list(effects_object1,effects_object2)
+    types <- sapply(effects_objects,function(x) attr(x,'type'))
+    effects_objects <- effects_objects[match(types,c('functions','topics'))]
+
+    if (any(sapply(effects_objects,is.null))) stop('Must provide a topics effects-class and a functions effects-class.')
+
+    effects_object1 <- effects_objects[[1]]
+    effects_object2 <- effects_objects[[2]]
+    class(effects_object1) <- 'functions'
+
+    vis(effects_object1,effects_object2,...)
+
+  }else{
+
+    class(effects_object1) <- type
+
+    vis(topic_effects_object,...)
+
+  }
+
 
 }

@@ -28,7 +28,10 @@ NULL
 #' with more iterations.}
 #' @export
 
-fit_stan_model <- function(gene_table,inits,prior=c('t','normal','laplace'),t_df=c(7,7,7),iters=300,warmup=iters/2,chains=1,return_fit=TRUE,verbose=FALSE){
+est.hmc <- function(hmc_object,inits,prior=c('t','normal','laplace'),t_df=c(7,7,7),iters=300,warmup=iters/2,chains=1,
+                    return_summary=TRUE,verbose=FALSE){
+
+  gene_table <- hmc_object$gene_table
 
   prior <- match.arg(prior,several.ok=TRUE)
 
@@ -176,8 +179,6 @@ fit_stan_model <- function(gene_table,inits,prior=c('t','normal','laplace'),t_df
 
   }
 
-
-
   if (chains > 1){
     if (verbose) cat('Preparing parallelization.\n')
     options_old <- options()
@@ -188,8 +189,6 @@ fit_stan_model <- function(gene_table,inits,prior=c('t','normal','laplace'),t_df
     options(mc.cores=chains)
   }
 
-
-
   if (verbose) cat('Fitting model via HMC.\n')
 
   fit <- rstan::stan(model_code=stan_code,data=stan_dat,
@@ -199,64 +198,34 @@ fit_stan_model <- function(gene_table,inits,prior=c('t','normal','laplace'),t_df
                      iter=iters,chains=chains,
                      verbose=verbose)
 
-  if (verbose) cat('Extracting summary (this often takes some time).\n')
-
+  out <- list()
   summary_pars <- c('mu','phi',lambda_rhat,'b_pw_sigma','b_topic_sigma','b_pwxtopic_sigma','b_pw','b_topic','b_pwxtopic','yhat')
-  extract_summary <- vector(mode='list',length=length(summary_pars))
-  names(extract_summary) <- summary_pars
-  for (i in seq_along(extract_summary)){
+  out[['pars']] <- summary_pars
+  out[['fit']] <- fit
+  out[['data']] <- stan_dat
+  out[['inits']] <- list(orig=inits,
+                         last=apply(fit,2,relist,
+                                   skeleton=rstan:::create_skeleton(fit@model_pars,fit@par_dims)))
 
-    if (grepl('^b\\_[a-z]+$',summary_pars[i])){
-
-      extract_summary_tmp <- summary(fit,pars=summary_pars[i],probs=c(.005,.025,.05,.1,.25,.5,.75,0.9,.95,.975,.995))[['summary']]
-      par_name <- gsub('^b\\_','',summary_pars[i])
-      lookup_table <- unique(cbind(as.character(stan_dat[[par_name]]),as.character(stan_dat[[paste0(par_name,'_full')]])))
-      rownames(extract_summary_tmp) <- lookup_table[,2][order(as.integer(lookup_table[,1],decreasing=TRUE))]
-
-      if (par_name == 'pwxtopic'){
-        par_name_tmp <- do.call('rbind',strsplit(rownames(extract_summary_tmp),'\\:'))
-        colnames(par_name_tmp) <- unlist(strsplit(par_name,'x'))
-        extract_summary_tmp <- cbind(par_name_tmp,as.data.frame(extract_summary_tmp))
-      }else{
-        par_name_tmp <- matrix(rownames(extract_summary_tmp),ncol=1)
-        colnames(par_name_tmp) <- par_name
-        extract_summary_tmp <- cbind(par_name_tmp,as.data.frame(extract_summary_tmp))
-      }
-
-      extract_summary[[i]] <- extract_summary_tmp
-
-    }else{
-
-      extract_summary[[i]] <- summary(fit,pars=summary_pars[i],probs=c(.005,.025,.05,.1,.25,.5,.75,0.9,.95,.975,.995))[['summary']]
-
-    }
-
-  }
-
-  out <- list(summary=extract_summary)
-
-  if (return_fit){
-    out[['fit']] <- fit
-    out[['data']] <- stan_dat
-  }
-
-  rhat_params <- c('mu','phi',lambda_rhat,'b_pw','b_topic','b_pwxtopic','b_pw_sigma','b_topic_sigma','b_pwxtopic_sigma')
-  rhat <- summary(fit,pars=rhat_params)[['summary']][,'Rhat'] > 1.1
-  rhat_count <- sum(rhat)
-  if (rhat_count > 0){
-
-    warning(sprintf('%s parameters with Rhat > 1.1. Consider more iterations.',rhat_count))
-
-    out[['flagged']] <- names(which(rhat))
-    out[['inits']] <- list(mu=summary(fit,pars='mu')[['summary']][,'mean'],
-                           phi=summary(fit,pars='phi')[['summary']][,'mean'],
-                           b_pw=summary(fit,pars='b_pw')[['summary']][,'mean'],
-                           b_topic=summary(fit,pars='b_topic')[['summary']][,'mean'],
-                           b_pwxtopic=summary(fit,pars='b_pwxtopic')[['summary']][,'mean'])
-
-  }
-
+  # out[['inits_new']] <- list(mu=summary(fit,pars='mu')[['summary']][,'mean'],
+  #                        phi=summary(fit,pars='phi')[['summary']][,'mean'],
+  #                        b_pw=summary(fit,pars='b_pw')[['summary']][,'mean'],
+  #                        b_topic=summary(fit,pars='b_topic')[['summary']][,'mean'],
+  #                        b_pwxtopic=summary(fit,pars='b_pwxtopic')[['summary']][,'mean'])
   out[['sampler']] <- rstan::get_sampler_params(fit)
+
+
+  if (return_summary){
+    if (verbose) cat('Extracting summary (this often takes some time).\n')
+    out[['summary']] <- extract_stan_summary(fit,stan_dat,summary_pars)
+    rhat_pars <- c('mu','phi',lambda_rhat,'b_pw','b_topic','b_pwxtopic','b_pw_sigma','b_topic_sigma','b_pwxtopic_sigma')
+    rhat <- summary(fit,pars=rhat_pars)[['summary']][,'Rhat'] > 1.1
+    rhat_count <- sum(rhat,na.rm=TRUE)
+    if (rhat_count > 0){
+      warning(sprintf('%s parameters with Rhat > 1.1. Consider more iterations.',rhat_count))
+      out[['flagged']] <- names(which(rhat))
+    }
+  }
 
   return(out)
 

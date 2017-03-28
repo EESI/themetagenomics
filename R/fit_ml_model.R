@@ -27,7 +27,7 @@ NULL
 #' with more iterations.}
 #' @export
 
-fit_ml_model <- function(gene_table,iters=1000,return_fit=FALSE,verbose=FALSE,...){
+est.ml <- function(gene_table,iters=1000,return_fit=FALSE,verbose=FALSE,...){
 
   if (verbose) cat('Fitting model via ML.\n')
 
