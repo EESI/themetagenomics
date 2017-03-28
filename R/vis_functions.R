@@ -28,12 +28,12 @@ NULL
 #' @param gene_min (optional) Mininum count for gene set table. Defaults to 10.
 #' @param pw_min (optional) Maximium number of pathways to show in heatmap. for Defaults to 20.
 
-vis.functions <- function(functions_object,beta_min=1e-5,ui_level=.8,gene_min=10,pw_min=20){
+vis.functions <- function(functions_object,topic_effects,beta_min=1e-5,ui_level=.8,gene_min=10,pw_min=20){
 
-  topics <- functions_object$topics
-  topic_effects <- functions_object$topic_effects
-  function_effects <- functions_object$function_effects
-  tax_table <- functions_object$topics$tax_table
+  topics <- topic_effects$topics
+  tax_table <- topic_effects$topics$tax_table
+
+  topic_effects <- topic_effects$topic_effects
 
   if (!(ui_level %in% c(.99,.95,.9,.5))){
     warning(sprintf('ui_level must be .5, .8, .9, .95, or .99 -- defaulting to .8.'))
@@ -50,8 +50,8 @@ vis.functions <- function(functions_object,beta_min=1e-5,ui_level=.8,gene_min=10
 
   fit <- topics$fit
   K <- fit$settings$dim$K
-  N_pw <- length(unique(function_effects$model$summary$b_pwxtopic$pw))
-  pws <- unique(function_effects$model$summary$b_pwxtopic$pw)
+  N_pw <- length(unique(functions_object$model$summary$b_pwxtopic$pw))
+  pws <- unique(functions_object$model$summary$b_pwxtopic$pw)
 
   beta <- t(exp(fit$beta$logbeta[[1]]))
   rownames(beta) <- fit$vocab
@@ -59,14 +59,14 @@ vis.functions <- function(functions_object,beta_min=1e-5,ui_level=.8,gene_min=10
   beta[beta < beta_min] <- beta_min
   logbeta_global <- log(beta)
 
-  uncertainty <- any(grepl('%',colnames(function_effects$model$summary$mu)))
+  uncertainty <- any(grepl('%',colnames(functions_object$model$summary$mu)))
 
   int_mat <- matrix(0.0,N_pw,K,dimnames=list(pws,paste0('T',1:K)))
 
-  for (i in seq_len(nrow(function_effects$model$summary$b_pwxtopic))){
-    pw <- as.character(function_effects$model$summary$b_pwxtopic$pw[i])
-    k <- paste0('T',as.character(function_effects$model$summary$b_pwxtopic$topic[i]))
-    int_mat[pw,k] <- function_effects$model$summary$b_pwxtopic$mean[i]
+  for (i in seq_len(nrow(functions_object$model$summary$b_pwxtopic))){
+    pw <- as.character(functions_object$model$summary$b_pwxtopic$pw[i])
+    k <- paste0('T',as.character(functions_object$model$summary$b_pwxtopic$topic[i]))
+    int_mat[pw,k] <- functions_object$model$summary$b_pwxtopic$mean[i]
   }
 
   dd_row <- as.dendrogram(hclust(dist(int_mat,method='euclidean'),method='ward.D2'))
@@ -83,11 +83,11 @@ vis.functions <- function(functions_object,beta_min=1e-5,ui_level=.8,gene_min=10
 
     sig_mat <- matrix(0,N_pw,K,dimnames=list(pws,paste0('T',1:K)))
 
-    sig <- rowSums(sign(function_effects$model$summary$b_pwxtopic[,ui_interval]))
+    sig <- rowSums(sign(functions_object$model$summary$b_pwxtopic[,ui_interval]))
 
-    for (i in seq_len(nrow(function_effects$model$summary$b_pwxtopic))){
-      pw <- as.character(function_effects$model$summary$b_pwxtopic$pw[i])
-      k <- paste0('T',as.character(function_effects$model$summary$b_pwxtopic$topic[i]))
+    for (i in seq_len(nrow(functions_object$model$summary$b_pwxtopic))){
+      pw <- as.character(functions_object$model$summary$b_pwxtopic$pw[i])
+      k <- paste0('T',as.character(functions_object$model$summary$b_pwxtopic$topic[i]))
       sig_mat[pw,k] <- sig[i]
     }
 
@@ -119,12 +119,6 @@ vis.functions <- function(functions_object,beta_min=1e-5,ui_level=.8,gene_min=10
 
   }
 
-
-
-
-
-
-
   shinyApp(
 
     ui <- fluidPage(
@@ -155,10 +149,6 @@ vis.functions <- function(functions_object,beta_min=1e-5,ui_level=.8,gene_min=10
       div(tableOutput('tbl'),style='font-size:80%;line-height:50%')
 
     ),
-
-
-
-
 
     server = function(input,output){
 
@@ -248,12 +238,13 @@ vis.functions <- function(functions_object,beta_min=1e-5,ui_level=.8,gene_min=10
           geom_raster(aes(fill=probability)) +
           viridis::scale_fill_viridis(name='Probability Rank') +
           labs(x='',y='',fill='Probability Rank') +
-          geom_vline(xintercept=EST()$bars,color='white',size=2) +
           theme(legend.position='none',
                 axis.title.y=element_text(face='bold',size=20),
                 axis.ticks.y=element_blank(),
                 axis.text.y=element_blank(),
                 axis.text.x=element_text(angle=-90,hjust=0,vjust=.5))
+        if (length(EST()$bars) > 0) p_tax <- p_tax +
+          geom_vline(xintercept=EST()$bars,color='white',size=2)
 
         ggplotly(p_tax)
       })
@@ -274,7 +265,8 @@ vis.functions <- function(functions_object,beta_min=1e-5,ui_level=.8,gene_min=10
           labs(x='',y='',fill='Coefficient') +
           theme(axis.text.x=element_text(angle=-90,hjust=0,vjust=.5),
                 legend.position='left') +
-          theme(legend.position='none') +
+          theme(legend.position='none')
+        if (length(EST()$bars) > 0) p_fxn <- p_fxn +
           geom_vline(xintercept=EST()$bars,color='white',size=2)
 
         ggplotly(p_fxn,source='hm_fxn')
@@ -301,7 +293,7 @@ vis.functions <- function(functions_object,beta_min=1e-5,ui_level=.8,gene_min=10
         k <- levels(df1$topic)[s[['x']]]
         pw <- levels(df1$pw)[s[['y']]]
 
-        gene_table <- function_effects$gene_table[paste0('T',function_effects$gene_table$topic) == k & function_effects$gene_table$pw == pw,c('count','ko','description')]
+        gene_table <- functions_object$gene_table[paste0('T',functions_object$gene_table$topic) == k & functions_object$gene_table$pw == pw,c('count','ko','description')]
         gene_table <- gene_table[gene_table$count >= 10,]
         gene_table <- gene_table[order(gene_table$count,decreasing=TRUE),]
         colnames(gene_table) <- c('Count','ID','Description')
