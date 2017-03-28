@@ -2,7 +2,7 @@
 % Please edit documentation in R/download_ref.R
 \name{download_ref}
 \alias{download_ref}
-\title{Download PICRUSt reference tables}
+\title{Download functional prediction reference tables}
 \usage{
 download_ref(destination, reference = "all", overwrite = FALSE,
   verbose = FALSE)
@@ -10,13 +10,19 @@ download_ref(destination, reference = "all", overwrite = FALSE,
 \arguments{
 \item{destination}{Location of the folder to save the reference files.}
 
-\item{reference}{(optional) A string for either gg_ko, gg_cog, silva_ko, or
+\item{reference}{A string for either gg_ko, gg_cog, silva_ko, or
 all. Defaults to all.}
 
-\item{verbose}{(optional) Logical to print status of download. Defaults to
-TRUE.}
+\item{verbose}{Logical flag to print progress information. Defaults to FALSE.}
 }
 \description{
 A function to download the KO and COG 13.5 GreenGenes reference tables for
-PICRUSt prediction.
+PICRUSt prediction or the KO reference table for tax4fun prediction.
+}
+\examples{
+download_ref(destination='/references',reference='gg_ko')
+
+}
+\seealso{
+\code{\link{picrust}} \code{\link{t4f}}
 }

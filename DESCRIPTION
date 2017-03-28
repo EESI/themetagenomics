@@ -16,6 +16,7 @@ Depends:
   Rcpp (>= 0.12.8)
 Imports: 
 Suggests:
+  curl,
   ggplot2,
   huge,
   igraph,

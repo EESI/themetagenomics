@@ -2,48 +2,66 @@
 % Please edit documentation in R/t4f.R
 \name{t4f}
 \alias{t4f}
-\title{Predict topic functional content via tax4fun}
+\title{Predict OTU functional content via tax4fun}
 \usage{
-t4f(taxa_table, rows_are_taxa, taxa, reference_path, type = "uproc",
-  short = TRUE, copy_number_normalize = FALSE, sample_normalize = FALSE,
+t4f(otu_table, rows_are_taxa, tax_table, reference_path, type = "uproc",
+  short = TRUE, cn_normalize = FALSE, sample_normalize = FALSE,
   drop = TRUE)
 }
 \arguments{
-\item{rows_are_taxa}{TRUE/FALSE whether OTUs are rows and samples are columns
-or vice versa.}
+\item{otu_table}{(required) Matrix or dataframe containing taxa abundances
+(counts, non-negative integers) across samples. Rows and columns must be
+uniquely named.}
 
-\item{taxa}{Dataframe or matrix containing the taxonomic information (N x 7).}
+\item{rows_are_taxa}{(required) Logical flag indicating whether otu_table
+rows correspond to taxa (TRUE) or samples (FALSE).}
 
-\item{reference_path}{Location of the precalculated mapping file. See
-\code{link{download_ref}}}
+\item{tax_table}{Matrix or dataframe containing Silva taxonimic information
+with row or column names corresponding to the otu_table. Silva species
+information is required.}
 
-\item{type}{(optional) String for either uproc or pauda. Defaults to uproc.}
+\item{reference_path}{Location of the precalculated mapping file, which
+will determine the method of prediction used.}
 
-\item{short}{(optional) Logical whether to use a short or long read
-reference. Defaults to TRUE.}
+\item{type}{Type of protein domain classifcation methods used to generate
+references (uproc or pauda). Defaults to uproc.}
 
-\item{copy_number_normalize}{(optional) Logical whether to perform 16S rRNA
-copy number normalization. Defaults to FALSE.}
+\item{short}{Logical flag whether to use a short or long read
+references. Defaults to TRUE.}
 
-\item{sample_normalize}{(optional) Logical whether to normalize functional
+\item{cn_normalize}{Logical flag for performing 16S rRNA copy number
+normalization. Defaults to FALSE.}
+
+\item{sample_normalize}{Logical flag to normalize functional
 predictions by the total functional abundance in a sample. Defaults to FALSE.}
 
-\item{drop}{(optional) Logical whether to drop empty samples or OTUs after
-normalization and whether to drop KO annotations lacking pathway information.
-Defaults to TRUE.}
-
-\item{x}{An abundance table of samples verses OTUs}
+\item{drop}{Logical flag to drop empty gene columns. Defaults to TRUE.}
 }
 \value{
 A list containing
-
-\item{fxn_table}{A matrix of gene counts across topics}
-\item{fxn_meta}{A list of associated functional metadata}
-\item{pi_meta}{matrix of tax4fun metadata (e.g., FTU)}
+\describe{
+\item{fxn_table}{A matrix of gene counts across topics.}
+\item{fxn_meta}{A list of functional metadata corresponding to fxn_table.}
+\item{method_meta}{A matrix of method specific metadata (FTU).}
+}
 }
 \description{
-Given an abundance table prepared with the Silva reference database, this
+Given an OTU abundance table prepared with the Silva reference database, this
 function predicts the functional content using a KO precalculated mapping
-table that maps the taxonomic abundance for given taxa to functional
+table that maps the taxonomic abundance for given tax_table to functional
 abundance content across a set of functional genes.
+}
+\examples{
+download_ref(destination='/references',reference='silva_ko')
+
+predicted_functions <- t4f(otu_table=OTU,rows_are_taxa=TRUE,reference='/references/t4f_ref_profiles.rds',
+                           short=TRUE,cn_normalize=TRUE,sample_normalize=TRUE,drop=TRUE)
+
+}
+\references{
+ABhauer, K. P., Wemheuer, B. Daniel, R., and Meinicke, P. (2015).
+Bioinformatics, 1-3. 31(17).
+}
+\seealso{
+\code{\link{download_ref}} \code{\link{picrust}}
 }

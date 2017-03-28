@@ -191,8 +191,6 @@ List sweep_picrust_gz(string file_path, StringVector otu_id_targets) {
     // check if at gene metadata lines (final 2)
     if (rec.substr(0,8) == "metadata"){
 
-      // printf("Testing!\n\n");
-
       int line_end = rec.find('\n');
       genemeta.push_back(rec.substr(id_pos + 1,line_end));
 
@@ -225,14 +223,8 @@ List sweep_picrust_gz(string file_path, StringVector otu_id_targets) {
 
           o += 1;
 
-          // for (int s=0; s<otu_id_targets.size();s++){
-          //   Rcout << otu_id_targets(s) << " ";
-          // }
-
           matches.push_back(otu_id); // record otu id of match
           otu_id_targets.erase(j); // remove otu id from targets
-
-          // printf("\niter %d, found a match: %s\n",o,otu_id.c_str());
 
           break;
         }
@@ -266,18 +258,27 @@ List sweep_picrust_gz(string file_path, StringVector otu_id_targets) {
 
 }
 
-//' Predict OTU functional potential
+//' Predict OTU functional potential via PICRUSt
 //'
-//' This predicts the functional potential of a metagenome given
-//' a precalculated mapping table which maps the functional
-//' content for a given OTU to content across functional genes.
+//' Given an OTU abundance table prepared with the GreenGenes reference database,
+//' this function predicts the functional content using either COG or KO
+//' precalculated mapping tables that map the taxonomic abundance for a given OTU
+//' to functional abundance content across a set of functional genes.
 //'
 //' @param file_path Path to the precalculated table
 //' @param otu_id_targets Character vector of OTU IDs to predict
-//' @return A list containing the the gene IDs, the OTU IDs that
-//' were present in the precalculated table and hence predicted,
-//' the PICRUSt gene metadata, the predicted gene table, and the
-//' PICRUSt metadata that contains confidence scores, etc.
+//'
+//' @return A list containing
+//' \describe{
+//' \item{gene_ids}{String vector of KO IDs, the column names in genome_table_out.}
+//' \item{pimeta_ids}{String vector of names for the PICRUSt metdata categories,
+//' the column names of pimeta_table_out.}
+//' \item{matches}{String vector of OTU IDs from otu_id_targets that were present
+//' in the mapping file.}
+//' \item{genemeta}{String vector of functional metadata corresponding to gene_ids}
+//' \item{genome_table_out}{Integer matrix of gene counts across topics}
+//' \item{pimeta_table_out}{Numeric matrix of method specific metadata (NSTI)}
+//' }
 // [[Rcpp::export]]
 
 List picrust_otu(std::string file_path, StringVector otu_id_targets) {

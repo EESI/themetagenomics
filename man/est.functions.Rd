@@ -5,7 +5,7 @@
 \title{Estimate the predicted function-topic effects}
 \usage{
 \method{est}{functions}(functions_object, topics_subset, level = 2,
-  method = "HMC", ...)
+  method = c("hmc", "ml"), ...)
 }
 \arguments{
 \item{topics_subset}{Vector of intergers corresponding to a subset of topics

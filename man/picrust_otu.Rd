@@ -2,7 +2,7 @@
 % Please edit documentation in R/RcppExports.R
 \name{picrust_otu}
 \alias{picrust_otu}
-\title{Predict OTU functional potential}
+\title{Predict OTU functional potential via PICRUSt}
 \usage{
 picrust_otu(file_path, otu_id_targets)
 }
@@ -12,13 +12,21 @@ picrust_otu(file_path, otu_id_targets)
 \item{otu_id_targets}{Character vector of OTU IDs to predict}
 }
 \value{
-A list containing the the gene IDs, the OTU IDs that
-were present in the precalculated table and hence predicted,
-the PICRUSt gene metadata, the predicted gene table, and the
-PICRUSt metadata that contains confidence scores, etc.
+A list containing
+\describe{
+\item{gene_ids}{String vector of KO IDs, the column names in genome_table_out.}
+\item{pimeta_ids}{String vector of names for the PICRUSt metdata categories,
+the column names of pimeta_table_out.}
+\item{matches}{String vector of OTU IDs from otu_id_targets that were present
+in the mapping file.}
+\item{genemeta}{String vector of functional metadata corresponding to gene_ids}
+\item{genome_table_out}{Integer matrix of gene counts across topics}
+\item{pimeta_table_out}{Numeric matrix of method specific metadata (NSTI)}
+}
 }
 \description{
-This predicts the functional potential of a metagenome given
-a precalculated mapping table which maps the functional
-content for a given OTU to content across functional genes.
+Given an OTU abundance table prepared with the GreenGenes reference database,
+this function predicts the functional content using either COG or KO
+precalculated mapping tables that map the taxonomic abundance for a given OTU
+to functional abundance content across a set of functional genes.
 }

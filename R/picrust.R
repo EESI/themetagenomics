@@ -2,39 +2,56 @@
 #' @importFrom Rcpp sourceCpp
 NULL
 
-#' Predict topic functional content via PICRUSt
+#' Predict OTU functional content via PICRUSt
 #'
 #' Given an OTU abundance table prepared with the GreenGenes reference database,
 #' this function predicts the functional content using either COG or KO
 #' precalculated mapping tables that map the taxonomic abundance for a given OTU
 #' to functional abundance content across a set of functional genes.
 #'
-#' @param x An abundance table of samples verses OTUs
-#' @param rows_are_taxa TRUE/FALSE whether OTUs are rows and samples are columns
-#'   or vice versa.
-#' @param reference_path Location of the precalculated mapping file. See
-#'   \code{link{download_ref}}
-#' @param drop (optional) Logical whether to drop empty samples or OTUs after
-#'   normalization. Defaults to TRUE.
+#' @param otu_table (required) Matrix or dataframe containing taxa abundances
+#'   (counts, non-negative integers) across samples. Rows and columns must be
+#'   uniquely named.
+#' @param rows_are_taxa (required) Logical flag indicating whether otu_table
+#'   rows correspond to taxa (TRUE) or samples (FALSE).
+#' @param reference_path Location of the precalculated mapping file, which
+#'   will determine the method of prediction used.
+#' @param cn_normalize Logical flag for performing 16S rRNA copy number
+#'   normalization. Defaults to FALSE.
+#' @param sample_normalize Logical flag to normalize functional
+#'   predictions by the total functional abundance in a sample. Defaults to FALSE.
+#' @param drop Logical flag to drop empty gene columns. Defaults to TRUE.
 #'
 #' @return A list containing
+#' \describe{
+#' \item{fxn_table}{A matrix of gene counts across topics.}
+#' \item{fxn_meta}{A list of functional metadata corresponding to fxn_table.}
+#' \item{method_meta}{A matrix of method specific metadata (NSTI).}
+#' }
 #'
-#' \item{fxn_table}{A matrix of gene counts across topics}
-#' \item{fxn_meta}{A list of associated functional metadata}
-#' \item{pi_meta}{matrix of PICRUSt metadata (e.g., NSTI)}
+#' @references
+#' Langille, M. G.I.*, Zaneveld, J.*, Caporaso, J. G., McDonald, D., Knights, D.,
+#' a Reyes, J., Clemente, J. C., Burkepile, D. E., Vega Thurber, R. L., Knight, R.,
+#' Beiko, R. G., and Huttenhower, C. (2013). Nature Biotechnology, 1-10. 8.
+#'
+#' @seealso \code{\link{download_ref}} \code{\link{picrust}}
+#'
+#' @examples
+#' download_ref(destination='/references',reference='gg_ko')
+#'
+#' predicted_functions <- t4f(otu_table=OTU,rows_are_taxa=TRUE,reference='/references/ko_13_5_precalcualted.tab.gz',
+#'                            cn_normalize=TRUE,sample_normalize=FALSE,drop=TRUE)
+#'
 #' @export
 
-picrust <- function(otu_table,rows_are_taxa,reference_path,drop=TRUE){
+picrust <- function(otu_table,rows_are_taxa,reference_path,cn_normalize=FALSE,sample_normalize=FALSE,drop=TRUE){
 
-  if (!file.exists(reference_path)){
+  if (!file.exists(reference_path))
     stop('Please provide a valid reference file.')
-  }
 
-  if (rows_are_taxa == TRUE){
+  if (rows_are_taxa == TRUE) otu_table <- t(otu_table)
 
-    otu_table <- t(otu_table)
-
-  }
+  if (cn_normalize) otu_table <- cnn(otu_table,rows_are_taxa=FALSE,drop=drop)
 
   out <- picrust_otu(reference_path,colnames(otu_table))
   fxn_mapping <- out$genome_table_out
@@ -56,7 +73,9 @@ picrust <- function(otu_table,rows_are_taxa,reference_path,drop=TRUE){
     fxn_meta <- lapply(fxn_meta,function(x) x[colnames(fxn_table)])
   }
 
-  predictions <- list(fxn_table=fxn_table,fxn_meta=fxn_meta,pi_meta=pi_meta)
+  if (sample_normalize) fxn_table <- fxn_table/rowSums(fxn_table)
+
+  predictions <- list(fxn_table=fxn_table,fxn_meta=fxn_meta,method_meta=pi_meta)
 
   return(predictions)
 

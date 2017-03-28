@@ -1,13 +1,17 @@
-#' Download PICRUSt reference tables
+#' Download functional prediction reference tables
 #'
 #' A function to download the KO and COG 13.5 GreenGenes reference tables for
-#' PICRUSt prediction.
+#' PICRUSt prediction or the KO reference table for tax4fun prediction.
 #'
-#' @param reference (optional) A string for either gg_ko, gg_cog, silva_ko, or
+#' @param reference A string for either gg_ko, gg_cog, silva_ko, or
 #'   all. Defaults to all.
 #' @param destination Location of the folder to save the reference files.
-#' @param verbose (optional) Logical to print status of download. Defaults to
-#'   TRUE.
+#' @param verbose Logical flag to print progress information. Defaults to FALSE.
+#'
+#' @seealso \code{\link{picrust}} \code{\link{t4f}}
+#'
+#' @examples
+#' download_ref(destination='/references',reference='gg_ko')
 #'
 #' @export
 
@@ -21,9 +25,7 @@ download_ref <- function(destination,reference='all',overwrite=FALSE,verbose=FAL
            'cog_13_5_precalculated.tab.gz',
            't4f_ref_profiles.rds')
 
-  if (reference != 'all'){
-    fns <- fns[ref %in% reference]
-  }
+  if (reference != 'all')  fns <- fns[ref %in% reference]
 
   for (fn in fns){
 

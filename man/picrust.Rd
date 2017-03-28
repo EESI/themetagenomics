@@ -2,32 +2,56 @@
 % Please edit documentation in R/picrust.R
 \name{picrust}
 \alias{picrust}
-\title{Predict topic functional content via PICRUSt}
+\title{Predict OTU functional content via PICRUSt}
 \usage{
-picrust(otu_table, rows_are_taxa, reference_path, drop = TRUE)
+picrust(otu_table, rows_are_taxa, reference_path, cn_normalize = FALSE,
+  drop = TRUE)
 }
 \arguments{
-\item{rows_are_taxa}{TRUE/FALSE whether OTUs are rows and samples are columns
-or vice versa.}
+\item{otu_table}{(required) Matrix or dataframe containing taxa abundances
+(counts, non-negative integers) across samples. Rows and columns must be
+uniquely named.}
 
-\item{reference_path}{Location of the precalculated mapping file. See
-\code{link{download_ref}}}
+\item{rows_are_taxa}{(required) Logical flag indicating whether otu_table
+rows correspond to taxa (TRUE) or samples (FALSE).}
 
-\item{drop}{(optional) Logical whether to drop empty samples or OTUs after
-normalization. Defaults to TRUE.}
+\item{reference_path}{Location of the precalculated mapping file, which
+will determine the method of prediction used.}
 
-\item{x}{An abundance table of samples verses OTUs}
+\item{cn_normalize}{Logical flag for performing 16S rRNA copy number
+normalization. Defaults to FALSE.}
+
+\item{drop}{Logical flag to drop empty gene columns. Defaults to TRUE.}
+
+\item{sample_normalize}{Logical flag to normalize functional
+predictions by the total functional abundance in a sample. Defaults to FALSE.}
 }
 \value{
 A list containing
-
-\item{fxn_table}{A matrix of gene counts across topics}
-\item{fxn_meta}{A list of associated functional metadata}
-\item{pi_meta}{matrix of PICRUSt metadata (e.g., NSTI)}
+\describe{
+\item{fxn_table}{A matrix of gene counts across topics.}
+\item{fxn_meta}{A list of functional metadata corresponding to fxn_table.}
+\item{method_meta}{A matrix of method specific metadata (NSTI).}
+}
 }
 \description{
 Given an OTU abundance table prepared with the GreenGenes reference database,
 this function predicts the functional content using either COG or KO
 precalculated mapping tables that map the taxonomic abundance for a given OTU
 to functional abundance content across a set of functional genes.
+}
+\examples{
+download_ref(destination='/references',reference='gg_ko')
+
+predicted_functions <- t4f(otu_table=OTU,rows_are_taxa=TRUE,reference='/references/ko_13_5_precalcualted.tab.gz',
+                           cn_normalize=TRUE,sample_normalize=FALSE,drop=TRUE)
+
+}
+\references{
+Langille, M. G.I.*, Zaneveld, J.*, Caporaso, J. G., McDonald, D., Knights, D.,
+a Reyes, J., Clemente, J. C., Burkepile, D. E., Vega Thurber, R. L., Knight, R.,
+Beiko, R. G., and Huttenhower, C. (2013). Nature Biotechnology, 1-10. 8.
+}
+\seealso{
+\code{\link{download_ref}} \code{\link{picrust}}
 }

@@ -2,24 +2,69 @@
 % Please edit documentation in R/prepare_data.R
 \name{prepare_data}
 \alias{prepare_data}
-\title{Prepare data for pipeline}
+\title{Prepare themetadata object from data for topic modeling pipeline}
 \usage{
 prepare_data(otu_table, rows_are_taxa, tax_table, metadata, formula, refs,
   cn_normalize = TRUE, drop = TRUE, verbose = FALSE)
 }
 \arguments{
-\item{otu_table}{OTU table.}
+\item{otu_table}{(required) Matrix or dataframe containing taxa abundances
+(counts, non-negative integers) across samples. Rows and columns must be
+uniquely named.}
 
-\item{rows_are_taxa}{Logical flag.}
+\item{rows_are_taxa}{(required) Logical flag indicating whether otu_table
+rows correspond to taxa (TRUE) or samples (FALSE).}
 
-\item{metadata}{Metadata.}
+\item{tax_table}{Matrix or dataframe containing taxonimc information with row or
+column names corresponding to the otu_table.}
 
-\item{formula}{Formula for covariates.}
+\item{metadata}{Matrix or dataframe containing sample information with row or
+column names corresponding to the otu_table.}
 
-\item{drop}{Drop empty.}
+\item{formula}{Formula for covariates of interest found in metadata.
+Interactions, transformations, splines, and polynomial expansions are
+permitted.}
 
-\item{taxa}{Taxa table.}
+\item{refs}{Character vector of length equal to the number of factors or
+binary covariates in formula, indicating the reference level.}
+
+\item{cn_normalize}{Logical flag for performing 16S rRNA copy number
+normalization. Defaults to TRUE.}
+
+\item{drop}{Logical flag to drop empty rows and columns. Defaults to TRUE.}
+
+\item{verbose}{Logical flag to print progress information. Defaults to FALSE.}
+}
+\value{
+An object of class themetadata containing
+\describe{
+\item{otu_table}{Matrix of taxa abundances, correctly overlapping with tax_table
+and metadata. Will be copy number normalized, lacking empty rows and columns by
+default.}
+\item{tax_table}{Matrix, correctly overlapping with otu_table}
+\item{metadata}{Dataframe, correctly overlapping with otu_table and formula. All
+character covariates are converted to factors.}
+\item{formula}{Unaltered, given by the user}
+\item{splineinfo}{List containing the covariate, nonlinear function name, and
+basis function expansion of all applicable covariates based on the formula.}
+\item{modelframe}{Dataframe of metadata of only applicable covariates with factors
+expanded as dummy variables}
+}
 }
 \description{
-TBD
+Creates a themetadata class by preprocessing data from an OTU table,
+taxonimic information, sample metadata, and a formula reflecting the preposed
+relationship between sample metadata and the topics over samples
+distribution.
+}
+\examples{
+formula <- ~s(age) + drug + sex
+refs <- c('control','female')
+
+dat <- prepare_data(otu_table=OTU,rows_are_taxa=FALSE,tax_table=TAX,
+                    metadata=META,formula=formula,refs=refs,
+                    cn_normalize=TRUE,drop=TRUE)
+}
+\seealso{
+\code{\link[stm]{s}}
 }

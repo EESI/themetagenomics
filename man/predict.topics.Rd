@@ -2,31 +2,62 @@
 % Please edit documentation in R/predict_functions.R
 \name{predict.topics}
 \alias{predict.topics}
+\alias{predict_functions}
+\alias{predict.functions}
+\alias{predict_topics}
 \title{Predict topic functional content}
 \usage{
 \method{predict}{topics}(topics_object, reference_path, scalar = 100,
   drop = TRUE, ...)
 }
 \arguments{
-\item{scalar}{(optional) Value for scaling the topics over OTUs distrubution
+\item{topics_object}{(required) Output of \code{\link{find_topics}}.}
+
+\item{reference_path}{Location of the precalculated mapping file, which
+will determine the method of prediction used.}
+
+\item{scalar}{Value for scaling the topics over taxa distrubution
 to predicted counts. Defaults to 100.}
 
-\item{drop}{(optional) Logical to drop empty gene columns. Defaults to TRUE.}
+\item{drop}{Logical flag to drop empty gene columns. Defaults to TRUE.}
 
-\item{fit}{STM object}
-
-\item{reference}{Location of the precalculated mapping file. See
-\code{link{download_ref}}}
+\item{...}{Optional arguments for function t4f}
 }
 \value{
-A list containing
-
-\item{fxn_table}{A matrix of gene counts across topics}
-\item{fxn_meta}{A list of associated functional metadata}
-\item{pi_meta}{matrix of method specific metadata}
+An object of class functions containing
+\describe{
+\item{fxn_table}{A matrix of gene counts across topics.}
+\item{fxn_meta}{A list of functional metadata corresponding to fxn_table.}
+\item{method_meta}{A matrix of method specific metadata.}
+}
 }
 \description{
-Given an STM object, this function predicts the functional content using a
-precalculated mapping table which maps the taxonomic abundance for a given
-OTU to functional abundance content across a set of functional genes.
+Given an object of class topics, this function predicts the functional
+content using PICRUSt or tax4fun precalculated mapping tables that maps
+the taxonomic abundance for a given OTU to functional abundance content
+across a set of functional genes.
+}
+\examples{
+formula <- ~s(age) + drug + sex
+refs <- c('control','female')
+
+dat <- prepare_data(otu_table=OTU,rows_are_taxa=FALSE,tax_table=TAX,
+                    metadata=META,formula=formula,refs=refs,
+                    cn_normalize=TRUE,drop=TRUE)
+topics <- find_topics(dat,K=15)
+
+download_ref(destination='/references',reference='gg_ko')
+functions <- predict(topics,reference_path='/references/ko_13_5_precalculated.tab.gz')
+
+}
+\references{
+ABhauer, K. P., Wemheuer, B. Daniel, R., and Meinicke, P. (2015).
+Bioinformatics, 1-3. 31(17).
+
+Langille, M. G.I.*, Zaneveld, J.*, Caporaso, J. G., McDonald, D., Knights, D.,
+a Reyes, J., Clemente, J. C., Burkepile, D. E., Vega Thurber, R. L., Knight, R.,
+Beiko, R. G., and Huttenhower, C. (2013). Nature Biotechnology, 1-10. 8.
+}
+\seealso{
+\code{\link{download_ref}} \code{\link{picrust}} \code{\link{t4f}}
 }

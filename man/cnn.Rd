@@ -7,23 +7,34 @@
 cnn(otu_table, rows_are_taxa, copy_numbers, drop = TRUE, verbose = FALSE)
 }
 \arguments{
-\item{otu_table}{Phyloseq object or OTU table as a data frame or matrix with
-OTU IDs as row or column names.}
+\item{otu_table}{(required) Matrix or dataframe containing taxa abundances
+(counts, non-negative integers) across samples. Rows and columns must be
+uniquely named.}
 
-\item{rows_are_taxa}{TRUE/FALSE whether OTUs are rows and samples are columns
-or vice versa.}
+\item{rows_are_taxa}{(required) Logical flag indicating whether otu_table
+rows correspond to taxa (TRUE) or samples (FALSE).}
 
 \item{copy_numbers}{A 2-column matrix or data frame of copy numbers where
 column 1 contains the OTU IDs and column 2 the copy numbers.}
 
-\item{drop}{Logical whether to drop empty samples or OTUs after normalization.
-Defaults to TRUE.}
+\item{drop}{Logical flag to drop empty rows and columns. Defaults to TRUE.}
+
+\item{verbose}{Logical flag to print progress information. Defaults to FALSE.}
 }
 \value{
-A normalized, rounded (to nearest integer) OTU table.
+A normalized, rounded (to nearest integer) abundance table.
 }
 \description{
-This implements copy number normalization using the PICRUSt 16S GreenGreenes
-13.5 copy number count table (default) or a user provided set of copy
-numbers.
+Implements 16S rRNA copy number normalization using the PICRUSt 16S
+GreenGreenes 13.5 copy number count table (default) or a user provided set of
+copy numbers.
+}
+\examples{
+nOTU <- cnn(OTU,rows_are_taxa=FALSE,drop=TRUE)
+
+}
+\references{
+Langille, M. G.I.*, Zaneveld, J.*, Caporaso, J. G., McDonald, D., Knights, D.,
+a Reyes, J., Clemente, J. C., Burkepile, D. E., Vega Thurber, R. L., Knight, R.,
+Beiko, R. G., and Huttenhower, C. (2013). Nature Biotechnology, 1-10. 8.
 }

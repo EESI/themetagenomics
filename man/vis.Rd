@@ -17,8 +17,8 @@ vis(effects_object, type = c("taxa", "binary", "continuous", "functions"),
 \method{vis}{continuous}(continuous_object, lambda_step = 0.1,
   taxa_reg_n = 8)
 
-\method{vis}{functions}(functions_object, beta_min = 1e-05, ui_level = 0.8,
-  gene_min = 10, pw_min = 20)
+\method{vis}{functions}(functions_object, topic_effects, beta_min = 1e-05,
+  ui_level = 0.8, gene_min = 10, pw_min = 20)
 
 \method{vis}{taxa}(taxa_object, taxa_bar_n = 30, top_n = 7,
   method = c("huge", "simple"), corr_thresh = 0.01, lambda_step = 0.01)
@@ -36,6 +36,8 @@ vis(effects_object, type = c("taxa", "binary", "continuous", "functions"),
 between .01 and .1. Defaults to .1.}
 
 \item{taxa_reg_n}{(optional) Number of most relevant taxa within topic to regress. Defaults to 8.}
+
+\item{topic_effects}{Output of class effects from \code{\link{estimate_topic_effects}}.}
 
 \item{beta_min}{(optional) Minimum probability in topics over taxa
 distribution to set to 0. Defaults to 1e-5.}
@@ -57,8 +59,6 @@ Defaults to huge.}
 is set to simple. Defaults to .01.}
 
 \item{topics}{Output of class topics from \code{\link{find_topics}} that contains the STM object.}
-
-\item{topic_effects}{Output of class effects from \code{\link{estimate_topic_effects}}.}
 
 \item{otu_table}{Dataframe or matrix containing abundance information.}
 

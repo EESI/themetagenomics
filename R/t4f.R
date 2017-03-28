@@ -1,57 +1,64 @@
-#' Predict topic functional content via tax4fun
+#' Predict OTU functional content via tax4fun
 #'
-#' Given an abundance table prepared with the Silva reference database, this
+#' Given an OTU abundance table prepared with the Silva reference database, this
 #' function predicts the functional content using a KO precalculated mapping
-#' table that maps the taxonomic abundance for given taxa to functional
+#' table that maps the taxonomic abundance for given tax_table to functional
 #' abundance content across a set of functional genes.
 #'
-#' @param x An abundance table of samples verses OTUs
-#' @param rows_are_taxa TRUE/FALSE whether OTUs are rows and samples are columns
-#'   or vice versa.
-#' @param taxa Dataframe or matrix containing the taxonomic information (N x 7).
-#' @param reference_path Location of the precalculated mapping file. See
-#'   \code{link{download_ref}}
-#' @param type (optional) String for either uproc or pauda. Defaults to uproc.
-#' @param short (optional) Logical whether to use a short or long read
-#'   reference. Defaults to TRUE.
-#' @param copy_number_normalize (optional) Logical whether to perform 16S rRNA
-#'   copy number normalization. Defaults to FALSE.
-#' @param sample_normalize (optional) Logical whether to normalize functional
+#' @param otu_table (required) Matrix or dataframe containing taxa abundances
+#'   (counts, non-negative integers) across samples. Rows and columns must be
+#'   uniquely named.
+#' @param rows_are_taxa (required) Logical flag indicating whether otu_table
+#'   rows correspond to taxa (TRUE) or samples (FALSE).
+#' @param tax_table Matrix or dataframe containing Silva taxonimic information
+#'   with row or column names corresponding to the otu_table. Silva species
+#'   information is required.
+#' @param reference_path Location of the precalculated mapping file, which
+#'   will determine the method of prediction used.
+#' @param type Type of protein domain classifcation methods used to generate
+#'   references (uproc or pauda). Defaults to uproc.
+#' @param short Logical flag whether to use a short or long read
+#'   references. Defaults to TRUE.
+#' @param cn_normalize Logical flag for performing 16S rRNA copy number
+#'   normalization. Defaults to FALSE.
+#' @param sample_normalize Logical flag to normalize functional
 #'   predictions by the total functional abundance in a sample. Defaults to FALSE.
-#' @param drop (optional) Logical whether to drop empty samples or OTUs after
-#'   normalization and whether to drop KO annotations lacking pathway information.
-#'   Defaults to TRUE.
+#' @param drop Logical flag to drop empty gene columns. Defaults to TRUE.
 #'
 #' @return A list containing
+#' \describe{
+#' \item{fxn_table}{A matrix of gene counts across topics.}
+#' \item{fxn_meta}{A list of functional metadata corresponding to fxn_table.}
+#' \item{method_meta}{A matrix of method specific metadata (FTU).}
+#' }
 #'
-#' \item{fxn_table}{A matrix of gene counts across topics}
-#' \item{fxn_meta}{A list of associated functional metadata}
-#' \item{pi_meta}{matrix of tax4fun metadata (e.g., FTU)}
+#' @references
+#' ABhauer, K. P., Wemheuer, B. Daniel, R., and Meinicke, P. (2015).
+#' Bioinformatics, 1-3. 31(17).
+#'
+#' @seealso \code{\link{download_ref}} \code{\link{picrust}}
+#'
+#' @examples
+#' download_ref(destination='/references',reference='silva_ko')
+#'
+#' predicted_functions <- t4f(otu_table=OTU,rows_are_taxa=TRUE,reference='/references/t4f_ref_profiles.rds',
+#'                            short=TRUE,cn_normalize=TRUE,sample_normalize=TRUE,drop=TRUE)
+#'
 #' @export
 
-t4f <- function(taxa_table,rows_are_taxa,taxa,reference_path,type='uproc',
-                short=TRUE,copy_number_normalize=FALSE,sample_normalize=FALSE,
+t4f <- function(otu_table,rows_are_taxa,tax_table,reference_path,type='uproc',
+                short=TRUE,cn_normalize=FALSE,sample_normalize=FALSE,
                 drop=TRUE){
 
-  if (missing(taxa)){
-
-    taxa_ids <- colnames(taxa_table)
-
+  if (missing(tax_table)){
+    taxa_ids <- colnames(otu_table)
   }else{
-
-    taxa_ids <- apply(taxa,1,function(l){
-      paste0(paste0(l[!is.na(l)],collapse=';'),';')
-    })
-
+    taxa_ids <- apply(tax_table,1,function(l){paste0(paste0(l[!is.na(l)],collapse=';'),';')})
   }
 
-  if (rows_are_taxa == TRUE){
+  if (rows_are_taxa == TRUE) otu_table <- t(otu_table)
 
-    taxa_table <- t(taxa_table)
-
-  }
-
-  colnames(taxa_table) <- taxa_ids
+  colnames(otu_table) <- taxa_ids
 
   if (short) size <- 'short' else size <- 'long'
 
@@ -60,17 +67,17 @@ t4f <- function(taxa_table,rows_are_taxa,taxa,reference_path,type='uproc',
   kegg_lookup <- readRDS(system.file('references/kegg_lookup_table.rds',package='themetagenomics'))
   ref_profile <- readRDS(reference_path)[[type]][[size]]
 
-  sample_name <- rownames(taxa_table)
+  sample_name <- rownames(otu_table)
   silva_ids <- rownames(silva_to_kegg)
 
   overlap_taxa <- intersect(silva_ids,taxa_ids)
 
-  sample_sums <- rowSums(taxa_table)
-  taxa_table <- taxa_table[,overlap_taxa]
+  sample_sums <- rowSums(otu_table)
+  otu_table <- otu_table[,overlap_taxa]
   silva_to_kegg <- silva_to_kegg[overlap_taxa,]
 
-  tax_to_kegg <- t(silva_to_kegg) %*% t(taxa_table)
-  if (copy_number_normalize) tax_to_kegg <- tax_to_kegg/copy_numbers
+  tax_to_kegg <- t(silva_to_kegg) %*% t(otu_table)
+  if (cn_normalize) tax_to_kegg <- tax_to_kegg/copy_numbers
   if (sample_normalize) tax_to_kegg <- t(as.matrix(t(tax_to_kegg))/colSums(tax_to_kegg))
   fxn_table <- t(ref_profile %*% tax_to_kegg)
 
@@ -101,7 +108,7 @@ t4f <- function(taxa_table,rows_are_taxa,taxa,reference_path,type='uproc',
   t4f_meta <- NULL
   t4f_meta <- cbind(t4f_meta,ftu=1-rowSums(fxn_table)/sample_sums)
 
-  return(list(fxn_table=fxn_table,fxn_meta=fxn_meta,t4f_meta=t4f_meta))
+  return(list(fxn_table=fxn_table,fxn_meta=fxn_meta,method_meta=t4f_meta))
 
   # why do the references have 1 less row than the kegg id
   # why are there blank rows in the kegg id

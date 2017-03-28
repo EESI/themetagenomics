@@ -2,14 +2,14 @@
 % Please edit documentation in R/find_topics.R
 \name{stm_wrapper}
 \alias{stm_wrapper}
-\title{Wrapper for \code{\link{stm}}}
+\title{Wrapper for stm}
 \usage{
 stm_wrapper(K, docs, vocab, formula = NULL, metadata = NULL,
   sigma_prior = 0, model = NULL, iters = 500, tol = 1e-05,
   batches = 1, seed = NULL, verbose = FALSE, verbose_n = 5,
-  control = control)
+  init_type = c("Spectral", "LDA", "Random"), control = control)
 }
 \description{
-Wrapper for \code{\link{stm}}
+Wrapper for stm
 }
 \keyword{internal}
