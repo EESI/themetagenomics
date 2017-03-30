@@ -2,13 +2,16 @@
 
 language: r
 sudo: false
-warnings_are_errors: false
+cache: packages
+warnings_are_errors: true
 r:
   - release #3.3.0
   #- oldrel #3.2.5
   #- devel
 
-cache: packages
+r_github_packages:
+  - hadley/devtools
+  - jimhester/covr
 
 after_success:
   - Rscript -e 'covr::codecov()'
