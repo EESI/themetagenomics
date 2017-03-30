@@ -1,17 +1,75 @@
 #' Estimate topic effects
 #'
-#' Given a covariate of interest, measure its relationship with the samples over topics distribution estimated by the STM.
+#' Given a covariate of interest, measure its relationship with the samples over
+#' topics distribution from the STM.
 #'
-#' @param covariate String corresponding to the name of the covariate of interest found in metadata.
-#' @param topics STM object containing the topic information
-#' @param metadata Dataframe or matrix of metadata. If the STM was fit with covariate information, this must point to the same metadata used in the STM.
-#' @param nsims (optional) Number of simulations to perform for inferring covariate effects.
-#' @param ui_level With of uncertainty interval to report effects. Defaults to .95.
-#' @return A list containing
+#' @param topics_object (required) Ouput of \code{\link{find_topics}}.
+#' @param metadata Matrix or dataframe containing sample information with row or
+#'   column names corresponding to the otu_table.
+#' @param formula New formula for covariates of interest found in metadata,
+#'   different than the formula used to generate topics_object. Interactions,
+#'   transformations, splines, and polynomial expansions are permitted.
+#' @param refs Character vector of length equal to the number of factors or
+#'   binary covariates in formula, indicating the reference level.
+#' @param nsims Number of simulations to perform for estimating
+#'   covariate effects. Defaults to 100.
+#' @param ui_level Width of uncertainty interval for reporting effects. Defaults to
+#'   .95.
+#' @param npoints Number of posterior predictive samples to draw. Defaults to 100.
+#' @param verbose Logical flag to print progress information. Defaults to FALSE.
 #'
-#' \item{est}{The estimate of the effect}
-#' \item{rank}{The rank of the topics based on the effect estimate (increasing)}
-#' \item{sig}{A vector of topic indexes for topics whose uncertainty intervals did not enclose 0.}
+#' @return An object of class effects containing
+#' \describe{
+#' \item{topic_effects}{List of the effect estimates for the covariates in formula.}
+#' \item{topics}{Object of class topics containing the original output of find_topics.}
+#' \item{modelframe}{Original modelframe.}
+#' }
+#'
+#' @details The posterior predictive estimates are calculated depending on the type of covariate. First, all
+#' factors are expanded using dummy variables, setting the reference classes as intercepts. For each topic,
+#' the topic frequency over samples is regressed against the expanded design matrix. Covariate weights and the
+#' variance-covariance matrix is then calculated, which are used to sample new weights using a multivariate
+#' normal distribution.
+#'
+#' The estimation of a specific covariate effect is performed by calculated y-hat from the posterior predictive
+#' distribution by holding all covariates other than the target covariate fixed. This is accomplished by
+#' marginalizing over the sample data. This fixed design matrix is then multiplied by the weights simulated
+#' from the multivariate normal distribution. For a target binary covariate x (which includes expanded factors),
+#' effect estimates are defined as the difference between y-hat when x=1 and y-hat when x=0 is calcuated, with the reference
+#' covariate designated as 1 (hence negative differences imply a strong effect for the reference class). For
+#' continuous covariates, the effect estimates are defined as the regression weight for that covariate of interest.
+#' To explore the posterior predictive distribution, y-hat is again calculated, but over a vector of values spanning the
+#' range of the continuous covariate, with other covariates held fixed as before. Additional y-hat are then calculated
+#' while iteratively setting each binary covariate to 0, to explore their influence on the continuous covariate.
+#' Nonlinear covariates (e.g., splines) are treated similarly with respect to y-hat. Their effect estimates, however, are
+#' calculated by calculating the Spearman rank correlation coefficient between y-hat and y.
+#'
+#' For each covariate, the effect estimate is returned. y-hat vectors are returned as well for continuous and nonlinear
+#' covariates. All effect estimates are ranked in terms of weight or correlation coefficient. Values not overlapping 0 given
+#' a user designed level of uncertainty or returned as "significant."
+#'
+#' @seealso \code{\link[stm]{estimateEffect}}
+#'
+#' @references
+#' Gelman, A. and Hill, J. (2006). Data Analysis Using Regression and
+#' Multilevel/Hierarchical Models. Cambridge University Press; 1 edition.
+#'
+#' Roberts, M.E., Stewart, B.M., Tingley, D., Lucas, C., Leder-Luis,
+#' J., Gadarian, S.K., Albertson, B., & Rand, D.G. (2014). Structural topic
+#' models for open-ended survey responses. Am. J. Pol. Sci. 58, 1064–1082.
+#'
+#' @examples
+#' formula <- ~s(age) + drug + sex
+#' refs <- c('control','female')
+#'
+#' dat <- prepare_data(otu_table=OTU,rows_are_taxa=FALSE,tax_table=TAX,
+#'                     metadata=META,formula=formula,refs=refs,
+#'                     cn_normalize=TRUE,drop=TRUE)
+#' topics <- find_topics(dat,K=15)
+#' topic_effects <- est(topics)
+#'
+#' @aliases est_topics est.topics
+#'
 #' @export
 
 est.topics <- function(topics_object,metadata,formula,refs,nsims=100,ui_level=.8,npoints=100,verbose=FALSE){

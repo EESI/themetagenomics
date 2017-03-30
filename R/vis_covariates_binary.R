@@ -1,29 +1,8 @@
 #' @import ggplot2 shiny plotly
 NULL
 
-#' @describeIn vis Generate interactive graphical interface for binary covariates
-#'
-#'   This function integrates the topics
-#'   over taxa p(k|t) distribution from the STM, binary covariate effects from the p(s|k) component, and
-#'   their relationship with the raw taxonomic abundances. The covariate effects
-#'   for each topic are shown as a scatterplot of posterior weights with error bars corresponding the
-#'   global approximation of uncertainty. If the covariate chosen is binary,
-#'   this reflects the mean difference between levels. For continuous covariates, the points
-#'   represent the mean regression weights (i.e., the posterior slope estimate of the
-#'   covariate). Colors indicate whether a given point was positive (red) or negative
-#'   (blue) and did not enclose 0 at a user defined uncertainty interval.
-#'
-#'   Selecting a topic estimate generates violin plots showing the p(s|k) distribution, split based
-#'   on chosen binary covariate effects. The slider
-#'   allows the user to threshold the number of points shown, based on their values in p(s|k).
-#'   Highlighting points in the violin plots generates bar plots that show their abundances (or
-#'   relative abundanecs) in the raw abundance table.
-#'
-#' @param topics Output of class topics from \code{\link{find_topics}} that contains the STM object.
-#' @param topic_effects Output of class effects from \code{\link{estimate_topic_effects}}.
-#' @param otu_table Dataframe or matrix containing abundance information.
-#' @param tax_table Dataframe or matrix containing the taxonomy information.
-#' @param taxa_grp_n (optional) Number of taxa group names to display (remaining are renamed to other). Defaults to 7.
+#' @rdname vis
+#' @param taxa_grp_n Number of taxa group names to display (remaining are renamed to other). Defaults to 7.
 
 vis.binary <- function(binary_object,taxa_grp_n=7){
 

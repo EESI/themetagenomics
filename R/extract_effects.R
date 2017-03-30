@@ -1,6 +1,19 @@
+#' Extract summary statistics
+#'
 #' @export
 extract <- function(object,...) UseMethod('extract')
 
+#' @describeIn extract Extract summary statistics from HMC effects object
+#'
+#' Extracts the summary information in a form condusive with vis methods,
+#' specifically in cases when return_summary was set to FALSE.
+#'
+#' @return A list containing
+#' \describe{
+#' \item{summary}{Rstan summary of parameters from model.}
+#' \item{flagged}{Vector of parameter names with Rhat > 1.1.}
+#' }
+#'
 #' @export
 extract.effects <- function(effects_object,verbose=FALSE){
 
@@ -31,6 +44,8 @@ extract.effects <- function(effects_object,verbose=FALSE){
 
 }
 
+#' Backend to extract summary from rstan object
+#' @keywords internal
 extract_stan_summary <- function(fit,stan_dat,summary_pars){
   extract_summary <- vector(mode='list',length=length(summary_pars))
   names(extract_summary) <- summary_pars

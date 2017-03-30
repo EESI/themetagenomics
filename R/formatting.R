@@ -1,6 +1,4 @@
-# Functions to reformat data
-
-# sample vector of counts to document format
+#' sample vector of counts to document format
 format_to_docs <- function(doc,vocab){
 
   doc <- doc[doc != 0]
@@ -10,7 +8,7 @@ format_to_docs <- function(doc,vocab){
 
 }
 
-# functional metadata strings to lists of lists
+#' functional metadata strings to lists of lists
 format_gene_metadata <- function(picrust_out){
 
   gene_metadata <- picrust_out$genemeta
@@ -44,7 +42,7 @@ format_gene_metadata <- function(picrust_out){
 
 }
 
-# format functional output to gene table for inference
+#' format functional output to gene table for inference
 format_gene_table <- function(functions,level,pw_targets,keep){
 
   description_idx <- grepl('Description',names(functions$fxn_meta))
@@ -145,7 +143,7 @@ format_gene_table <- function(functions,level,pw_targets,keep){
 
 }
 
-# generate pretty taxa names
+#' generate pretty taxa names
 pretty_taxa_names <- function(x){
 
   taxonomy <- c('Species','Genus','Family','Order','Class','Phylum','Kingdom')
@@ -165,7 +163,7 @@ pretty_taxa_names <- function(x){
 }
 
 
-# group_by summarize function for taxa without dplyr
+#' group_by summarize function for taxa without dplyr
 sum_taxa_by_group <- function(otu_ids,taxa,otu_table,metadata,cov_list,group=c('Phylum','Class','Order','Family','Genus'),sample_norm=FALSE){
 
   if (sample_norm) z <- cov_list$coverage else {z <- sapply(cov_list$ids,length); z <- z/median(z)}
@@ -192,8 +190,7 @@ sum_taxa_by_group <- function(otu_ids,taxa,otu_table,metadata,cov_list,group=c('
 
 }
 
-# rename taxa below rank to other
-
+#' rename taxa below rank to other
 rename_taxa_to_other <- function(x,taxa,top_n=7,group=c('Phylum','Class','Order','Family','Genus'),type=c('otu_table','docs'),as_factor=FALSE){
 
   type <- match.arg(type)

@@ -1,8 +1,8 @@
-#' Predict OTU functional content via tax4fun
+#' Predict taxonomic functional content via tax4fun
 #'
-#' Given an OTU abundance table prepared with the Silva reference database, this
-#' function predicts the functional content using a KO precalculated mapping
-#' table that maps the taxonomic abundance for given tax_table to functional
+#' Given a taxonomic abundance table prepared with the Silva reference database,
+#' predicts the functional content using a KO precalculated mapping
+#' table that maps the taxonomic abundance for a given tax_table to functional
 #' abundance content across a set of functional genes.
 #'
 #' @param otu_table (required) Matrix or dataframe containing taxa abundances

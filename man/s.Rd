@@ -2,7 +2,7 @@
 % Please edit documentation in R/s.R
 \name{s}
 \alias{s}
-\title{Make a B-spline Basis Function}
+\title{Make a B-spline Basis Function (from \code{\link[stm]{s}})}
 \usage{
 s(x, df, ...)
 }

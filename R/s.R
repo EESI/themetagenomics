@@ -1,4 +1,4 @@
-#' Make a B-spline Basis Function
+#' Make a B-spline Basis Function (from \code{\link[stm]{s}})
 #'
 #' This is a simple wrapper around the \code{\link[splines]{bs}} function in
 #' the splines package.  It will default to a spline with 10 degrees of

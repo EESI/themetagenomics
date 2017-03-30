@@ -146,30 +146,6 @@ find_topics.themetadata <- function(themetadata_object,K,sigma_prior=0,model=NUL
 
 }
 
-#' Print summary for topics class
-#' @export
-print.topics <- function(topics_object,...){
-  cat(sprintf('A %s object containing a topic model with %s topics, %s samples and %s discrete taxa.\n',
-              class(topics_object),
-              topics_object$fit$settings$dim$K,
-              topics_object$fit$settings$dim$N,
-              topics_object$fit$settings$dim$V))
-}
-
-#' Prevent object renaming in class topics
-#' @export
-`names<-.topics` <- function(object,value){
-  warning('topics-class objects cannot be renamed.')
-  return(object)
-}
-
-#' Prevent attribute renaming in class topics
-#' @export
-`attributes<-.topics` <- function(object,value){
-  warning('topics-class attributes cannot be renamed.')
-  return(object)
-}
-
 #' Wrapper for stm
 #' @keywords internal
 stm_wrapper <- function(K,docs,vocab,formula=NULL,metadata=NULL,sigma_prior=0,

@@ -1,31 +1,19 @@
-#' @import lme4 rstan Rcpp
-#' @importFrom stats4 summary
-NULL
-
-#' Estimate function effects via HMC
+#' @rdname est.functions
 #'
-#' Given within topic functional predictions, estimate the effects at a given
-#' gene function category level via HMC. The effects correspond to a topic-gene
-#' category interaction term after accounting for topic and gene category
-#' effects.
-#'
-#' @param gene_table A gene_table formatted via \code{\link{format_gene_table}}.
+#' @param hmc_object (required) Output of code{\link{predict.topics}} with hmc
+#' selected as method.
 #' @param inits List of values for parameter initialization. If omitted, values
 #'   are generated via \code{\link{glmer.nb}}
-#' @param iters Number of iterations for HMC. Defaults to 1000.
-#' @param chains (optional) Number of chains for HMC. Defaults to 1.
-#' @param return_fit (optional) Logical to return the rstan data and fit.
-#' @param verbose (optional) Logical to print progress.
+#' @param prior Prior to be placed on covariate weights. Choices include student-t,
+#' normal, and laplace. Defaults to student-t.
+#' @param t_df Degrees of freedom for student-t priors. Defaults to 7.
+#' @param iters Number of iterations for for fitting. Defaults to 300 and 100 for
+#' HMC and ML, respectively.
+#' @param warmup For HMC, proportion of iterations devoted to warmup. Defaults to
+#' iters/2.
+#' @param chains For HMC, number of parallel chains. Defaults to 1.
+#' @param return_summary Logical flag to return results summary. Defaults to TRUE.
 #'
-#' @return A list containing
-#'
-#' \item{summary}{Rstan output that includes the coefficient mean estimates, uncertainty
-#' intervals, standard deviations, effective sample size, Rhat statistics}
-#' \item{fit}{Rstan fit (if return_fit=TRUE)}
-#' \item{data}{Rstan input data (if return_fit=TRUE)}
-#' \item{flagged}{Parameter estimates with Rhat statistics > 1.1}
-#' \item{inits}{If parameter estimates are flagged, a list of inits to initialize Rstan
-#' with more iterations.}
 #' @export
 
 est.hmc <- function(hmc_object,inits,prior=c('t','normal','laplace'),t_df=c(7,7,7),iters=300,warmup=iters/2,chains=1,
@@ -147,7 +135,7 @@ est.hmc <- function(hmc_object,inits,prior=c('t','normal','laplace'),t_df=c(7,7,
                         data=stan_table,
                         verbose=verbose,
                         control=glmerControl(calc.derivs=FALSE,
-                                             optCtrl=list(maxfun=30))) # check if ok for level 3
+                                             optCtrl=list(maxfun=50))) # check if ok for level 3
 
     inits <- lapply(seq_len(chains),function(x) list(mu=fixef(mm_init),
                                                      phi=getME(mm_init,'glmer.nb.theta'),
@@ -216,10 +204,11 @@ est.hmc <- function(hmc_object,inits,prior=c('t','normal','laplace'),t_df=c(7,7,
 
 
   if (return_summary){
+
     if (verbose) cat('Extracting summary (this often takes some time).\n')
     out[['summary']] <- extract_stan_summary(fit,stan_dat,summary_pars)
     rhat_pars <- c('mu','phi',lambda_rhat,'b_pw','b_topic','b_pwxtopic','b_pw_sigma','b_topic_sigma','b_pwxtopic_sigma')
-    rhat <- summary(fit,pars=rhat_pars)[['summary']][,'Rhat'] > 1.1
+    rhat <- stats4::summary(fit,pars=rhat_pars)[['summary']][,'Rhat'] > 1.1
     rhat_count <- sum(rhat,na.rm=TRUE)
     if (rhat_count > 0){
       warning(sprintf('%s parameters with Rhat > 1.1. Consider more iterations.',rhat_count))

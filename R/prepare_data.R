@@ -249,17 +249,3 @@ prepare_data <- function(otu_table,rows_are_taxa,tax_table,metadata,formula,refs
   return(slots)
 
 }
-
-#' Prevent object renaming in class themetadata
-#' @export
-`names<-.themetadata` <- function(object,value){
-  warning('themetadata-class objects cannot be renamed.')
-  return(object)
-}
-
-#' Prevent attribute renaming in class themetadata
-#' @export
-`attributes<-.themetadata` <- function(object,value){
-  warning('themetadata-class attributes cannot be renamed.')
-  return(object)
-}

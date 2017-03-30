@@ -11,7 +11,7 @@
 #' @param scalar Value for scaling the topics over taxa distrubution
 #'   to predicted counts. Defaults to 100.
 #' @param drop Logical flag to drop empty gene columns. Defaults to TRUE.
-#' @param ... Optional arguments for function t4f
+#' @param ... Additional arguments for t4f method.
 #'
 #' @return An object of class functions containing
 #' \describe{
@@ -63,22 +63,25 @@ predict.topics <- function(topics_object,reference_path,scalar=100,drop=TRUE,...
   }
 
   class(predictions) <- 'functions'
+  if (grepl('ko\\_',reference_path)){
+    attr(predictions,'method') <- 'PICRUSt'
+    attr(predictions,'ref') <- 'GreenGenes16_5'
+    attr(predictions,'db') <- 'KEGG'
+  }else if (grepl('cog\\_',reference_path)){
+    attr(predictions,'method') <- 'PICRUSt'
+    attr(predictions,'ref') <- 'GreenGenes16_5'
+    attr(predictions,'db') <- 'COG'
+  }else if (grepl('t4f\\_',reference_path)){
+    attr(predictions,'method') <- 'Tax4Fun'
+    attr(predictions,'ref') <- 'Silva123'
+    attr(predictions,'db') <- 'KEGG'
+  }else{
+    attr(predictions,'type') <- NULL
+    attr(predictions,'ref') <- NULL
+    attr(predictions,'db') <- NULL
+  }
 
   return(predictions)
 
-}
-
-#' Prevent object renaming in class functions
-#' @export
-`names<-.functions` <- function(object,value){
-  warning('functions-class objects cannot be renamed.')
-  return(object)
-}
-
-#' Prevent attribute renaming in class functions
-#' @export
-`attributes<-.functions` <- function(object,value){
-  warning('functions-class attributes cannot be renamed.')
-  return(object)
 }
 

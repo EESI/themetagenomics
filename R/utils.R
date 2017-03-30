@@ -1,3 +1,4 @@
+#' Jensen Shannon distance
 jsd <- function(p,q) {
 
   m <- .5*(p + q)
@@ -7,8 +8,10 @@ jsd <- function(p,q) {
   return(dis)
 }
 
+#' Normalize to 0-1 range
 norm10 <- function(x) (x-min(x))/(max(x)-min(x))
 
+#' Z score normalize
 normz <- function(x) (x-mean(x))/sd(x)
 
 # dplyr dense_rank
@@ -19,6 +22,7 @@ dense_rank <- function(x) {
 
 }
 
+#' Create modelframe that expands catagoricals into dummy variables
 create_modelframe <- function(formula,refs,metadata){
 
   rnames <- rownames(metadata)
@@ -63,7 +67,7 @@ create_modelframe <- function(formula,refs,metadata){
 
 }
 
-
+#' Create design matrix for ppd sampling
 make_ppd_x <- function(estimated_effects,covariate,mod,npoints=100){
 
   formula <- estimated_effects$formula
@@ -118,6 +122,7 @@ make_ppd_x <- function(estimated_effects,covariate,mod,npoints=100){
 
 }
 
+#' Create a lookup table that identifies splines and multiclass factors
 create_multiclasses_table <- function(modelframe,modelframe_full,splines=NULL){
   classes <- sapply(modelframe,class)
   multiclasses <- classes
@@ -152,6 +157,7 @@ create_multiclasses_table <- function(modelframe,modelframe_full,splines=NULL){
 
 }
 
+#' Checks whether a continuous covariate involves a basis function
 check_for_splines <- function(formula,metadata){
 
   vars <- terms(formula,data=metadata,
@@ -161,6 +167,7 @@ check_for_splines <- function(formula,metadata){
 
 }
 
+#' Extract basis function design matrix and basis type
 extract_spline_info <- function(formula,metadata,remove_only=FALSE){
 
   vars <- terms(formula,data=metadata,

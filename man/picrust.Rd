@@ -5,7 +5,7 @@
 \title{Predict OTU functional content via PICRUSt}
 \usage{
 picrust(otu_table, rows_are_taxa, reference_path, cn_normalize = FALSE,
-  drop = TRUE)
+  sample_normalize = FALSE, drop = TRUE)
 }
 \arguments{
 \item{otu_table}{(required) Matrix or dataframe containing taxa abundances
@@ -21,10 +21,10 @@ will determine the method of prediction used.}
 \item{cn_normalize}{Logical flag for performing 16S rRNA copy number
 normalization. Defaults to FALSE.}
 
-\item{drop}{Logical flag to drop empty gene columns. Defaults to TRUE.}
-
 \item{sample_normalize}{Logical flag to normalize functional
 predictions by the total functional abundance in a sample. Defaults to FALSE.}
+
+\item{drop}{Logical flag to drop empty gene columns. Defaults to TRUE.}
 }
 \value{
 A list containing

@@ -1,32 +1,12 @@
 #' @import ggplot2 shiny plotly
 NULL
 
-#' @describeIn vis Generate interactive graphical interface for gene functions
-#'
-#'   This function integrates the taxa over topics p(t|k) and gene functions over topics p(g|k) distributions,
-#'   along with and the covariate effects from the p(s|k) component. The covariate effects
-#'   for each topic are shown as a scatterplot of posterior weights with error bars corresponding the
-#'   global approximation of uncertainty. If the covariate chosen is binary,
-#'   this reflects the mean difference between levels. For continuous covariates, the points
-#'   represent the mean regression weights (i.e., the posterior slope estimate of the
-#'   covariate). Colors indicate whether a given point was positive (red) or negative
-#'   (blue) and did not enclose 0 at a user defined uncertainty interval.
-#'
-#'   The upper heatmap shows p(t|k), clustered via Wards method on a user chosen distance metric. Topics are ranked
-#'   to right based on the weights from the aforementioned scatterplot. The lower heatmap shows the weights for the
-#'   pathway-topic interaction from the multilevel Bayesian model. Positive and negative weight estimates that do
-#'   not enclose zero at a chosen uncertainty level are marked with red and blue crosses, respectively. The pathway
-#'   ordering is done via Wards method on Euclidean distance.
-#'   Upon selected a cell within the pathway-topic heatmap, a table of genes is returned, ranking the genes in terms of
-#'   abundance that belong to a given pathway-topic combination.
-#'
-#' @inheritParams vis.binary
-#' @param function_effects Output of \code{\link{estimate_function_effects}}
-#'   that contains the results from either HMC or ML.
-#' @param beta_min (optional) Minimum probability in topics over taxa
+#' @rdname vis
+#' @param topic_effects Output of \code{\link{est.topics}}.
+#' @param beta_min Minimum probability in topics over taxa
 #'   distribution to set to 0. Defaults to 1e-5.
-#' @param gene_min (optional) Mininum count for gene set table. Defaults to 10.
-#' @param pw_min (optional) Maximium number of pathways to show in heatmap. for Defaults to 20.
+#' @param gene_min Mininum count for gene set table. Defaults to 10.
+#' @param pw_min Maximium number of pathways to show in heatmap. for Defaults to 20.
 
 vis.functions <- function(functions_object,topic_effects,beta_min=1e-5,ui_level=.8,gene_min=10,pw_min=20){
 

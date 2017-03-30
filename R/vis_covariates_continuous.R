@@ -1,34 +1,10 @@
 #' @import ggplot2 shiny plotly
 NULL
 
-#' @describeIn vis Generate interactive graphical interface for continuous covariates
-#'
-#'   This function integrates the samples over topics p(t|s) and the topics
-#'   over taxa p(k|t) distributions from the STM, binary and continuous covariate effects from the p(s|k) component, and
-#'   their relationship with the raw taxonomic abundances. The covariate effects
-#'   for each topic are shown as a scatterplot of posterior weights with error bars corresponding the
-#'   global approximation of uncertainty. If the covariate chosen is binary,
-#'   this reflects the mean difference between levels. For continuous covariates, the points
-#'   represent the mean regression weights (i.e., the posterior slope estimate of the
-#'   covariate). If, however, a spline or polynomial expansion was used, then the figure shows the estimated  Spearman rank
-#'   correlation between \eqn{\hat\theta} from the posterior predictive distribution and \eqn{\theta} for a given topic k.
-#'   Colors indicate whether a given point was positive (red) or negative
-#'   (blue) and did not enclose 0 at a user defined uncertainty interval.
-#'
-#'   Selecting a topic estimate generates three panels. The top panel shows the posterior predictive estimate of the
-#'   selected continuous covariate. If binary covariates were present in the model formula, then the continuous effect
-#'   given the binary covariate is shown as two regression lines, along with their corresponding uncertainty intervals.
-#'   The points show the true p(k|s) values determined by the STM as a function of the selected continuous covariate.
-#'   The middle panel then shows the raw abundances (or relative abundances) of most relavent taxa. Relavence can be
-#'   control by adjusting \eqn{\lambda} where \deqn{r = \lambda x log p(t|k) + \lambda x log p(t|k)/p(x)}. If binary
-#'   covariates were provided in the model formula, selected split will split the regressions based on the selected
-#'   covariate. Each figure overlays a linear best fit (red) and loess fit (red) to facilitate intepretation. The bottom
-#'   panel shows these taxa combined.
-#'
-#' @inheritParams vis.binary
-#' @param lambda_step (optional) Value designating the lambda stepsize for calculating taxa relevance. Recommended to be
+#' @rdname vis
+#' @param lambda_step Value designating the lambda stepsize for calculating taxa relevance. Recommended to be
 #'   between .01 and .1. Defaults to .1.
-#' @param taxa_reg_n (optional) Number of most relevant taxa within topic to regress. Defaults to 8.
+#' @param taxa_reg_n Number of most relevant taxa within topic to regress. Defaults to 8.
 
 vis.continuous <- function(continuous_object,lambda_step=.1,taxa_reg_n=8){
 

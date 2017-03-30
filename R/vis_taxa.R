@@ -1,65 +1,17 @@
 #' @import ggplot2 shiny plotly
 NULL
 
-#' @describeIn vis Generate interactive graphical interface for taxa
+#' @rdname vis
 #'
-#'   This function integrates the samples over topics p(s|k) and topics
-#'   over taxa p(k|t) distributions from the STM, the topic correlations from the
-#'   p(s|k) component, the covariate effects from the p(s|k) component, and
-#'   their relationship with the raw taxonomic abundances. The covariate effects
-#'   for each topic are shown as a scatterplot of posterior weights with error bars corresponding the
-#'   global approximation of uncertainty. If the covariate chosen is binary,
-#'   this reflects the mean difference between levels. For continuous covariates, the points
-#'   represent the mean regression weights (i.e., the posterior slope estimate of the
-#'   covariate). Colors indicate whether a given point was positive (red) or negative
-#'   (blue) and did not enclose 0 at a user defined uncertainty interval.
-#'
-#'   The ordination figure maintains the color coding just decribed. The
-#'   ordination is performed on p(k|t) via either PCoA (using either
-#'   Jensen-Shannon, Euclidean, Hellinger, Bray-Curtis, Jaccard, or Chi-squared
-#'   distance) or t-SNE. The latter iterates through decreasing perplexity
-#'   values (starting at 30) until the algorithm succeeds. The top 2 or 3
-#'   axes can be shown. The radius of the topic points corresponds to the topic
-#'   frequencies marginalized over taxa.
-#'
-#'   The bar plot behaves in accordance with LDAvis. When no topics are chosen,
-#'   the overall taxa frequencies are shown. These frequencies do not equal the
-#'   abundances found in the initial abundance table. Instead, they show p(k|t)
-#'   multiplied by the marginal topic distribution (in counts). To determine the
-#'   initial order in which taxa are shown, these two distributions are compared
-#'   via Kullback-Liebler divergence and then weighted by the overall taxa
-#'   frequency. The coloration of the bars indiciates the taxonomic group the
-#'   inidividual taxa belong to. The groups shown are determined based on the
-#'   abundance of that group in the raw abundance table. When a topic is
-#'   selected, the relative frequency of a given taxa in that topic is shown in
-#'   red.
-#'
-#'   \eqn{\lambda} controls relevance of taxa within a topic, which in turn is used to
-#'   adjust the order in which the taxa are shown when a topic is selected.
-#'   Relevence is essentially a weighted sum between the probability of taxa in
-#'   a given topic and the probability of taxa in a given topic relative to the
-#'   overall frequency of that taxa. Adjusting \eqn{\lambda} influences the relative weighting such
-#'   that \deqn{r = \lambda x log p(t|k) + \lambda x log p(t|k)/p(x)}.
-#'   The correlation graph shows the topic correlations from \eqn{p(s|k) ~ MVN(mu,sigma)}.
-#'   Again, the coloration described above is conserved. The size
-#'   of the nodes reflects the magnitude of the covariate posterior regression weight,
-#'   whereas the width of the edges represents the value of the positive
-#'   correlation between the connected nodes. By default, the graph estimates
-#'   are determined using the the huge package, which first performs a
-#'   nonparanormal transformation of p(s|k), followed by a Meinhuasen and
-#'   Buhlman procedure. Alternatively, by choosing the simple method, the
-#'   correlations are simply a thresholded MAP estimate of p(s|k).
-
-#' @inheritParams vis.binary
-#' @param taxa_bar_n (optional) Number of taxa to show in the frequency bar plot.
+#' @param taxa_bar_n Number of taxa to show in the frequency bar plot.
 #'   Defaults to 30.
-#' @param top_n (optional) Number of taxonic groups to colorize in the frequency
+#' @param top_n Number of taxonic groups to colorize in the frequency
 #'   bar plot. Defaults to 7.
-#' @param method (optional) Method for estimating topic correlations links.
+#' @param method Method for estimating topic correlations links.
 #'   Defaults to huge.
-#' @param corr_thresh (optional) Threshold to set correlations to 0 when method
+#' @param corr_thresh Threshold to set correlations to 0 when method
 #'   is set to simple. Defaults to .01.
-#' @param lambda_step (optional) Controls the step size for adjusting lambda in
+#' @param lambda_step Controls the step size for adjusting lambda in
 #'   the relevancy calculation. Defaults to .01.
 
 vis.taxa <- function(taxa_object,taxa_bar_n=30,top_n=7,method=c('huge','simple'),corr_thresh=.01,lambda_step=.01){

@@ -2,7 +2,7 @@
 % Please edit documentation in R/t4f.R
 \name{t4f}
 \alias{t4f}
-\title{Predict OTU functional content via tax4fun}
+\title{Predict taxonomic functional content via tax4fun}
 \usage{
 t4f(otu_table, rows_are_taxa, tax_table, reference_path, type = "uproc",
   short = TRUE, cn_normalize = FALSE, sample_normalize = FALSE,
@@ -46,9 +46,9 @@ A list containing
 }
 }
 \description{
-Given an OTU abundance table prepared with the Silva reference database, this
-function predicts the functional content using a KO precalculated mapping
-table that maps the taxonomic abundance for given tax_table to functional
+Given a taxonomic abundance table prepared with the Silva reference database,
+predicts the functional content using a KO precalculated mapping
+table that maps the taxonomic abundance for a given tax_table to functional
 abundance content across a set of functional genes.
 }
 \examples{
