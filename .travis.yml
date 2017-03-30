@@ -1,2 +1,9 @@
+# R for travis: see documentation at https://docs.travis-ci.com/user/languages/r
+
 language: r
 cache: packages
+
+notifications:
+  email:
+    on_success: change
+    on_failure: change
