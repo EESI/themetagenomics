@@ -1,4 +1,8 @@
 packrat/lib*/
 .Rproj.user
+.Rhistory
+.RData
+inst/doc
+.httr-oauth
 ^.*\.o$
 ^.*\.so$
