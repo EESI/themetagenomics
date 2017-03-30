@@ -7,17 +7,27 @@
 \alias{predict_topics}
 \title{Predict topic functional content}
 \usage{
-\method{predict}{topics}(object, reference_path, scalar = 100, drop = TRUE,
-  ...)
+\method{predict}{topics}(object, reference = c("gg_ko", "gg_cog", "silva_ko"),
+  reference_path, scalar = 100, cn_normalize = FALSE,
+  sample_normalize = FALSE, drop = TRUE, ...)
 }
 \arguments{
 \item{object}{(required) Output of \code{\link{find_topics}}.}
 
-\item{reference_path}{Location of the precalculated mapping file, which
-will determine the method of prediction used.}
+\item{reference}{A string for either gg_ko, gg_cog, or silva_ko.
+Defaults to gg_ko.}
+
+\item{reference_path}{Folder path of the reference file}
 
 \item{scalar}{Value for scaling the topics over taxa distrubution
 to predicted counts. Defaults to 100.}
+
+\item{cn_normalize}{Logical flag for performing 16S rRNA copy number
+normalization. Defaults to FALSE.}
+
+\item{sample_normalize}{Logical flag to normalize functional
+predictions by the total functional abundance in a sample.
+Defaults to FALSE.}
 
 \item{drop}{Logical flag to drop empty gene columns. Defaults to TRUE.}
 
@@ -38,16 +48,20 @@ the taxonomic abundance for a given OTU to functional abundance content
 across a set of functional genes.
 }
 \examples{
-formula <- ~s(age) + drug + sex
-refs <- c('control','female')
+formula <- ~DIAGNOSIS
+refs <- 'Not IBD'
 
-dat <- prepare_data(otu_table=OTU,rows_are_taxa=FALSE,tax_table=TAX,
-                    metadata=META,formula=formula,refs=refs,
+dat <- prepare_data(otu_table=GEVERS$OTU,rows_are_taxa=FALSE,tax_table=GEVERS$TAX,
+                    metadata=GEVERS$META,formula=formula,refs=refs,
                     cn_normalize=TRUE,drop=TRUE)
+
 topics <- find_topics(dat,K=15)
 
+\dontrun{
 download_ref(destination='/references',reference='gg_ko')
-functions <- predict(topics,reference_path='/references/ko_13_5_precalculated.tab.gz')
+functions <- predict(topics,reference='gg_ko',
+                     reference_path='/references')
+}
 
 }
 \references{

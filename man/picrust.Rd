@@ -4,8 +4,9 @@
 \alias{picrust}
 \title{Predict OTU functional content via PICRUSt}
 \usage{
-picrust(otu_table, rows_are_taxa, reference_path, cn_normalize = FALSE,
-  sample_normalize = FALSE, drop = TRUE)
+picrust(otu_table, rows_are_taxa, reference = c("gg_ko", "gg_cog"),
+  reference_path, cn_normalize = FALSE, sample_normalize = FALSE,
+  drop = TRUE)
 }
 \arguments{
 \item{otu_table}{(required) Matrix or dataframe containing taxa abundances
@@ -15,8 +16,9 @@ uniquely named.}
 \item{rows_are_taxa}{(required) Logical flag indicating whether otu_table
 rows correspond to taxa (TRUE) or samples (FALSE).}
 
-\item{reference_path}{Location of the precalculated mapping file, which
-will determine the method of prediction used.}
+\item{reference}{A string for either gg_ko or gg_cog. Defaults to gg_ko.}
+
+\item{reference_path}{Folder path of the reference file}
 
 \item{cn_normalize}{Logical flag for performing 16S rRNA copy number
 normalization. Defaults to FALSE.}
@@ -41,11 +43,14 @@ precalculated mapping tables that map the taxonomic abundance for a given OTU
 to functional abundance content across a set of functional genes.
 }
 \examples{
+\dontrun{
 download_ref(destination='/references',reference='gg_ko')
 
-predicted_functions <- t4f(otu_table=OTU,rows_are_taxa=TRUE,
-                           reference='/references/ko_13_5_precalcualted.tab.gz',
-                           cn_normalize=TRUE,sample_normalize=FALSE,drop=TRUE)
+predicted_functions <- picrust(otu_table=GEVERS$OTU,rows_are_taxa=TRUE,
+                               reference='gg_ko',reference_path='/references',
+                               cn_normalize=TRUE,
+                               sample_normalize=FALSE,drop=TRUE)
+                           }
 
 }
 \references{

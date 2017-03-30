@@ -14,8 +14,8 @@ NULL
 #'   uniquely named.
 #' @param rows_are_taxa (required) Logical flag indicating whether otu_table
 #'   rows correspond to taxa (TRUE) or samples (FALSE).
-#' @param reference_path Location of the precalculated mapping file, which
-#'   will determine the method of prediction used.
+#' @param reference A string for either gg_ko or gg_cog. Defaults to gg_ko.
+#' @param reference_path Folder path of the reference file
 #' @param cn_normalize Logical flag for performing 16S rRNA copy number
 #'   normalization. Defaults to FALSE.
 #' @param sample_normalize Logical flag to normalize functional
@@ -37,24 +37,30 @@ NULL
 #' @seealso \code{\link{download_ref}} \code{\link{picrust}}
 #'
 #' @examples
+#' \dontrun{
 #' download_ref(destination='/references',reference='gg_ko')
 #'
-#' predicted_functions <- t4f(otu_table=OTU,rows_are_taxa=TRUE,
-#'                            reference='/references/ko_13_5_precalcualted.tab.gz',
-#'                            cn_normalize=TRUE,sample_normalize=FALSE,drop=TRUE)
+#' predicted_functions <- picrust(otu_table=GEVERS$OTU,rows_are_taxa=TRUE,
+#'                                reference='gg_ko',reference_path='/references',
+#'                                cn_normalize=TRUE,
+#'                                sample_normalize=FALSE,drop=TRUE)
+#'                            }
 #'
 #' @export
 
-picrust <- function(otu_table,rows_are_taxa,reference_path,cn_normalize=FALSE,sample_normalize=FALSE,drop=TRUE){
+picrust <- function(otu_table,rows_are_taxa,reference=c('gg_ko','gg_cog'),reference_path,
+                    cn_normalize=FALSE,sample_normalize=FALSE,drop=TRUE){
 
-  if (!file.exists(reference_path))
-    stop('Please provide a valid reference file.')
+  reference <- match.arg(reference)
 
   if (rows_are_taxa == TRUE) otu_table <- t(otu_table)
 
   if (cn_normalize) otu_table <- cnn(otu_table,rows_are_taxa=FALSE,drop=drop)
 
-  out <- picrust_otu(reference_path,colnames(otu_table))
+  if (reference == 'gg_ko') ref_fn <- 'ko_13_5_precalculated.tab.gz'
+  if (reference == 'cog_ko') ref_fn <- 'cog_13_5_precalculated.tab.gz'
+
+  out <- picrust_otu(file.path(reference_path,ref_fn),colnames(otu_table))
   fxn_mapping <- out$genome_table_out
   rownames(fxn_mapping) <- out$matches
   colnames(fxn_mapping) <- out$gene_ids

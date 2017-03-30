@@ -1,7 +1,5 @@
 #' @rdname est.functions
 #'
-#' @param object (required) Output of code{\link{predict.topics}} with hmc
-#' selected as method.
 #' @param inits List of values for parameter initialization. If omitted, values
 #'   are generated via \code{\link{glmer.nb}}
 #' @param prior Prior to be placed on covariate weights. Choices include student-t,

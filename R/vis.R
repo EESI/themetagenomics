@@ -7,7 +7,6 @@ NULL
 #'
 #' @param effects_object (required) Output of \code{\link{est.topics}} or
 #' \code{\link{est.functions}} with ml selected as method.
-#' @param type Type of visualization to perform.
 #' @param ... Additional arguments for methods.
 #'
 #' @details
@@ -138,35 +137,50 @@ NULL
 #' \code{\link[Rtsne]{Rtsne}}
 #'
 #' @examples
-#' formula <- ~s(age) + drug + sex
-#' refs <- c('control','female')
+#' formula <- ~DIAGNOSIS
+#' refs <- 'Not IBD'
 #'
-#' dat <- prepare_data(otu_table=OTU,rows_are_taxa=FALSE,tax_table=TAX,
-#'                     metadata=META,formula=formula,refs=refs,
+#' dat <- prepare_data(otu_table=GEVERS$OTU,rows_are_taxa=FALSE,tax_table=GEVERS$TAX,
+#'                     metadata=GEVERS$META,formula=formula,refs=refs,
 #'                     cn_normalize=TRUE,drop=TRUE)
-#' topics <- find_topics(dat,K=15)
 #'
+#' \dontrun{
 #' vis(topic_effects,type='taxa')
 #' vis(topic_effects,type='binary')
+#' }
+#'
+#' formula <- ~PCDAI
+#'
+#' dat <- prepare_data(otu_table=GEVERS$OTU,rows_are_taxa=FALSE,tax_table=GEVERS$TAX,
+#'                     metadata=GEVERS$META,formula=formula,refs=refs,
+#'                     cn_normalize=TRUE,drop=TRUE)
+#'
+#' \dontrun{
 #' vis(topic_effects,type='continuous')
 #'
 #' functions <- predict(topics,reference_path='/references/ko_13_5_precalculated.tab.gz')
+#'
 #' function_effects <- est(functions,level=3,
 #'                         iters=500,method='hmc',
 #'                         prior=c('laplace','t','laplace'))
 #'
 #' vis(function_effects,topic_effects)
+#' }
 #' @export
 vis <- function(effects_object,...) UseMethod('vis')
 
+#' @rdname vis
+#'
+#' @param type Type of visualization to perform.
+#'
 #' @export
-vis.effects <- function(effects_object,effects_object2,type=c('taxa','binary','continuous','functions'),...){
+vis.effects <- function(effects_object,topic_effects,type=c('taxa','binary','continuous','functions'),...){
 
   type <- match.arg(type)
 
-  if (type == 'functions' | !missing(effects_object2)){
+  if (type == 'functions' | !missing(topic_effects)){
 
-    effects_objects <- list(effects_object,effects_object2)
+    effects_objects <- list(effects_object,topic_effects)
     types <- sapply(effects_objects,function(x) attr(x,'type'))
     effects_objects <- effects_objects[match(types,c('functions','topics'))]
 

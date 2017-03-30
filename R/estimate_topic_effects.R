@@ -17,6 +17,7 @@
 #'   .95.
 #' @param npoints Number of posterior predictive samples to draw. Defaults to 100.
 #' @param verbose Logical flag to print progress information. Defaults to FALSE.
+#' @param ... Additional arguments for methods.
 #'
 #' @return An object of class effects containing
 #' \describe{
@@ -59,12 +60,13 @@
 #' models for open-ended survey responses. Am. J. Pol. Sci. 58, 1064–1082.
 #'
 #' @examples
-#' formula <- ~s(age) + drug + sex
-#' refs <- c('control','female')
+#' formula <- ~DIAGNOSIS
+#' refs <- 'CD'
 #'
-#' dat <- prepare_data(otu_table=OTU,rows_are_taxa=FALSE,tax_table=TAX,
-#'                     metadata=META,formula=formula,refs=refs,
+#' dat <- prepare_data(otu_table=GEVERS$OTU,rows_are_taxa=FALSE,tax_table=GEVERS$TAX,
+#'                     metadata=GEVERS$META,formula=formula,refs=refs,
 #'                     cn_normalize=TRUE,drop=TRUE)
+#'
 #' topics <- find_topics(dat,K=15)
 #' topic_effects <- est(topics)
 #'
@@ -72,7 +74,7 @@
 #'
 #' @export
 
-est.topics <- function(object,metadata,formula,refs,nsims=100,ui_level=.8,npoints=100,verbose=FALSE){
+est.topics <- function(object,metadata,formula,refs,nsims=100,ui_level=.8,npoints=100,verbose=FALSE,...){
 
   fit <- object$fit
   K <- fit$settings$dim$K
@@ -123,14 +125,17 @@ est.topics <- function(object,metadata,formula,refs,nsims=100,ui_level=.8,npoint
   if (verbose) cat('Estimating regression weights with global uncertainty.\n')
   estimated_effects <- stm::estimateEffect(formula,fit,modelframe,uncertainty='Global')
 
-  estimated_effects$modelframe_full <- object$modelframe # maybe remove htis
+  modelframe_full <- object$modelframe
+  rownames(modelframe_full) <- rownames(modelframe)
+
+  estimated_effects$modelframe_full <- modelframe_full # maybe remove htis
   estimated_effects$modelframe <- modelframe
   estimated_effects$splines <- spline_info$info
 
   topic_effects <- est_topics_backend(estimated_effects,fit$theta,
                                       nsims=nsims,ui_level=ui_level,npoints=npoints,verbose=verbose)
 
-  out <- list(topic_effects=topic_effects,topics=topics,modelframe=topics$modelframe)
+  out <- list(topic_effects=topic_effects,topics=object,modelframe=modelframe_full)
   class(out) <- 'effects'
   attr(out,'type') <- 'topics'
 
@@ -213,8 +218,6 @@ est_topics_backend <- function(estimated_effects,theta,nsims=100,ui_level=.8,npo
 
         for (mod in mods){
 
-          if (verbose) cat(sprintf('Making posterior predictions for %s given %s.\n',cov_i,mod))
-
           ppd <- make_ppd_x(estimated_effects,covariate=cov_i,mod=mod,npoints=100)
 
           for (k in seq_len(K)){
@@ -237,13 +240,13 @@ est_topics_backend <- function(estimated_effects,theta,nsims=100,ui_level=.8,npo
         names(fitted) <- paste0('T',1:K)
         fitted <- list(fitted)
 
-        if (verbose) cat(sprintf('Making posterior predictions for %s given %s.\n',cov_i,mod))
-
         ppd <- make_ppd_x(estimated_effects,covariate=cov_i,npoints=100)[[1]]
 
         for (k in seq_len(K)){
           sims <- ppd %*% t(simbetas[[k]])
-          fitted[[mod]][[k]] <- cbind(rowMeans(sims),
+
+          # was fitted[[mod]][[k]] but there isn't a mod
+          fitted[[k]] <- cbind(rowMeans(sims),
                                       t(apply(sims,1,function(x) quantile(x,c(ui_offset,1-ui_offset)))),
                                       cov_vals)
         }

@@ -20,6 +20,7 @@ NULL
 #' @param chains For HMC, number of parallel chains. Defaults to 1.
 #' @param return_summary Logical flag to return results summary. Defaults to TRUE.
 #' @param verbose Logical flag to print progress information. Defaults to FALSE.
+#' @param ... Additional arguments for methods.
 #'
 #' @return An object of class effects containing
 #' \describe{
@@ -35,19 +36,22 @@ NULL
 #' @seealso \code{\link[rstan]{stan}} \code{\link{est.functions}}
 #'
 #' @examples
-#' formula <- ~s(age) + drug + sex
-#' refs <- c('control','female')
+#' formula <- ~DIAGNOSIS
+#' refs <- 'Not IBD'
 #'
-#' dat <- prepare_data(otu_table=OTU,rows_are_taxa=FALSE,tax_table=TAX,
-#'                     metadata=META,formula=formula,refs=refs,
+#' dat <- prepare_data(otu_table=GEVERS$OTU,rows_are_taxa=FALSE,tax_table=GEVERS$TAX,
+#'                     metadata=GEVERS$META,formula=formula,refs=refs,
 #'                     cn_normalize=TRUE,drop=TRUE)
+#'
 #' topics <- find_topics(dat,K=15)
+#' \dontrun{
 #' functions <- predict(topics,reference_path='/references/ko_13_5_precalculated.tab.gz')
 #'
-#  function_effects_init <- est(functions,level=3,iters=150,
-#                               prior=c('laplace','t','laplace'))
-#  function_effects <- resume(function_effects_init,init_type='last',
-#                             iters=300,chains=4)
+#' function_effects_init <- est(functions,level=3,iters=150,
+#'                              prior=c('laplace','t','laplace'))
+#' function_effects <- resume(function_effects_init,init_type='last',
+#'                            iters=300,chains=4)
+#'                            }
 #'
 #' @export
 resume <- function(object,...) UseMethod('resume')
@@ -88,9 +92,10 @@ resume.effects <- function(object,init_type=c('last','orig'),inits,
 }
 
 #' @export
-resume.stanfit <- function(stan_obj,stan_dat,inits,gene_table,
+resume.stanfit <- function(object,stan_dat,inits,gene_table,
                            pars,iters,warmup=iters/2,chains=1,
-                           return_summary=TRUE,verbose=FALSE){
+                           return_summary=TRUE,verbose=FALSE,
+                           ...){
 
   if (chains > 1){
     if (verbose) cat('Preparing parallelization.\n')
@@ -102,7 +107,7 @@ resume.stanfit <- function(stan_obj,stan_dat,inits,gene_table,
     options(mc.cores=chains)
   }
 
-  fit <- rstan::stan(fit=stan_obj,data=stan_dat,
+  fit <- rstan::stan(fit=object,data=stan_dat,
                      init=inits,warmup=warmup,
                      pars=c('theta'),include=FALSE,
                      iter=iters,chains=chains,

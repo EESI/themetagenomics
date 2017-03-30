@@ -14,6 +14,8 @@ resume(object, ...)
 \arguments{
 \item{object}{(required) Ouput of \code{\link{est.functions}}.}
 
+\item{...}{Additional arguments for methods.}
+
 \item{init_type}{Type of initial parameters, either the original set that was
 passed to \code{\link{est.functions}} or the last parameter sample from the
 reused fit. Defaults to last.}
@@ -46,15 +48,22 @@ cases when a previous fit failed to converged (i.e., Rhat > 1.1 for a portion
 of parameter estimates), thus requiring more iterations.
 }
 \examples{
-formula <- ~s(age) + drug + sex
-refs <- c('control','female')
+formula <- ~DIAGNOSIS
+refs <- 'Not IBD'
 
-dat <- prepare_data(otu_table=OTU,rows_are_taxa=FALSE,tax_table=TAX,
-                    metadata=META,formula=formula,refs=refs,
+dat <- prepare_data(otu_table=GEVERS$OTU,rows_are_taxa=FALSE,tax_table=GEVERS$TAX,
+                    metadata=GEVERS$META,formula=formula,refs=refs,
                     cn_normalize=TRUE,drop=TRUE)
+
 topics <- find_topics(dat,K=15)
+\dontrun{
 functions <- predict(topics,reference_path='/references/ko_13_5_precalculated.tab.gz')
 
+function_effects_init <- est(functions,level=3,iters=150,
+                             prior=c('laplace','t','laplace'))
+function_effects <- resume(function_effects_init,init_type='last',
+                           iters=300,chains=4)
+                           }
 
 }
 \references{

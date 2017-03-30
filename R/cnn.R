@@ -22,7 +22,7 @@
 #' Beiko, R. G., and Huttenhower, C. (2013). Nature Biotechnology, 1-10. 8.
 #'
 #' @examples
-#' nOTU <- cnn(OTU,rows_are_taxa=FALSE,drop=TRUE)
+#' nOTU <- cnn(GEVERS$OTU,rows_are_taxa=FALSE,drop=TRUE)
 #'
 #' @export
 cnn <- function(otu_table,rows_are_taxa,copy_numbers,drop=TRUE,verbose=FALSE){

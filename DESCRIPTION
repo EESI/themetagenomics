@@ -5,12 +5,12 @@ Authors@R: c(
     person("Stephen", "Woloszynek", , "sw424@drexel.edu", c("aut", "cre")),
     person("Drexel University", role = "cph")
     )
-Description: A Topic Modeling Library for 16S rRNA Amplicon Data
+Description: A Topic Modeling Library for 16S rRNA Amplicon Data.
 URL: http://github.com/sw1/themetagenomics
 BugReports: http://github.com/sw1/themetagenomics/issues
 License: MIT + file LICENSE
 Encoding: UTF-8
-LazyData: true
+LazyData: TRUE
 Depends:
   R (>= 3.3.3),
   Rcpp (>= 0.12.8)
@@ -19,6 +19,7 @@ Imports:
   lme4,
   plotly,
   rstan,
+  scales,
   shiny,
   stats,
   stats4

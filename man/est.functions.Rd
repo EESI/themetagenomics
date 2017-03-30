@@ -47,12 +47,6 @@ iters/2.}
 \item{chains}{For HMC, number of parallel chains. Defaults to 1.}
 
 \item{return_summary}{Logical flag to return results summary. Defaults to TRUE.}
-
-\item{object}{(required) Output of code{\link{predict.topics}} with hmc
-selected as method.}
-
-\item{object}{(required) Output of \code{\link{predict.topics}} with ml
-selected as method.}
 }
 \value{
 An object of class effects containing
@@ -97,17 +91,20 @@ number of iterations. In such a case, the model estimates are returns so the use
 HMC, but by initializing at these ML values.}
 }
 \examples{
-formula <- ~s(age) + drug + sex
-refs <- c('control','female')
+formula <- ~DIAGNOSIS
+refs <- 'CD'
 
-dat <- prepare_data(otu_table=OTU,rows_are_taxa=FALSE,tax_table=TAX,
-                    metadata=META,formula=formula,refs=refs,
+dat <- prepare_data(otu_table=GEVERS$OTU,rows_are_taxa=FALSE,tax_table=GEVERS$TAX,
+                    metadata=GEVERS$META,formula=formula,refs=refs,
                     cn_normalize=TRUE,drop=TRUE)
 topics <- find_topics(dat,K=15)
+
+\dontrun{
 functions <- predict(topics,reference_path='/references/ko_13_5_precalculated.tab.gz')
 function_effects <- est(functions,level=3,
                         iters=500,method='hmc',
                         prior=c('laplace','t','laplace'))
+                        }
 
 }
 \references{

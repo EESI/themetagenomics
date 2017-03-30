@@ -65,17 +65,20 @@
 #' Reference Manual, Version 2.14.0. http://mc-stan.org
 #'
 #' @examples
-#' formula <- ~s(age) + drug + sex
-#' refs <- c('control','female')
+#' formula <- ~DIAGNOSIS
+#' refs <- 'CD'
 #'
-#' dat <- prepare_data(otu_table=OTU,rows_are_taxa=FALSE,tax_table=TAX,
-#'                     metadata=META,formula=formula,refs=refs,
+#' dat <- prepare_data(otu_table=GEVERS$OTU,rows_are_taxa=FALSE,tax_table=GEVERS$TAX,
+#'                     metadata=GEVERS$META,formula=formula,refs=refs,
 #'                     cn_normalize=TRUE,drop=TRUE)
 #' topics <- find_topics(dat,K=15)
+#'
+#' \dontrun{
 #' functions <- predict(topics,reference_path='/references/ko_13_5_precalculated.tab.gz')
 #' function_effects <- est(functions,level=3,
 #'                         iters=500,method='hmc',
 #'                         prior=c('laplace','t','laplace'))
+#'                         }
 #'
 #' @aliases est_functions est.functions
 #'

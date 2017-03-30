@@ -7,7 +7,12 @@
 \usage{
 extract(object, ...)
 
-\method{extract}{effects}(object, verbose = FALSE)
+\method{extract}{effects}(object, ...)
+}
+\arguments{
+\item{object}{Object of class effects, fit via hmc.}
+
+\item{...}{Additional arguments for methods.}
 }
 \value{
 A list containing
@@ -27,3 +32,24 @@ Extracts the summary information in a form condusive with vis methods,
 specifically in cases when return_summary was set to FALSE.
 }}
 
+\examples{
+formula <- ~DIAGNOSIS
+refs <- 'Not IBD'
+
+dat <- prepare_data(otu_table=GEVERS$OTU,rows_are_taxa=FALSE,tax_table=GEVERS$TAX,
+                    metadata=GEVERS$META,formula=formula,refs=refs,
+                    cn_normalize=TRUE,drop=TRUE)
+
+topics <- find_topics(dat,K=15)
+\dontrun{
+functions <- predict(topics,reference_path='/references/ko_13_5_precalculated.tab.gz')
+
+function_effects <- est(functions,level=3,
+                        iters=500,method='hmc',
+                        prior=c('laplace','t','laplace'),
+                        return_summary=FALSE)
+
+function_effects_summary <- extract(function_effects)
+                        }
+
+}

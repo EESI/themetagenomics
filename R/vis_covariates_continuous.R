@@ -1,15 +1,14 @@
 #' @rdname vis
-#' @param continuous_object Object of continuous binary, automatically converted from
-#' effects object.
+#'
 #' @param taxa_reg_n Number of most relevant taxa within topic to regress. Defaults to 8.
 
-vis.continuous <- function(continuous_object,lambda_step=.1,taxa_reg_n=8,...){
+vis.continuous <- function(effects_object,lambda_step=.1,taxa_reg_n=8,...){
 
-  topics <- continuous_object$topics
-  topic_effects <- continuous_object$topic_effects
-  otu_table <- continuous_object$topics$otu_table
-  tax_table <- continuous_object$topics$tax_table
-  metadata <- continuous_object$modelframe
+  topics <- effects_object$topics
+  topic_effects <- effects_object$topic_effects
+  otu_table <- effects_object$topics$otu_table
+  tax_table <- effects_object$topics$tax_table
+  metadata <- effects_object$modelframe
 
   covariates <- colnames(metadata)
   cov_f <- sapply(metadata,class) == 'factor'
@@ -191,7 +190,7 @@ vis.continuous <- function(continuous_object,lambda_step=.1,taxa_reg_n=8,...){
           df$sig <- factor(as.character(sign(df$est) * as.numeric(as.character.factor(df$sig))),levels=c('0','1','-1'),ordered=TRUE)
           df$topic <- factor(df$topic,levels=df$topic,ordered=TRUE)
 
-          p_est <- ggplot(df,aes(topic,y=est,ymin=lower,ymax=upper,color=sig)) +
+          p_est <- ggplot(df,aes_(~topic,y=~est,ymin=~lower,ymax=~upper,color=~sig)) +
             geom_hline(yintercept=0,linetype=3)
           p_est <- p_est +
             geom_pointrange(size=2) +
@@ -238,7 +237,7 @@ vis.continuous <- function(continuous_object,lambda_step=.1,taxa_reg_n=8,...){
 
           l <- input$lambda
 
-          tinfo_k <- subset(tinfo,Category == current_k)
+          tinfo_k <- tinfo[tinfo$Category == current_k,] #subset(tinfo,Category == current_k)
           rel_k <- l*tinfo_k$logprob + (1-l)*tinfo_k$loglift
           new_order <- tinfo_k[order(rel_k,decreasing=TRUE)[1:taxa_reg_n],]
           new_order$Term <- as.character.factor(new_order$Term)
@@ -255,9 +254,9 @@ vis.continuous <- function(continuous_object,lambda_step=.1,taxa_reg_n=8,...){
           df_temp$taxon <- paste0(pretty_names[df_temp$otu],' (',df_temp$otu,')')
           df_temp$taxon <- factor(df_temp$taxon,levels=unique(df_temp$taxon),ordered=TRUE)
 
-          p_full <- ggplot(data=TAB()$df,aes(covariate,abundance,color=p)) +
+          p_full <- ggplot(data=TAB()$df,aes_(~covariate,~abundance,color=~p)) +
             geom_blank() +
-            geom_point(data=df_temp,aes(covariate,abundance,color=p),alpha=.5,size=1.2) +
+            geom_point(data=df_temp,aes_(~covariate,~abundance,color=~p),alpha=.5,size=1.2) +
             scale_y_log10(labels=scales::comma) +
             viridis::scale_color_viridis('Beta Prob.') +
             theme_classic() +
@@ -298,14 +297,14 @@ vis.continuous <- function(continuous_object,lambda_step=.1,taxa_reg_n=8,...){
             df2 <- P()$df[P()$df$abundance > round(P()$min,5),]
 
             p_ss <- P()$p_ss +
-              stat_smooth(data=df2,aes(covariate,abundance),color='black',size=1.1,method='loess',se=FALSE) +
-              stat_smooth(data=df2,aes(covariate,abundance),color='darkred',size=1.1,method='lm',linetype=2,se=FALSE)
+              stat_smooth(data=df2,aes_(~covariate,~abundance),color='black',size=1.1,method='loess',se=FALSE) +
+              stat_smooth(data=df2,aes_(~covariate,~abundance),color='darkred',size=1.1,method='lm',linetype=2,se=FALSE)
 
           }else{
 
             p_ss <- P()$p_ss +
-              stat_smooth(data=P()$df,aes(covariate,abundance),color='black',size=1.1,method='loess',se=FALSE) +
-              stat_smooth(data=P()$df,aes(covariate,abundance),color='darkred',size=1.1,method='lm',linetype=2,se=FALSE)
+              stat_smooth(data=P()$df,aes_(~covariate,~abundance),color='black',size=1.1,method='loess',se=FALSE) +
+              stat_smooth(data=P()$df,aes_(~covariate,~abundance),color='darkred',size=1.1,method='lm',linetype=2,se=FALSE)
 
           }
 
@@ -429,14 +428,14 @@ vis.continuous <- function(continuous_object,lambda_step=.1,taxa_reg_n=8,...){
             df2 <- P()$df[P()$df$abundance > round(P()$min,5),]
 
             p_full <- P()$p_full +
-              stat_smooth(data=df2,aes(covariate,abundance),color='black',size=1.1,method='loess',se=FALSE) +
-              stat_smooth(data=df2,aes(covariate,abundance),color='darkred',size=1.1,method='lm',linetype=2,se=FALSE)
+              stat_smooth(data=df2,aes_(~covariate,~abundance),color='black',size=1.1,method='loess',se=FALSE) +
+              stat_smooth(data=df2,aes_(~covariate,~abundance),color='darkred',size=1.1,method='lm',linetype=2,se=FALSE)
 
           }else{
 
             p_full <- P()$p_full +
-              stat_smooth(data=P()$df,aes(covariate,abundance),color='black',size=1.1,method='loess',se=FALSE) +
-              stat_smooth(data=P()$df,aes(covariate,abundance),color='darkred',size=1.1,method='lm',linetype=2,se=FALSE)
+              stat_smooth(data=P()$df,aes_(~covariate,~abundance),color='black',size=1.1,method='loess',se=FALSE) +
+              stat_smooth(data=P()$df,aes_(~covariate,~abundance),color='darkred',size=1.1,method='lm',linetype=2,se=FALSE)
           }
 
           if (any(input$z %in% '3'))

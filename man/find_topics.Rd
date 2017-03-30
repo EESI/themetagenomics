@@ -10,6 +10,8 @@ find_topics(themetadata_object, K, sigma_prior = 0, model = NULL,
   control = list())
 }
 \arguments{
+\item{themetadata_object}{(required) Ouput of \code{\link{prepare_data}}.}
+
 \item{K}{(required) A positive integer indicating the number of topics to be
 estimated.}
 
@@ -38,8 +40,6 @@ printed.}
 
 \item{control}{List of additional parameters control portions of the
 optimization. See details.}
-
-\item{thetmetadata_object}{(required) Ouput of \code{\link{prepare_data}}.}
 }
 \value{
 An object of class topics containing
@@ -99,12 +99,13 @@ initialization.}
 }
 }
 \examples{
-formula <- ~s(age) + drug + sex
-refs <- c('control','female')
+formula <- ~DIAGNOSIS
+refs <- 'Not IBD'
 
-dat <- prepare_data(otu_table=OTU,rows_are_taxa=FALSE,tax_table=TAX,
-                    metadata=META,formula=formula,refs=refs,
+dat <- prepare_data(otu_table=GEVERS$OTU,rows_are_taxa=FALSE,tax_table=GEVERS$TAX,
+                    metadata=GEVERS$META,formula=formula,refs=refs,
                     cn_normalize=TRUE,drop=TRUE)
+
 topics <- find_topics(dat,K=15)
 
 }

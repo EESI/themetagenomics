@@ -1,15 +1,14 @@
 #' @rdname vis
-#' @param binary_object Object of class binary, automatically converted from
-#' effects object.
+#'
 #' @param taxa_grp_n Number of taxa group names to display (remaining are renamed to other). Defaults to 7.
 
-vis.binary <- function(binary_object,taxa_grp_n=7,...){
+vis.binary <- function(effects_object,taxa_grp_n=7,...){
 
-  topics <- binary_object$topics
-  topic_effects <- binary_object$topic_effects
-  otu_table <- binary_object$topics$otu_table
-  tax_table <- binary_object$topics$tax_table
-  metadata <- binary_object$modelframe
+  topics <- effects_object$topics
+  topic_effects <- effects_object$topic_effects
+  otu_table <- effects_object$topics$otu_table
+  tax_table <- effects_object$topics$tax_table
+  metadata <- effects_object$modelframe
 
   fit <- topics$fit
   K <- fit$settings$dim$K
@@ -47,11 +46,11 @@ vis.binary <- function(binary_object,taxa_grp_n=7,...){
       fixedRow(
         column(2,
                conditionalPanel(condition='output.show',sliderInput('z', label='Min. beta prob.',min=-6,max=-1,value=-2,step=.25,pre='10^(',post=')'))
-               ),
+        ),
         column(8,htmlOutput('text')),
         column(2,
                conditionalPanel(condition='output.show',checkboxInput('norm',label=strong('Normalize'),value=TRUE))
-               )
+        )
       ),
 
       plotlyOutput('dis'),
@@ -86,7 +85,7 @@ vis.binary <- function(binary_object,taxa_grp_n=7,...){
           df$sig <- factor(as.character(sign(df$est) * as.numeric(as.character.factor(df$sig))),levels=c('0','1','-1'),ordered=TRUE)
           df$topic <- factor(df$topic,levels=df$topic,ordered=TRUE)
 
-          p_est <- ggplot(df,aes(topic,y=est,ymin=lower,ymax=upper,color=sig)) +
+          p_est <- ggplot(df,aes_(~topic,y=~est,ymin=~lower,ymax=~upper,color=~sig)) +
             geom_hline(yintercept=0,linetype=3)
           p_est <- p_est +
             geom_pointrange(size=2) +
@@ -125,52 +124,54 @@ vis.binary <- function(binary_object,taxa_grp_n=7,...){
       DF1 <- reactive({
         suppressWarnings({
 
-        s <- event_data('plotly_click',source='reg_est')
+          s <- event_data('plotly_click',source='reg_est')
 
-        validate(need(!is.null(s),'Please choose a topic by clicking a point.'))
+          validate(need(!is.null(s),'Please choose a topic by clicking a point.'))
 
-        df0 <- EST()$df0
+          df0 <- EST()$df0
 
-        k <- EST()$k_levels[s[['x']]]
+          k <- EST()$k_levels[s[['x']]]
 
-        beta_subset <- beta[,k]
-        beta_subset <- beta_subset[beta_subset > 10^(as.integer(input$z))]
+          beta_subset <- beta[,k]
+          beta_subset <- beta_subset[beta_subset > 10^(as.integer(input$z))]
 
-        if (input$norm) x <- ra_table else x <- otu_table
-        df0$abundance <- c(0,max(x))
+          if (input$norm) x <- ra_table else x <- otu_table
+          df0$abundance <- c(0,max(x))
 
-        otu_subset <- t(x[,names(beta_subset)])
+          otu_subset <- t(x[,names(beta_subset)])
 
-        df1 <- try(data.frame(abundance=matrix(otu_subset,ncol=1),
-                              otu=rownames(otu_subset),
-                              p=beta_subset,
-                              sample=rep(colnames(otu_subset),each=nrow(otu_subset)),
-                              covariate=metadata[colnames(otu_subset),EST()$covariate]),
-                   silent=TRUE)
+          df1 <- try(data.frame(abundance=matrix(otu_subset,ncol=1),
+                                otu=rownames(otu_subset),
+                                p=beta_subset,
+                                sample=rep(colnames(otu_subset),each=nrow(otu_subset)),
+                                covariate=metadata[colnames(otu_subset),EST()$covariate]),
+                     silent=TRUE)
 
-        validate(need(!(class(df1) == 'try-error'),'Too many points filtered. Lower the minimum beta probability.'))
+          validate(need(!(class(df1) == 'try-error'),'Too many points filtered. Lower the minimum beta probability.'))
 
-        df1$covariate <- factor(df1$covariate,levels=EST()$cov_names,ordered=TRUE)
-        df1$taxon <- paste0(pretty_names[df1$otu],' (',df1$otu,')')
+          df1$covariate <- factor(df1$covariate,levels=EST()$cov_names,ordered=TRUE)
+          df1$taxon <- paste0(pretty_names[df1$otu],' (',df1$otu,')')
 
-        df2 <- df1[df1$abundance > min(df1$abundance),]
+          df2 <- df1[df1$abundance > min(df1$abundance),]
 
-        p_dis <- ggplot(data=df0,aes(covariate,abundance,color=p)) +
-          geom_blank() +
-          geom_violin(data=df2,
-                      aes(covariate,abundance,color=p),fill=NA) +
-          geom_jitter(data=df1,
-                      aes(covariate,abundance,color=p,labels=taxon),alpha=.5,size=2) +
-          scale_y_log10(labels=scales::comma) +
-          viridis::scale_color_viridis('Beta Prob.') +
-          theme_classic() +
-          labs(x='',y='Abundance') +
-          ggtitle(k)
+          browser()
 
-        p_dis <- ggplotly(p_dis,source='dis_cov',tooltip=c('taxon','abundance','p'))
-        p_dis <- layout(p_dis,dragmode='select')
+          p_dis <- ggplot(data=df0,aes_(~covariate,~abundance,color=~p)) +
+            geom_blank() +
+            geom_violin(data=df2,
+                        aes_(~covariate,~abundance,color=~p),fill=NA) +
+            geom_jitter(data=df1,
+                        aes_(~covariate,~abundance,color=~p,labels=~taxon),alpha=.5,size=2) +
+            scale_y_log10(labels=scales::comma) +
+            viridis::scale_color_viridis('Beta Prob.') +
+            theme_classic() +
+            labs(x='',y='Abundance') +
+            ggtitle(k)
 
-        list(p_dis=p_dis,df1=df1,df0=df0)
+          p_dis <- ggplotly(p_dis,source='dis_cov',tooltip=c('taxon','abundance','p'))
+          p_dis <- layout(p_dis,dragmode='select')
+
+          list(p_dis=p_dis,df1=df1,df0=df0)
 
         })
       })
@@ -186,11 +187,11 @@ vis.binary <- function(binary_object,taxa_grp_n=7,...){
                    {
                      output$text <- renderUI({
                        HTML('The slider on the <b>left</b> adjusts the value in which taxa are filtered based on their probability in the topics over
-                             taxa distribution beta. The check box sets whether to shown counts or relative abundances. The violin plots <b>below</b>
-                             are interactive. Select a subset of points to visualize their distribution in the raw data as a function on taxonomy.')
-                       })
+                            taxa distribution beta. The check box sets whether to shown counts or relative abundances. The violin plots <b>below</b>
+                            are interactive. Select a subset of points to visualize their distribution in the raw data as a function on taxonomy.')
+                     })
                      }
-                   )
+                     )
 
 
       output$dis <- renderPlotly({
@@ -220,7 +221,7 @@ vis.binary <- function(binary_object,taxa_grp_n=7,...){
 
         validate(need(!(class(df_tax) == 'try-error'),'Too few or no points selected. Drag select points in the ribbon plots.'))
 
-        p_tax <- ggplot(df_tax,aes(taxon,abundance,fill=cov)) +
+        p_tax <- ggplot(df_tax,aes_(~taxon,~abundance,fill=~cov)) +
           geom_bar(color='black',stat='identity',position='dodge') +
           facet_grid(.~group,scales='free_x') +
           scale_fill_manual(values=c('indianred3','dodgerblue3')) +
@@ -235,9 +236,9 @@ vis.binary <- function(binary_object,taxa_grp_n=7,...){
       })
 
 
-    }
+                   }
 
 
-  )
+      )
 
 }

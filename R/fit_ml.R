@@ -1,8 +1,5 @@
 #' @rdname est.functions
 #'
-#' @param object (required) Output of \code{\link{predict.topics}} with ml
-#' selected as method.
-#'
 #' @export
 
 est.ml <- function(object,iters=1000,verbose=FALSE,...){

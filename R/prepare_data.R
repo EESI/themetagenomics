@@ -45,11 +45,11 @@ NULL
 #' @seealso \code{\link[stm]{s}}
 #'
 #' @examples
-#' formula <- ~s(age) + drug + sex
-#' refs <- c('control','female')
+#' formula <- ~DIAGNOSIS
+#' refs <- 'Not IBD'
 #'
-#' dat <- prepare_data(otu_table=OTU,rows_are_taxa=FALSE,tax_table=TAX,
-#'                     metadata=META,formula=formula,refs=refs,
+#' dat <- prepare_data(otu_table=GEVERS$OTU,rows_are_taxa=FALSE,tax_table=GEVERS$TAX,
+#'                     metadata=GEVERS$META,formula=formula,refs=refs,
 #'                     cn_normalize=TRUE,drop=TRUE)
 #' @export
 prepare_data <- function(otu_table,rows_are_taxa,tax_table,metadata,formula,refs,
@@ -57,7 +57,6 @@ prepare_data <- function(otu_table,rows_are_taxa,tax_table,metadata,formula,refs
 
   if (max(otu_table) <= 1)
     stop('Count table must contain counts (non-negative integers) and hence cannot be normalized.')
-
   if (is.null(colnames(otu_table)) | is.null(rownames(otu_table)))
     stop('otu_table must contain appropriate row and column names.')
   if (!missing(tax_table))
@@ -75,6 +74,7 @@ prepare_data <- function(otu_table,rows_are_taxa,tax_table,metadata,formula,refs
                 splineinfo=NULL,
                 modelframe=NULL)
   class(slots) <- 'themetadata'
+  refs_type <- NULL
 
   if (rows_are_taxa) otu_table <- t(otu_table)
 
@@ -93,14 +93,14 @@ prepare_data <- function(otu_table,rows_are_taxa,tax_table,metadata,formula,refs
     refs_type <- 'none'
   }
   if (miss$metadata){
-    if (rows_raw_taxa){
+    if (rows_are_taxa){
       metadata <- matrix(1,nrow=ncol(otu_table),2,dimnames=list(colnames(otu_table),NULL))
     }else{
       metadata <- matrix(1,nrow=nrow(otu_table),2,dimnames=list(rownames(otu_table),NULL))
     }
   }
   if (miss$tax_table){
-    if (rows_raw_taxa){
+    if (rows_are_taxa){
       tax_table <- matrix(NA,nrow(otu_table),7,dimnames=list(rownames(otu_table),NULL))
     }else{
       tax_table <- matrix(NA,ncol(otu_table),7,dimnames=list(colnames(otu_table),NULL))
@@ -145,7 +145,7 @@ prepare_data <- function(otu_table,rows_are_taxa,tax_table,metadata,formula,refs
 
 
   splines <- check_for_splines(formula,metadata)
-  if (splines) formula_tmp <- extract_spline_info(formula,metadata,remove_only=TRUE)
+  if (splines) formula_tmp <- extract_spline_info(formula,metadata,remove_only=TRUE) else formula_tmp <- formula
   if (!miss$metadata){
     if (verbose) if (any(is.na(metadata))) cat('Removing NA values in metadata.\n')
     metadata <- model.frame(formula_tmp,data=metadata,na.action=na.omit)
@@ -153,7 +153,7 @@ prepare_data <- function(otu_table,rows_are_taxa,tax_table,metadata,formula,refs
 
   intersection <- intersect(rownames(otu_table),rownames(metadata))
   otu_table <- otu_table[intersection,]
-  metadata <- metadata[intersection,]
+  metadata <- metadata[intersection,,drop=FALSE]
 
   intersection <- intersect(colnames(otu_table),rownames(tax_table))
   otu_table <- otu_table[,intersection]
@@ -170,14 +170,16 @@ prepare_data <- function(otu_table,rows_are_taxa,tax_table,metadata,formula,refs
   if (drop){
     otu_table <- otu_table[,colSums(otu_table) > 0]
     otu_table <- otu_table[rowSums(otu_table) > 0,]
-    metadata <- metadata[rownames(otu_table),]
+    metadata <- metadata[rownames(otu_table),,drop=FALSE]
     tax_table <- tax_table[colnames(otu_table),]
   }
 
   classes <- sapply(metadata,class)
   if(any(classes == 'character')){
     if (verbose) cat('Converting character covariates to factors.\n')
+    rnames <- rownames(metadata)
     metadata <- as.data.frame(unclass(metadata))
+    rownames(metadata) <- rnames
   }
   classes <- sapply(metadata,class)
   if (sum(classes == 'factor') > 0){
@@ -203,10 +205,13 @@ prepare_data <- function(otu_table,rows_are_taxa,tax_table,metadata,formula,refs
       if (splines){
         splineinfo <- extract_spline_info(formula,metadata)
         modelframe <- create_modelframe(splineinfo$formula,refs,metadata)
+        slots$splineinfo <- splineinfo
       }else{
         modelframe <- create_modelframe(formula,refs,metadata)
       }
     }
+  }else{
+    modelframe <- create_modelframe(formula,refs,metadata)
   }
   rownames(metadata) <- rownames(otu_table)
 
@@ -238,7 +243,6 @@ prepare_data <- function(otu_table,rows_are_taxa,tax_table,metadata,formula,refs
 
   slots$otu_table <- otu_table
   slots$modelframe <- modelframe
-  slots$splineinfo <- splineinfo
   if (!miss$tax_table) slots$tax_table <- tax_table
   if (!miss$metadata) slots$metadata <- metadata
   if (!miss$refs) slots$refs <- refs

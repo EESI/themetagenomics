@@ -58,11 +58,11 @@ relationship between sample metadata and the topics over samples
 distribution.
 }
 \examples{
-formula <- ~s(age) + drug + sex
-refs <- c('control','female')
+formula <- ~DIAGNOSIS
+refs <- 'Not IBD'
 
-dat <- prepare_data(otu_table=OTU,rows_are_taxa=FALSE,tax_table=TAX,
-                    metadata=META,formula=formula,refs=refs,
+dat <- prepare_data(otu_table=GEVERS$OTU,rows_are_taxa=FALSE,tax_table=GEVERS$TAX,
+                    metadata=GEVERS$META,formula=formula,refs=refs,
                     cn_normalize=TRUE,drop=TRUE)
 }
 \seealso{

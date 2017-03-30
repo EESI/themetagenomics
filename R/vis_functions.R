@@ -1,6 +1,5 @@
 #' @rdname vis
-#' @param functions_object Object of class functions, automatically converted from
-#' effects object.
+#'
 #' @param topic_effects Output of \code{\link{est.topics}}.
 #' @param beta_min Minimum probability in topics over taxa
 #'   distribution to set to 0. Defaults to 1e-5.
@@ -8,7 +7,7 @@
 #' @param gene_min Mininum count for gene set table. Defaults to 10.
 #' @param pw_min Maximium number of pathways to show in heatmap. for Defaults to 20.
 
-vis.functions <- function(functions_object,topic_effects,beta_min=1e-5,ui_level=.8,gene_min=10,pw_min=20,...){
+vis.functions <- function(effects_object,topic_effects,beta_min=1e-5,ui_level=.8,gene_min=10,pw_min=20,...){
 
   topics <- topic_effects$topics
   tax_table <- topic_effects$topics$tax_table
@@ -30,8 +29,8 @@ vis.functions <- function(functions_object,topic_effects,beta_min=1e-5,ui_level=
 
   fit <- topics$fit
   K <- fit$settings$dim$K
-  N_pw <- length(unique(functions_object$model$summary$b_pwxtopic$pw))
-  pws <- unique(functions_object$model$summary$b_pwxtopic$pw)
+  N_pw <- length(unique(effects_object$model$summary$b_pwxtopic$pw))
+  pws <- unique(effects_object$model$summary$b_pwxtopic$pw)
 
   beta <- t(exp(fit$beta$logbeta[[1]]))
   rownames(beta) <- fit$vocab
@@ -39,14 +38,14 @@ vis.functions <- function(functions_object,topic_effects,beta_min=1e-5,ui_level=
   beta[beta < beta_min] <- beta_min
   logbeta_global <- log(beta)
 
-  uncertainty <- any(grepl('%',colnames(functions_object$model$summary$mu)))
+  uncertainty <- any(grepl('%',colnames(effects_object$model$summary$mu)))
 
   int_mat <- matrix(0.0,N_pw,K,dimnames=list(pws,paste0('T',1:K)))
 
-  for (i in seq_len(nrow(functions_object$model$summary$b_pwxtopic))){
-    pw <- as.character(functions_object$model$summary$b_pwxtopic$pw[i])
-    k <- paste0('T',as.character(functions_object$model$summary$b_pwxtopic$topic[i]))
-    int_mat[pw,k] <- functions_object$model$summary$b_pwxtopic$mean[i]
+  for (i in seq_len(nrow(effects_object$model$summary$b_pwxtopic))){
+    pw <- as.character(effects_object$model$summary$b_pwxtopic$pw[i])
+    k <- paste0('T',as.character(effects_object$model$summary$b_pwxtopic$topic[i]))
+    int_mat[pw,k] <- effects_object$model$summary$b_pwxtopic$mean[i]
   }
 
   dd_row <- as.dendrogram(hclust(dist(int_mat,method='euclidean'),method='ward.D2'))
@@ -63,11 +62,11 @@ vis.functions <- function(functions_object,topic_effects,beta_min=1e-5,ui_level=
 
     sig_mat <- matrix(0,N_pw,K,dimnames=list(pws,paste0('T',1:K)))
 
-    sig <- rowSums(sign(functions_object$model$summary$b_pwxtopic[,ui_interval]))
+    sig <- rowSums(sign(effects_object$model$summary$b_pwxtopic[,ui_interval]))
 
-    for (i in seq_len(nrow(functions_object$model$summary$b_pwxtopic))){
-      pw <- as.character(functions_object$model$summary$b_pwxtopic$pw[i])
-      k <- paste0('T',as.character(functions_object$model$summary$b_pwxtopic$topic[i]))
+    for (i in seq_len(nrow(effects_object$model$summary$b_pwxtopic))){
+      pw <- as.character(effects_object$model$summary$b_pwxtopic$pw[i])
+      k <- paste0('T',as.character(effects_object$model$summary$b_pwxtopic$topic[i]))
       sig_mat[pw,k] <- sig[i]
     }
 
@@ -152,7 +151,7 @@ vis.functions <- function(functions_object,topic_effects,beta_min=1e-5,ui_level=
           bars <- c(which(max(df[df$sig == -1,'topic']) == levels(df$topic)) + .5,
                     which(min(df[df$sig == 1,'topic']) == levels(df$topic)) - .5)
 
-          p_est <- ggplot(df,aes(topic,y=est,ymin=lower,ymax=upper,color=sig)) +
+          p_est <- ggplot(df,aes_(~topic,y=~est,ymin=~lower,ymax=~upper,color=~sig)) +
             geom_hline(yintercept=0,linetype=3)
           p_est <- p_est +
             geom_pointrange(size=2) +
@@ -214,8 +213,8 @@ vis.functions <- function(functions_object,topic_effects,beta_min=1e-5,ui_level=
         df$otu <- factor(df$otu,levels=unique(df$otu),ordered=TRUE)
         df$taxon <- factor(df$taxon,levels=unique(df$taxon),ordered=TRUE)
 
-        p_tax <- ggplot(df,aes(topic,taxon)) +
-          geom_raster(aes(fill=probability)) +
+        p_tax <- ggplot(df,aes_(~topic,~taxon)) +
+          geom_raster(aes_(fill=~probability)) +
           viridis::scale_fill_viridis(name='Probability Rank') +
           labs(x='',y='',fill='Probability Rank') +
           theme(legend.position='none',
@@ -234,12 +233,12 @@ vis.functions <- function(functions_object,topic_effects,beta_min=1e-5,ui_level=
         df1$topic <- factor(df1$topic,levels=EST()$topic_order,ordered=TRUE)
         df2$topic <- factor(df2$topic,levels=EST()$topic_order,ordered=TRUE)
 
-        p_fxn <- ggplot(df1,aes(topic,pw,fill=weight)) +
+        p_fxn <- ggplot(df1,aes_(~topic,~pw,fill=~weight)) +
           geom_raster() +
           geom_point(data=df2[df2$sig > 0,],
-                     aes(topic,pw),color='red',shape=3)
+                     aes_(~topic,~pw),color='red',shape=3)
 
-        if (uncertainty)  p_fxn <- p_fxn + geom_point(data=df2[df2$sig < 0,],aes(topic,pw),color='cyan',shape=3)
+        if (uncertainty)  p_fxn <- p_fxn + geom_point(data=df2[df2$sig < 0,],aes_(~topic,~pw),color='cyan',shape=3)
 
         p_fxn <- p_fxn + viridis::scale_fill_viridis(name='Coefficient') +
           labs(x='',y='',fill='Coefficient') +
@@ -273,7 +272,7 @@ vis.functions <- function(functions_object,topic_effects,beta_min=1e-5,ui_level=
         k <- levels(df1$topic)[s[['x']]]
         pw <- levels(df1$pw)[s[['y']]]
 
-        gene_table <- functions_object$gene_table[paste0('T',functions_object$gene_table$topic) == k & functions_object$gene_table$pw == pw,c('count','ko','description')]
+        gene_table <- effects_object$gene_table[paste0('T',effects_object$gene_table$topic) == k & effects_object$gene_table$pw == pw,c('count','ko','description')]
         gene_table <- gene_table[gene_table$count >= 10,]
         gene_table <- gene_table[order(gene_table$count,decreasing=TRUE),]
         colnames(gene_table) <- c('Count','ID','Description')

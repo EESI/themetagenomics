@@ -3,6 +3,7 @@
 %   R/vis_covariates_continuous.R, R/vis_functions.R, R/vis_taxa.R
 \name{vis}
 \alias{vis}
+\alias{vis.effects}
 \alias{vis.binary}
 \alias{vis.continuous}
 \alias{vis.functions}
@@ -11,15 +12,18 @@
 \usage{
 vis(effects_object, ...)
 
-\method{vis}{binary}(binary_object, taxa_grp_n = 7, ...)
+\method{vis}{effects}(effects_object, topic_effects, type = c("taxa",
+  "binary", "continuous", "functions"), ...)
 
-\method{vis}{continuous}(continuous_object, lambda_step = 0.1,
-  taxa_reg_n = 8, ...)
+\method{vis}{binary}(effects_object, taxa_grp_n = 7, ...)
 
-\method{vis}{functions}(functions_object, topic_effects, beta_min = 1e-05,
+\method{vis}{continuous}(effects_object, lambda_step = 0.1, taxa_reg_n = 8,
+  ...)
+
+\method{vis}{functions}(effects_object, topic_effects, beta_min = 1e-05,
   ui_level = 0.8, gene_min = 10, pw_min = 20, ...)
 
-\method{vis}{taxa}(taxa_object, taxa_bar_n = 30, top_n = 7,
+\method{vis}{taxa}(effects_object, taxa_bar_n = 30, top_n = 7,
   method = c("huge", "simple"), corr_thresh = 0.01, lambda_step = 0.01,
   ...)
 }
@@ -29,23 +33,16 @@ vis(effects_object, ...)
 
 \item{...}{Additional arguments for methods.}
 
-\item{binary_object}{Object of class binary, automatically converted from
-effects object.}
+\item{topic_effects}{Output of \code{\link{est.topics}}.}
+
+\item{type}{Type of visualization to perform.}
 
 \item{taxa_grp_n}{Number of taxa group names to display (remaining are renamed to other). Defaults to 7.}
-
-\item{continuous_object}{Object of continuous binary, automatically converted from
-effects object.}
 
 \item{lambda_step}{Value designating the lambda stepsize for calculating
 taxa relevance. Recommended to be between .01 and .1. Defaults to .1.}
 
 \item{taxa_reg_n}{Number of most relevant taxa within topic to regress. Defaults to 8.}
-
-\item{functions_object}{Object of class functions, automatically converted from
-effects object.}
-
-\item{topic_effects}{Output of \code{\link{est.topics}}.}
 
 \item{beta_min}{Minimum probability in topics over taxa
 distribution to set to 0. Defaults to 1e-5.}
@@ -55,9 +52,6 @@ distribution to set to 0. Defaults to 1e-5.}
 \item{gene_min}{Mininum count for gene set table. Defaults to 10.}
 
 \item{pw_min}{Maximium number of pathways to show in heatmap. for Defaults to 20.}
-
-\item{taxa_object}{Object of taxa binary, automatically converted from
-effects object.}
 
 \item{taxa_bar_n}{Number of taxa to show in the frequency bar plot.
 Defaults to 30.}
@@ -70,8 +64,6 @@ Defaults to huge.}
 
 \item{corr_thresh}{Threshold to set correlations to 0 when method
 is set to simple. Defaults to .01.}
-
-\item{type}{Type of visualization to perform.}
 }
 \description{
 Launch in interactive visualize to explore topic effects
@@ -189,24 +181,35 @@ Launch in interactive visualize to explore topic effects
   }
 }
 \examples{
-formula <- ~s(age) + drug + sex
-refs <- c('control','female')
+formula <- ~DIAGNOSIS
+refs <- 'Not IBD'
 
-dat <- prepare_data(otu_table=OTU,rows_are_taxa=FALSE,tax_table=TAX,
-                    metadata=META,formula=formula,refs=refs,
+dat <- prepare_data(otu_table=GEVERS$OTU,rows_are_taxa=FALSE,tax_table=GEVERS$TAX,
+                    metadata=GEVERS$META,formula=formula,refs=refs,
                     cn_normalize=TRUE,drop=TRUE)
-topics <- find_topics(dat,K=15)
 
+\dontrun{
 vis(topic_effects,type='taxa')
 vis(topic_effects,type='binary')
+}
+
+formula <- ~PCDAI
+
+dat <- prepare_data(otu_table=GEVERS$OTU,rows_are_taxa=FALSE,tax_table=GEVERS$TAX,
+                    metadata=GEVERS$META,formula=formula,refs=refs,
+                    cn_normalize=TRUE,drop=TRUE)
+
+\dontrun{
 vis(topic_effects,type='continuous')
 
 functions <- predict(topics,reference_path='/references/ko_13_5_precalculated.tab.gz')
+
 function_effects <- est(functions,level=3,
                         iters=500,method='hmc',
                         prior=c('laplace','t','laplace'))
 
 vis(function_effects,topic_effects)
+}
 }
 \references{
 Roberts, M.E., Stewart, B.M., Tingley, D., Lucas, C., Leder-Luis,

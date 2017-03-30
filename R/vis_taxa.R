@@ -1,7 +1,5 @@
 #' @rdname vis
 #'
-#' @param taxa_object Object of taxa binary, automatically converted from
-#' effects object.
 #' @param taxa_bar_n Number of taxa to show in the frequency bar plot.
 #'   Defaults to 30.
 #' @param top_n Number of taxonic groups to colorize in the frequency
@@ -13,11 +11,11 @@
 #' @param lambda_step Value designating the lambda stepsize for calculating
 #' taxa relevance. Recommended to be between .01 and .1. Defaults to .1.
 
-vis.taxa <- function(taxa_object,taxa_bar_n=30,top_n=7,method=c('huge','simple'),corr_thresh=.01,lambda_step=.01,...){
+vis.taxa <- function(effects_object,taxa_bar_n=30,top_n=7,method=c('huge','simple'),corr_thresh=.01,lambda_step=.01,...){
 
-  topics <- taxa_object$topics
-  topic_effects <- taxa_object$topic_effects
-  tax_table <- taxa_object$topics$tax_table
+  topics <- effects_object$topics
+  topic_effects <- effects_object$topic_effects
+  tax_table <- effects_object$topics$tax_table
 
   method <- match.arg(method)
 
@@ -194,7 +192,7 @@ vis.taxa <- function(taxa_object,taxa_bar_n=30,top_n=7,method=c('huge','simple')
 
           l <- input$lambda
 
-          tinfo_k <- subset(tinfo,Category == current_k)
+          tinfo_k <- tinfo[tinfo$Category == current_k,]  #subset(tinfo,Category == current_k)
           rel_k <- l*tinfo_k$logprob + (1-l)*tinfo_k$loglift
           new_order <- tinfo_k[order(rel_k,decreasing=TRUE)[1:taxa_bar_n],]
           new_order$Term <- as.character.factor(new_order$Term)
@@ -229,7 +227,7 @@ vis.taxa <- function(taxa_object,taxa_bar_n=30,top_n=7,method=c('huge','simple')
           df <- df0[order(topic_effects[[covariate]][['rank']]),]
           df$topic <- factor(df$topic,levels=df$topic,ordered=TRUE)
 
-          p_est <- ggplot(df,aes(topic,y=est,ymin=lower,ymax=upper,color=sig)) +
+          p_est <- ggplot(df,aes_(~topic,y=~est,ymin=~lower,ymax=~upper,color=~sig)) +
             geom_hline(yintercept=0,linetype=3)
           p_est <- p_est +
             geom_pointrange(size=2) +
@@ -422,13 +420,13 @@ vis.taxa <- function(taxa_object,taxa_bar_n=30,top_n=7,method=c('huge','simple')
        if (show_topic$k != 0){
 
          p_bar <- ggplot(data=REL()) +
-           geom_bar(aes(Term,Total,fill=Taxon),stat='identity',color='white',alpha=.6) +
-           geom_bar(aes(Term,Freq),stat='identity',fill='darkred',color='white')
+           geom_bar(aes_(~Term,~Total,fill=~Taxon),stat='identity',color='white',alpha=.6) +
+           geom_bar(aes_(~Term,~Freq),stat='identity',fill='darkred',color='white')
 
        }else{
 
          p_bar <- ggplot(data=REL()) +
-           geom_bar(aes(Term,Total,fill=Taxon),stat='identity',color='white',alpha=1)
+           geom_bar(aes_(~Term,~Total,fill=~Taxon),stat='identity',color='white',alpha=1)
 
        }
 

@@ -40,11 +40,12 @@
 #' @seealso \code{\link{download_ref}} \code{\link{picrust}}
 #'
 #' @examples
+#' \dontrun{
 #' download_ref(destination='/references',reference='silva_ko')
-#'
-#' predicted_functions <- t4f(otu_table=OTU,rows_are_taxa=TRUE,
-#'                            reference='/references/t4f_ref_profiles.rds',
+#' predicted_functions <- t4f(otu_table=GEVERS$OTU,rows_are_taxa=TRUE,
+#'                            reference='/references',
 #'                            short=TRUE,cn_normalize=TRUE,sample_normalize=TRUE,drop=TRUE)
+#'                            }
 #'
 #' @export
 

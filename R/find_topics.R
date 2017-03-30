@@ -4,7 +4,7 @@
 #' samples into a document format and then fits a structural topic model by
 #' wrapping the \link[stm]{stm} function from pacakge stm.
 #'
-#' @param thetmetadata_object (required) Ouput of \code{\link{prepare_data}}.
+#' @param themetadata_object (required) Ouput of \code{\link{prepare_data}}.
 #' @param K (required) A positive integer indicating the number of topics to be
 #'   estimated.
 #' @param sigma_prior Scalar between 0 and 1. This sets the strength of
@@ -82,12 +82,13 @@
 #' models for open-ended survey responses. Am. J. Pol. Sci. 58, 1064–1082.
 #'
 #' @examples
-#' formula <- ~s(age) + drug + sex
-#' refs <- c('control','female')
+#' formula <- ~DIAGNOSIS
+#' refs <- 'Not IBD'
 #'
-#' dat <- prepare_data(otu_table=OTU,rows_are_taxa=FALSE,tax_table=TAX,
-#'                     metadata=META,formula=formula,refs=refs,
+#' dat <- prepare_data(otu_table=GEVERS$OTU,rows_are_taxa=FALSE,tax_table=GEVERS$TAX,
+#'                     metadata=GEVERS$META,formula=formula,refs=refs,
 #'                     cn_normalize=TRUE,drop=TRUE)
+#'
 #' topics <- find_topics(dat,K=15)
 #'
 #' @export

@@ -31,7 +31,7 @@ create_modelframe <- function(formula,refs,metadata){
   term_names <- colnames(metadata)
 
   cnames <- NULL
-  modelframe <- NULL
+  modelframe <- list()
   for (i in seq_along(term_names)){
 
     term <- term_names[i]
@@ -40,7 +40,7 @@ create_modelframe <- function(formula,refs,metadata){
       tmp <- metadata[term]
       tmp <- stats::model.matrix(stats::as.formula(paste0('~',term)),tmp)
       cnames <- c(cnames,colnames(tmp)[-1])
-      modelframe <- cbind(modelframe,tmp[,-1])
+      modelframe <- c(modelframe,list(tmp[,-1]))
     }else{
       tmp <- metadata[term]
       tmp[[1]] <- stats::relevel(tmp[[1]],ref=refs[1])
@@ -48,18 +48,17 @@ create_modelframe <- function(formula,refs,metadata){
       mm <- stats::model.matrix(stats::as.formula(paste0('~',term)),tmp)
       cnames <- c(cnames,colnames(mm)[-1])
 
-      modelframe <- data.frame(modelframe,
-                               lapply(seq_along(levels(tmp[[1]]))[-1],
-                                      function(j){
-                                        stats::relevel(as.factor(ifelse(mm[,j] == 1,levels(tmp[[1]])[j],levels(tmp[[1]])[1])),ref=levels(tmp[[1]])[1])
-                                      }
-                               )
-      )
+      modelframe <- c(modelframe,lapply(seq_along(levels(tmp[[1]]))[-1],
+                           function(j){
+                             stats::relevel(as.factor(ifelse(mm[,j] == 1,levels(tmp[[1]])[j],levels(tmp[[1]])[1])),
+                                            ref=levels(tmp[[1]])[1])
+                           }))
 
     }
 
   }
 
+  modelframe <- as.data.frame(modelframe)
   colnames(modelframe) <- cnames
   rownames(modelframe) <- rnames
 
@@ -106,8 +105,9 @@ make_ppd_x <- function(estimated_effects,covariate,mod,npoints=100){
     newdata <- metadata
     newdata[[covariate]] <- seq(min(newdata[[covariate]]),max(newdata[[covariate]]),length.out=nrow(newdata))
     modelframe <- stats::model.matrix(formula,data=newdata)
-    modelframe[,colnames(modelframe) != covariate] <- matrix(rep(colMeans(modelframe[,colnames(modelframe) != covariate]),
-                                                                 nrow(modelframe)),nrow(modelframe),byrow=TRUE)
+    if (ncol(modelframe) > 2)
+      modelframe[,colnames(modelframe) != covariate,drop=FALSE] <- matrix(rep(colMeans(modelframe[,colnames(modelframe) != covariate,drop=FALSE]),
+                                                                          nrow(modelframe)),nrow(modelframe),byrow=TRUE)
   }
 
   if (!missing(mod)){
@@ -148,9 +148,16 @@ create_multiclasses_table <- function(modelframe,modelframe_full,splines=NULL){
 
   })
 
-  out <- cbind(full=names(sapply(modelframe_full,class)),
-        do.call('rbind',multiclasses))
-  rownames(out) <- NULL
+  if (class(multiclasses) == 'list'){
+    out <- cbind(full=names(sapply(modelframe_full,class)),
+                 do.call('rbind',multiclasses))
+    rownames(out) <- NULL
+  }else{
+    out <- cbind(colnames(modelframe_full),t(multiclasses))
+    colnames(out) <- c('full','baseclass','multiclass','lev','ref')
+    rownames(out) <- NULL
+  }
+
   out <- data.frame(out,stringsAsFactors=FALSE)
 
   return(out)
@@ -189,13 +196,11 @@ extract_spline_info <- function(formula,metadata,remove_only=FALSE){
 
   info <- vector(mode='list',length=length(unlist(splines)))
   j <- 1
-  for (s in names(splines)){
-    for (i in seq_along(splines[[s]])){
-      info[[j]] <- list(
-        var=vars_new[i],
-        spline=s,
-        expansion=stats::model.frame(stats::as.formula(paste0('~',vars_old[i])),data=metadata)
-      )
+  for (b in names(splines)){
+    for (i in seq_along(splines[[b]])){
+      info[[j]] <- list(var=vars_new[splines[[b]][i]],
+                        spline=b,
+                        expansion=stats::model.frame(stats::as.formula(paste0('~',vars_old[splines[[b]][i]])),data=metadata))
       j <- j + 1
     }
   }

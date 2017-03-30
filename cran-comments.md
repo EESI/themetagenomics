@@ -9,7 +9,7 @@ This is a submission
 
 ## R CMD check results
 
-1 error [examples] | 0 warnings | 0 notes
+0 error | 1 warning [plotly/ggplot] | 0 notes
 
 * License components with restrictions and base license permitting such:
   MIT + file LICENSE

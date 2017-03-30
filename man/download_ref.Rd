@@ -13,6 +13,9 @@ download_ref(destination, reference = c("all", "gg_ko", "gg_cog", "silva_ko"),
 \item{reference}{A string for either gg_ko, gg_cog, silva_ko, or
 all. Defaults to all.}
 
+\item{overwrite}{Logical flag to overwrite if file already exists. Default
+to FALSE.}
+
 \item{verbose}{Logical flag to print progress information. Defaults to FALSE.}
 }
 \description{
@@ -20,7 +23,9 @@ A function to download the KO and COG 13.5 GreenGenes reference tables for
 PICRUSt prediction or the KO reference table for tax4fun prediction.
 }
 \examples{
+\dontrun{
 download_ref(destination='/references',reference='gg_ko')
+}
 
 }
 \seealso{

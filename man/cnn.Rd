@@ -30,7 +30,7 @@ GreenGreenes 13.5 copy number count table (default) or a user provided set of
 copy numbers.
 }
 \examples{
-nOTU <- cnn(OTU,rows_are_taxa=FALSE,drop=TRUE)
+nOTU <- cnn(GEVERS$OTU,rows_are_taxa=FALSE,drop=TRUE)
 
 }
 \references{

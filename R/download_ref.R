@@ -3,19 +3,24 @@
 #' A function to download the KO and COG 13.5 GreenGenes reference tables for
 #' PICRUSt prediction or the KO reference table for tax4fun prediction.
 #'
+#' @param destination Location of the folder to save the reference files.
 #' @param reference A string for either gg_ko, gg_cog, silva_ko, or
 #'   all. Defaults to all.
-#' @param destination Location of the folder to save the reference files.
+#' @param overwrite Logical flag to overwrite if file already exists. Default
+#' to FALSE.
 #' @param verbose Logical flag to print progress information. Defaults to FALSE.
 #'
 #' @seealso \code{\link{picrust}} \code{\link{t4f}}
 #'
 #' @examples
+#' \dontrun{
 #' download_ref(destination='/references',reference='gg_ko')
+#' }
 #'
 #' @export
 
-download_ref <- function(destination,reference=c('all','gg_ko','gg_cog','silva_ko'),overwrite=FALSE,verbose=FALSE){
+download_ref <- function(destination,reference=c('all','gg_ko','gg_cog','silva_ko'),
+                         overwrite=FALSE,verbose=FALSE){
 
   dir.create(destination,showWarnings=FALSE,recursive=TRUE)
 

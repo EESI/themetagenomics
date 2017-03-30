@@ -1,7 +1,6 @@
 #' @importFrom stats median sd
 NULL
 
-#' Print summary for topics class
 #' @export
 print.topics <- function(x,...){
   cat(sprintf('A %s object containing a topic model with %s topics, %s samples and %s discrete taxa.\n',
@@ -11,7 +10,6 @@ print.topics <- function(x,...){
               x$fit$settings$dim$V))
 }
 
-#' Print summary for effects class resulting from topics
 #' @export
 print.effects <- function(x,...){
   cat(sprintf('An %s object containing topic model effects information.\n',class(x)))
@@ -51,7 +49,6 @@ print.effects <- function(x,...){
   }
 }
 
-#' Print summary for effects class resulting from functions
 #' @export
 print.functions <- function(x,...){
   cat(sprintf('Predicted %s functions from %s taxonomic reference database via %s: %s topics across %s genes.\n',
