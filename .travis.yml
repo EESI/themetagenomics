@@ -2,7 +2,7 @@
 
 language: r
 sudo: false
-warnings_are_errors: true
+warnings_are_errors: false
 r:
   - release #3.3.0
   #- oldrel #3.2.5
