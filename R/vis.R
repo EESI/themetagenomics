@@ -1,4 +1,5 @@
-#' @import ggplot2 shiny plotly
+#' @import ggplot2 shiny
+#' @importFrom plotly ggplotly plotly plot_ly layout event_data add_trace add_lines add_annotations add_markers plotlyOutput renderPlotly
 #' @importFrom stats as.dendrogram dist hclust order.dendrogram cmdscale quantile terms
 #' @importFrom scales comma
 NULL

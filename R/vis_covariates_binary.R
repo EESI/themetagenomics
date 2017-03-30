@@ -154,8 +154,6 @@ vis.binary <- function(effects_object,taxa_grp_n=7,...){
 
           df2 <- df1[df1$abundance > min(df1$abundance),]
 
-          browser()
-
           p_dis <- ggplot(data=df0,aes_(~covariate,~abundance,color=~p)) +
             geom_blank() +
             geom_violin(data=df2,
