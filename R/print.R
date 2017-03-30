@@ -1,21 +1,24 @@
+#' @importFrom stats median sd
+NULL
+
 #' Print summary for topics class
 #' @export
-print.topics <- function(topics_object,...){
+print.topics <- function(x,...){
   cat(sprintf('A %s object containing a topic model with %s topics, %s samples and %s discrete taxa.\n',
-              class(topics_object),
-              topics_object$fit$settings$dim$K,
-              topics_object$fit$settings$dim$N,
-              topics_object$fit$settings$dim$V))
+              class(x),
+              x$fit$settings$dim$K,
+              x$fit$settings$dim$N,
+              x$fit$settings$dim$V))
 }
 
 #' Print summary for effects class resulting from topics
 #' @export
-print.effects <- function(effects_object,...){
-  cat(sprintf('An %s object containing topic model effects information.\n',class(effects_object)))
+print.effects <- function(x,...){
+  cat(sprintf('An %s object containing topic model effects information.\n',class(x)))
 
-  cat(sprintf('\n%s total covariate(s):\n',ncol(effects_object$modelframe)))
-  mf <- effects_object$modelframe
-  for (i in seq_len(ncol(effects_object$modelframe))){
+  cat(sprintf('\n%s total covariate(s):\n',ncol(x$modelframe)))
+  mf <- x$modelframe
+  for (i in seq_len(ncol(x$modelframe))){
     cl <- class(mf[[i]])
     if (cl == 'numeric'){
       cat(sprintf('%s\t%s (mean=%.02f, median=%.02f, std=%.02f)\n',
@@ -32,10 +35,10 @@ print.effects <- function(effects_object,...){
   }
 
   cat(sprintf('\nTopic weights outside %s-%s uncertainty interval:\n',
-              colnames(effects_object$topic_effects[[1]]$est)[2],
-              colnames(effects_object$topic_effects[[1]]$est)[3]))
-  for (i in seq_len(ncol(effects_object$modelframe))){
-    sig_topics <- effects_object$topic_effects[[i]]$sig
+              colnames(x$topic_effects[[1]]$est)[2],
+              colnames(x$topic_effects[[1]]$est)[3]))
+  for (i in seq_len(ncol(x$modelframe))){
+    sig_topics <- x$topic_effects[[i]]$sig
     if (length(sig_topics) > 0){
       cat(sprintf('%s:\t%s\n',
                   colnames(mf)[i],
@@ -50,11 +53,11 @@ print.effects <- function(effects_object,...){
 
 #' Print summary for effects class resulting from functions
 #' @export
-print.functions <- function(functions_object,...){
+print.functions <- function(x,...){
   cat(sprintf('Predicted %s functions from %s taxonomic reference database via %s: %s topics across %s genes.\n',
-              attr(functions_object,'db'),
-              attr(functions_object,'ref'),
-              attr(functions_object,'method'),
-              nrow(functions_object$fxn_table),
-              ncol(functions_object$fxn_table)))
+              attr(x,'db'),
+              attr(x,'ref'),
+              attr(x,'method'),
+              nrow(x$fxn_table),
+              ncol(x$fxn_table)))
 }

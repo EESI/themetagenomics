@@ -1,10 +1,9 @@
-#' @import ggplot2 shiny plotly
-NULL
-
 #' @rdname vis
+#' @param binary_object Object of class binary, automatically converted from
+#' effects object.
 #' @param taxa_grp_n Number of taxa group names to display (remaining are renamed to other). Defaults to 7.
 
-vis.binary <- function(binary_object,taxa_grp_n=7){
+vis.binary <- function(binary_object,taxa_grp_n=7,...){
 
   topics <- binary_object$topics
   topic_effects <- binary_object$topic_effects

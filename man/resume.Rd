@@ -2,12 +2,17 @@
 % Please edit documentation in R/resume_hmc.R
 \name{resume}
 \alias{resume}
+\alias{resume.effects}
 \title{Resume HMC using a previous fit}
 \usage{
 resume(object, ...)
+
+\method{resume}{effects}(object, init_type = c("last", "orig"), inits, iters,
+  warmup = iters/2, chains = 1, return_summary = TRUE, verbose = FALSE,
+  ...)
 }
 \arguments{
-\item{effects_object}{(required) Ouput of \code{\link{est.functions}}.}
+\item{object}{(required) Ouput of \code{\link{est.functions}}.}
 
 \item{init_type}{Type of initial parameters, either the original set that was
 passed to \code{\link{est.functions}} or the last parameter sample from the

@@ -1,55 +1,63 @@
-#' Prevent object renaming in class topics
+#' Prevent x renaming
+#'
+#' @param x x
+#' @param value value
+#'
+#' @name prev_rename
+NULL
+
+#' @rdname prev_rename
 #' @export
-`names<-.topics` <- function(object,value){
-  warning('topics-class objects cannot be renamed.')
-  return(object)
+`names<-.topics` <- function(x,value){
+  warning('topics-class xs cannot be renamed.')
+  return(x)
 }
 
-#' Prevent attribute renaming in class topics
+#' @rdname prev_rename
 #' @export
-`attributes<-.topics` <- function(object,value){
+`attributes<-.topics` <- function(x,value){
   warning('topics-class attributes cannot be renamed.')
-  return(object)
+  return(x)
 }
 
-#' Prevent object renaming in class themetadata
+#' @rdname prev_rename
 #' @export
-`names<-.themetadata` <- function(object,value){
-  warning('themetadata-class objects cannot be renamed.')
-  return(object)
+`names<-.themetadata` <- function(x,value){
+  warning('themetadata-class xs cannot be renamed.')
+  return(x)
 }
 
-#' Prevent attribute renaming in class themetadata
+#' @rdname prev_rename
 #' @export
-`attributes<-.themetadata` <- function(object,value){
+`attributes<-.themetadata` <- function(x,value){
   warning('themetadata-class attributes cannot be renamed.')
-  return(object)
+  return(x)
 }
 
-#' Prevent object renaming in class functions
+#' @rdname prev_rename
 #' @export
-`names<-.functions` <- function(object,value){
-  warning('functions-class objects cannot be renamed.')
-  return(object)
+`names<-.functions` <- function(x,value){
+  warning('functions-class xs cannot be renamed.')
+  return(x)
 }
 
-#' Prevent attribute renaming in class functions
+#' @rdname prev_rename
 #' @export
-`attributes<-.functions` <- function(object,value){
+`attributes<-.functions` <- function(x,value){
   warning('functions-class attributes cannot be renamed.')
-  return(object)
+  return(x)
 }
 
-#' Prevent object renaming in class effects
+#' @rdname prev_rename
 #' @export
-`names<-.effects` <- function(object,value){
-  warning('effects-class objects cannot be renamed.')
-  return(object)
+`names<-.effects` <- function(x,value){
+  warning('effects-class xs cannot be renamed.')
+  return(x)
 }
 
-#' Prevent attribute renaming in class topics
+#' @rdname prev_rename
 #' @export
-`attributes<-.effects` <- function(object,value){
+`attributes<-.effects` <- function(x,value){
   warning('effects-class attributes cannot be renamed.')
-  return(object)
+  return(x)
 }

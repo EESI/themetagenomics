@@ -1,8 +1,7 @@
-#' @import ggplot2 shiny plotly
-NULL
-
 #' @rdname vis
 #'
+#' @param taxa_object Object of taxa binary, automatically converted from
+#' effects object.
 #' @param taxa_bar_n Number of taxa to show in the frequency bar plot.
 #'   Defaults to 30.
 #' @param top_n Number of taxonic groups to colorize in the frequency
@@ -11,10 +10,10 @@ NULL
 #'   Defaults to huge.
 #' @param corr_thresh Threshold to set correlations to 0 when method
 #'   is set to simple. Defaults to .01.
-#' @param lambda_step Controls the step size for adjusting lambda in
-#'   the relevancy calculation. Defaults to .01.
+#' @param lambda_step Value designating the lambda stepsize for calculating
+#' taxa relevance. Recommended to be between .01 and .1. Defaults to .1.
 
-vis.taxa <- function(taxa_object,taxa_bar_n=30,top_n=7,method=c('huge','simple'),corr_thresh=.01,lambda_step=.01){
+vis.taxa <- function(taxa_object,taxa_bar_n=30,top_n=7,method=c('huge','simple'),corr_thresh=.01,lambda_step=.01,...){
 
   topics <- taxa_object$topics
   topic_effects <- taxa_object$topic_effects
@@ -226,7 +225,7 @@ vis.taxa <- function(taxa_object,taxa_bar_n=30,top_n=7,method=c('huge','simple')
                            lower=est_mat[,2],
                            upper=est_mat[,3],
                            sig=ifelse(1:K %in% topic_effects[[covariate]]$sig,'1','0'))
-          df0$sig <- factor(as.character(sign(df0$est) * as.numeric(as.character.factor(df0$sig))),level=c('0','1','-1'),ordered=TRUE)
+          df0$sig <- factor(as.character(sign(df0$est) * as.numeric(as.character.factor(df0$sig))),levels=c('0','1','-1'),ordered=TRUE)
           df <- df0[order(topic_effects[[covariate]][['rank']]),]
           df$topic <- factor(df$topic,levels=df$topic,ordered=TRUE)
 

@@ -4,8 +4,8 @@
 \alias{download_ref}
 \title{Download functional prediction reference tables}
 \usage{
-download_ref(destination, reference = "all", overwrite = FALSE,
-  verbose = FALSE)
+download_ref(destination, reference = c("all", "gg_ko", "gg_cog", "silva_ko"),
+  overwrite = FALSE, verbose = FALSE)
 }
 \arguments{
 \item{destination}{Location of the folder to save the reference files.}

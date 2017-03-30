@@ -13,8 +13,9 @@
 #' @param tax_table Matrix or dataframe containing Silva taxonimic information
 #'   with row or column names corresponding to the otu_table. Silva species
 #'   information is required.
-#' @param reference_path Location of the precalculated mapping file, which
-#'   will determine the method of prediction used.
+#' @param reference_path Folder path of the silva-to-kegg mapping file
+#' (t4f_silva_to_kegg.rds) and reference profiles (t4f_ref_profiles.rds). Must
+#' not be renamed.
 #' @param type Type of protein domain classifcation methods used to generate
 #'   references (uproc or pauda). Defaults to uproc.
 #' @param short Logical flag whether to use a short or long read
@@ -41,7 +42,8 @@
 #' @examples
 #' download_ref(destination='/references',reference='silva_ko')
 #'
-#' predicted_functions <- t4f(otu_table=OTU,rows_are_taxa=TRUE,reference='/references/t4f_ref_profiles.rds',
+#' predicted_functions <- t4f(otu_table=OTU,rows_are_taxa=TRUE,
+#'                            reference='/references/t4f_ref_profiles.rds',
 #'                            short=TRUE,cn_normalize=TRUE,sample_normalize=TRUE,drop=TRUE)
 #'
 #' @export
@@ -49,6 +51,9 @@
 t4f <- function(otu_table,rows_are_taxa,tax_table,reference_path,type='uproc',
                 short=TRUE,cn_normalize=FALSE,sample_normalize=FALSE,
                 drop=TRUE){
+
+  ref_profile_path <- file.path(reference_path,'t4f_ref_profiles.rds')
+  map_path <- file.path(reference_path,'t4f_silva_to_kegg.rds')
 
   if (missing(tax_table)){
     taxa_ids <- colnames(otu_table)
@@ -62,10 +67,10 @@ t4f <- function(otu_table,rows_are_taxa,tax_table,reference_path,type='uproc',
 
   if (short) size <- 'short' else size <- 'long'
 
-  silva_to_kegg <- readRDS(system.file('references/silva_to_kegg.rds',package='themetagenomics'))
+  silva_to_kegg <- readRDS(map_path)
   copy_numbers <- readRDS(system.file('references/copy_numbers.rds',package='themetagenomics'))
   kegg_lookup <- readRDS(system.file('references/kegg_lookup_table.rds',package='themetagenomics'))
-  ref_profile <- readRDS(reference_path)[[type]][[size]]
+  ref_profile <- readRDS(ref_profile_path)[[type]][[size]]
 
   sample_name <- rownames(otu_table)
   silva_ids <- rownames(silva_to_kegg)

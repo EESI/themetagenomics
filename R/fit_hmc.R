@@ -1,6 +1,6 @@
 #' @rdname est.functions
 #'
-#' @param hmc_object (required) Output of code{\link{predict.topics}} with hmc
+#' @param object (required) Output of code{\link{predict.topics}} with hmc
 #' selected as method.
 #' @param inits List of values for parameter initialization. If omitted, values
 #'   are generated via \code{\link{glmer.nb}}
@@ -16,10 +16,10 @@
 #'
 #' @export
 
-est.hmc <- function(hmc_object,inits,prior=c('t','normal','laplace'),t_df=c(7,7,7),iters=300,warmup=iters/2,chains=1,
-                    return_summary=TRUE,verbose=FALSE){
+est.hmc <- function(object,inits,prior=c('t','normal','laplace'),t_df=c(7,7,7),iters=300,warmup=iters/2,chains=1,
+                    return_summary=TRUE,verbose=FALSE,...){
 
-  gene_table <- hmc_object$gene_table
+  gene_table <- object$gene_table
 
   prior <- match.arg(prior,several.ok=TRUE)
 
@@ -192,14 +192,8 @@ est.hmc <- function(hmc_object,inits,prior=c('t','normal','laplace'),t_df=c(7,7,
   out[['fit']] <- fit
   out[['data']] <- stan_dat
   out[['inits']] <- list(orig=inits,
-                         last=apply(fit,2,relist,
-                                   skeleton=rstan:::create_skeleton(fit@model_pars,fit@par_dims)))
-
-  # out[['inits_new']] <- list(mu=summary(fit,pars='mu')[['summary']][,'mean'],
-  #                        phi=summary(fit,pars='phi')[['summary']][,'mean'],
-  #                        b_pw=summary(fit,pars='b_pw')[['summary']][,'mean'],
-  #                        b_topic=summary(fit,pars='b_topic')[['summary']][,'mean'],
-  #                        b_pwxtopic=summary(fit,pars='b_pwxtopic')[['summary']][,'mean'])
+                         last=apply(fit,2,utils::relist,
+                                   skeleton=create_skel(fit@model_pars,fit@par_dims)))
   out[['sampler']] <- rstan::get_sampler_params(fit)
 
 

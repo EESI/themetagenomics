@@ -20,8 +20,9 @@ rows correspond to taxa (TRUE) or samples (FALSE).}
 with row or column names corresponding to the otu_table. Silva species
 information is required.}
 
-\item{reference_path}{Location of the precalculated mapping file, which
-will determine the method of prediction used.}
+\item{reference_path}{Folder path of the silva-to-kegg mapping file
+(t4f_silva_to_kegg.rds) and reference profiles (t4f_ref_profiles.rds). Must
+not be renamed.}
 
 \item{type}{Type of protein domain classifcation methods used to generate
 references (uproc or pauda). Defaults to uproc.}
@@ -54,7 +55,8 @@ abundance content across a set of functional genes.
 \examples{
 download_ref(destination='/references',reference='silva_ko')
 
-predicted_functions <- t4f(otu_table=OTU,rows_are_taxa=TRUE,reference='/references/t4f_ref_profiles.rds',
+predicted_functions <- t4f(otu_table=OTU,rows_are_taxa=TRUE,
+                           reference='/references/t4f_ref_profiles.rds',
                            short=TRUE,cn_normalize=TRUE,sample_normalize=TRUE,drop=TRUE)
 
 }

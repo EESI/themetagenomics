@@ -5,17 +5,17 @@
 \alias{est_topics}
 \title{Estimate topic effects}
 \usage{
-\method{est}{topics}(topics_object, metadata, formula, refs, nsims = 100,
+\method{est}{topics}(object, metadata, formula, refs, nsims = 100,
   ui_level = 0.8, npoints = 100, verbose = FALSE)
 }
 \arguments{
-\item{topics_object}{(required) Ouput of \code{\link{find_topics}}.}
+\item{object}{(required) Ouput of \code{\link{find_topics}}.}
 
 \item{metadata}{Matrix or dataframe containing sample information with row or
 column names corresponding to the otu_table.}
 
 \item{formula}{New formula for covariates of interest found in metadata,
-different than the formula used to generate topics_object. Interactions,
+different than the formula used to generate object. Interactions,
 transformations, splines, and polynomial expansions are permitted.}
 
 \item{refs}{Character vector of length equal to the number of factors or

@@ -15,22 +15,22 @@ extract <- function(object,...) UseMethod('extract')
 #' }
 #'
 #' @export
-extract.effects <- function(effects_object,verbose=FALSE){
+extract.effects <- function(object,verbose=FALSE){
 
-  if (attr(effects_object,'type') != 'functions')
+  if (attr(object,'type') != 'functions')
     stop('Effects object must contain functional infrormation.')
 
-  if (attr(effects_object,'method') != 'hmc')
+  if (attr(object,'method') != 'hmc')
     stop('ML effects object returns summary automatically.')
 
   if (verbose) cat('Extracting summary (this often takes some time).\n')
 
-  fit <- effects_object$model$fit
-  pars <- effects_object$model$pars
+  fit <- object$model$fit
+  pars <- object$model$pars
 
   out <- list()
   out[['summary']] <- extract_stan_summary(fit,
-                                           effects_object$model$data,
+                                           object$model$data,
                                            pars)
   rhat_pars <- pars[pars != 'yhat']
   rhat <- summary(fit,pars=rhat_pars)[['summary']][,'Rhat'] > 1.1

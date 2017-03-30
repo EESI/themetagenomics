@@ -7,7 +7,7 @@
 \usage{
 extract(object, ...)
 
-\method{extract}{effects}(effects_object, verbose = FALSE)
+\method{extract}{effects}(object, verbose = FALSE)
 }
 \value{
 A list containing

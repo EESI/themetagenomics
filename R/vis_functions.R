@@ -1,14 +1,14 @@
-#' @import ggplot2 shiny plotly
-NULL
-
 #' @rdname vis
+#' @param functions_object Object of class functions, automatically converted from
+#' effects object.
 #' @param topic_effects Output of \code{\link{est.topics}}.
 #' @param beta_min Minimum probability in topics over taxa
 #'   distribution to set to 0. Defaults to 1e-5.
+#' @param ui_level Uncertainty level for plot intervals. Defaults to .8.
 #' @param gene_min Mininum count for gene set table. Defaults to 10.
 #' @param pw_min Maximium number of pathways to show in heatmap. for Defaults to 20.
 
-vis.functions <- function(functions_object,topic_effects,beta_min=1e-5,ui_level=.8,gene_min=10,pw_min=20){
+vis.functions <- function(functions_object,topic_effects,beta_min=1e-5,ui_level=.8,gene_min=10,pw_min=20,...){
 
   topics <- topic_effects$topics
   tax_table <- topic_effects$topics$tax_table

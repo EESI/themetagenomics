@@ -1,13 +1,13 @@
 #' @rdname est.functions
 #'
-#' @param ml_object (required) Output of \code{\link{predict.topics}} with ml
+#' @param object (required) Output of \code{\link{predict.topics}} with ml
 #' selected as method.
 #'
 #' @export
 
-est.ml <- function(ml_object,iters=1000,verbose=FALSE,...){
+est.ml <- function(object,iters=1000,verbose=FALSE,...){
 
-  gene_table <- ml_object$gene_table
+  gene_table <- object$gene_table
 
   if (verbose) cat('Fitting model via ML.\n')
 

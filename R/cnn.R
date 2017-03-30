@@ -29,7 +29,7 @@ cnn <- function(otu_table,rows_are_taxa,copy_numbers,drop=TRUE,verbose=FALSE){
 
   if (missing(copy_numbers)){
 
-    copy_numbers <- as.matrix(read.table(system.file('references/16S_13_5_precalculated.tab.gz',
+    copy_numbers <- as.matrix(utils::read.table(system.file('references/16S_13_5_precalculated.tab.gz',
                                                      package='themetagenomics'),
                                          sep='\t',header=FALSE,stringsAsFactors=FALSE))
 

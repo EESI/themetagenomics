@@ -4,7 +4,7 @@
 \alias{print.functions}
 \title{Print summary for effects class resulting from functions}
 \usage{
-\method{print}{functions}(functions_object, ...)
+\method{print}{functions}(x, ...)
 }
 \description{
 Print summary for effects class resulting from functions

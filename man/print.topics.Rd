@@ -4,7 +4,7 @@
 \alias{print.topics}
 \title{Print summary for topics class}
 \usage{
-\method{print}{topics}(topics_object, ...)
+\method{print}{topics}(x, ...)
 }
 \description{
 Print summary for topics class

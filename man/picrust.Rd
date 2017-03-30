@@ -43,7 +43,8 @@ to functional abundance content across a set of functional genes.
 \examples{
 download_ref(destination='/references',reference='gg_ko')
 
-predicted_functions <- t4f(otu_table=OTU,rows_are_taxa=TRUE,reference='/references/ko_13_5_precalcualted.tab.gz',
+predicted_functions <- t4f(otu_table=OTU,rows_are_taxa=TRUE,
+                           reference='/references/ko_13_5_precalcualted.tab.gz',
                            cn_normalize=TRUE,sample_normalize=FALSE,drop=TRUE)
 
 }

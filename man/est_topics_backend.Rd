@@ -2,12 +2,12 @@
 % Please edit documentation in R/estimate_topic_effects.R
 \name{est_topics_backend}
 \alias{est_topics_backend}
-\title{Backend to extract effects for \code{\link{estimate_topic_effects}}.}
+\title{Backend to extract effects for \code{\link{est.topics}}.}
 \usage{
 est_topics_backend(estimated_effects, theta, nsims = 100, ui_level = 0.8,
   npoints = 100, verbose = FALSE)
 }
 \description{
-Backend to extract effects for \code{\link{estimate_topic_effects}}.
+Backend to extract effects for \code{\link{est.topics}}.
 }
 \keyword{internal}

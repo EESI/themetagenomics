@@ -8,7 +8,7 @@ NULL
 #' cases when a previous fit failed to converged (i.e., Rhat > 1.1 for a portion
 #' of parameter estimates), thus requiring more iterations.
 #'
-#' @param effects_object (required) Ouput of \code{\link{est.functions}}.
+#' @param object (required) Ouput of \code{\link{est.functions}}.
 #' @param init_type Type of initial parameters, either the original set that was
 #' passed to \code{\link{est.functions}} or the last parameter sample from the
 #' reused fit. Defaults to last.
@@ -52,17 +52,18 @@ NULL
 #' @export
 resume <- function(object,...) UseMethod('resume')
 
+#' @rdname resume
 #' @export
-resume.effects <- function(effects_object,init_type=c('last','orig'),inits,
+resume.effects <- function(object,init_type=c('last','orig'),inits,
                            iters,warmup=iters/2,chains=1,
-                           return_summary=TRUE,verbose=FALSE){
+                           return_summary=TRUE,verbose=FALSE,...){
 
-  if (attr(effects_object,'type') != 'functions')
+  if (attr(object,'type') != 'functions')
     stop('Effects object must contain functional infrormation.')
 
   if (missing(inits)){
     init_type <- match.arg(init_type)
-    inits <- effects_object$model$inits[[init_type]]
+    inits <- object$model$inits[[init_type]]
   }
 
   if (length(inits) < chains)
@@ -71,16 +72,16 @@ resume.effects <- function(effects_object,init_type=c('last','orig'),inits,
       inits[[j]]
       })
 
-  mm <- resume(effects_object$model$fit,
-               stan_dat=effects_object$model$data,
+  mm <- resume(object$model$fit,
+               stan_dat=object$model$data,
                inits=inits,warmup=warmup,
-               gene_table=effects_object$gene_table,pars=effects_object$model$pars,
+               gene_table=object$gene_table,pars=object$model$pars,
                iters=iters,chains=chains,return_summary=return_summary,verbose=verbose)
 
-  out <- list(model=mm,gene_table=effects_object$gene_table)
+  out <- list(model=mm,gene_table=object$gene_table)
   class(out) <- 'effects'
   attr(out,'type') <- 'functions'
-  attr(out,'method') <- attr(effects_object,'method')
+  attr(out,'method') <- attr(object,'method')
 
   return(out)
 
@@ -112,8 +113,8 @@ resume.stanfit <- function(stan_obj,stan_dat,inits,gene_table,
   out[['fit']] <- fit
   out[['data']] <- stan_dat
   out[['inits']] <- list(orig=inits,
-                         last=apply(fit,2,relist,
-                              skeleton=rstan:::create_skeleton(fit@model_pars,fit@par_dims)))
+                         last=apply(fit,2,utils::relist,
+                              skeleton=create_skel(fit@model_pars,fit@par_dims)))
   out[['sampler']] <- rstan::get_sampler_params(fit)
 
   if (return_summary){

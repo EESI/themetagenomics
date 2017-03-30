@@ -15,7 +15,7 @@ knitr::opts_chunk$set(collapse=TRUE,comment='#>',fig.path='README-')
 
 ## Overiew
 
-Themetagenomics provides functions to explore topics generated from 16S rRNA sequencing information on both the abundance and functional levels.
+themetagenomics provides functions to explore topics generated from 16S rRNA sequencing information on both the abundance and functional levels.
 
 ## Relevant Literature
 

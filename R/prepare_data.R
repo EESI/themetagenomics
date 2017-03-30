@@ -1,3 +1,6 @@
+#' @importFrom stats model.frame na.omit relevel
+NULL
+
 #' Prepare themetadata object from data for topic modeling pipeline
 #'
 #' Creates a themetadata class by preprocessing data from an OTU table,

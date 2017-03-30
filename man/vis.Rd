@@ -9,43 +9,55 @@
 \alias{vis.taxa}
 \title{Launch in interactive visualize to explore topic effects}
 \usage{
-vis(effects_object, type = c("taxa", "binary", "continuous", "functions"),
-  ...)
+vis(effects_object, ...)
 
-\method{vis}{binary}(binary_object, taxa_grp_n = 7)
+\method{vis}{binary}(binary_object, taxa_grp_n = 7, ...)
 
 \method{vis}{continuous}(continuous_object, lambda_step = 0.1,
-  taxa_reg_n = 8)
+  taxa_reg_n = 8, ...)
 
 \method{vis}{functions}(functions_object, topic_effects, beta_min = 1e-05,
-  ui_level = 0.8, gene_min = 10, pw_min = 20)
+  ui_level = 0.8, gene_min = 10, pw_min = 20, ...)
 
 \method{vis}{taxa}(taxa_object, taxa_bar_n = 30, top_n = 7,
-  method = c("huge", "simple"), corr_thresh = 0.01, lambda_step = 0.01)
+  method = c("huge", "simple"), corr_thresh = 0.01, lambda_step = 0.01,
+  ...)
 }
 \arguments{
 \item{effects_object}{(required) Output of \code{\link{est.topics}} or
 \code{\link{est.functions}} with ml selected as method.}
 
-\item{type}{Type of visualization to perform.}
-
 \item{...}{Additional arguments for methods.}
+
+\item{binary_object}{Object of class binary, automatically converted from
+effects object.}
 
 \item{taxa_grp_n}{Number of taxa group names to display (remaining are renamed to other). Defaults to 7.}
 
-\item{lambda_step}{Value designating the lambda stepsize for calculating taxa relevance. Recommended to be
-between .01 and .1. Defaults to .1.}
+\item{continuous_object}{Object of continuous binary, automatically converted from
+effects object.}
+
+\item{lambda_step}{Value designating the lambda stepsize for calculating
+taxa relevance. Recommended to be between .01 and .1. Defaults to .1.}
 
 \item{taxa_reg_n}{Number of most relevant taxa within topic to regress. Defaults to 8.}
+
+\item{functions_object}{Object of class functions, automatically converted from
+effects object.}
 
 \item{topic_effects}{Output of \code{\link{est.topics}}.}
 
 \item{beta_min}{Minimum probability in topics over taxa
 distribution to set to 0. Defaults to 1e-5.}
 
+\item{ui_level}{Uncertainty level for plot intervals. Defaults to .8.}
+
 \item{gene_min}{Mininum count for gene set table. Defaults to 10.}
 
 \item{pw_min}{Maximium number of pathways to show in heatmap. for Defaults to 20.}
+
+\item{taxa_object}{Object of taxa binary, automatically converted from
+effects object.}
 
 \item{taxa_bar_n}{Number of taxa to show in the frequency bar plot.
 Defaults to 30.}
@@ -59,8 +71,7 @@ Defaults to huge.}
 \item{corr_thresh}{Threshold to set correlations to 0 when method
 is set to simple. Defaults to .01.}
 
-\item{lambda_step}{Controls the step size for adjusting lambda in
-the relevancy calculation. Defaults to .01.}
+\item{type}{Type of visualization to perform.}
 }
 \description{
 Launch in interactive visualize to explore topic effects
@@ -209,6 +220,6 @@ Zhao, T., & Liu., H. (2012) The huge Package for High-dimensional Undirected
 Graph Estimation in R. Journal of Machine Learning Research.
 }
 \seealso{
-\code{\link{networkD3}}, \code{\link{huge}}, \code{\link{topicCorr}},
-\code{\link{Rtsne}}
+\code{\link[networkD3]{igraph_to_networkD3}}, \code{\link[huge]{huge}}, \code{\link[stm]{topicCorr}},
+\code{\link[Rtsne]{Rtsne}}
 }

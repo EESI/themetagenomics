@@ -5,7 +5,7 @@
 #' the taxonomic abundance for a given OTU to functional abundance content
 #' across a set of functional genes.
 #'
-#' @param topics_object (required) Output of \code{\link{find_topics}}.
+#' @param object (required) Output of \code{\link{find_topics}}.
 #' @param reference_path Location of the precalculated mapping file, which
 #' will determine the method of prediction used.
 #' @param scalar Value for scaling the topics over taxa distrubution
@@ -46,9 +46,9 @@
 #'
 #' @export
 
-predict.topics <- function(topics_object,reference_path,scalar=100,drop=TRUE,...){
+predict.topics <- function(object,reference_path,scalar=100,drop=TRUE,...){
 
-  fit <- topics_object$fit
+  fit <- object$fit
 
   beta <- round(scalar*exp(fit$beta$logbeta[[1]]))
   rownames(beta) <- paste0('T',1:nrow(beta))

@@ -15,5 +15,5 @@ est(object, ...)
 Estimate topic or function effects
 }
 \seealso{
-\code{\link{est.topics}} \code{\link{est.functions}} \code{\link{fit_hmc}} \code{\link{fit_ml}}
+\code{\link{est.topics}} \code{\link{est.functions}} \code{\link{est.hmc}} \code{\link{est.ml}}
 }

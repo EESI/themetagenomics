@@ -8,17 +8,17 @@
 \alias{est.ml}
 \title{Estimate predicted function-topic effects}
 \usage{
-\method{est}{functions}(functions_object, topics_subset, level = 2,
-  method = c("hmc", "ml"), verbose = FALSE, ...)
+\method{est}{functions}(object, topics_subset, level = 2, method = c("hmc",
+  "ml"), verbose = FALSE, ...)
 
-\method{est}{hmc}(hmc_object, inits, prior = c("t", "normal", "laplace"),
+\method{est}{hmc}(object, inits, prior = c("t", "normal", "laplace"),
   t_df = c(7, 7, 7), iters = 300, warmup = iters/2, chains = 1,
-  return_summary = TRUE, verbose = FALSE)
+  return_summary = TRUE, verbose = FALSE, ...)
 
-\method{est}{ml}(ml_object, iters = 1000, verbose = FALSE, ...)
+\method{est}{ml}(object, iters = 1000, verbose = FALSE, ...)
 }
 \arguments{
-\item{functions_object}{(required) Ouput of \code{\link{predict.topics}}.}
+\item{object}{(required) Ouput of \code{\link{predict.topics}}.}
 
 \item{topics_subset}{Vector of topic indexes to be evaluated. Recommended to be < 25.}
 
@@ -29,9 +29,6 @@
 \item{verbose}{Logical flag to print progress information. Defaults to FALSE.}
 
 \item{...}{Additional arguments for methods.}
-
-\item{hmc_object}{(required) Output of code{\link{predict.topics}} with hmc
-selected as method.}
 
 \item{inits}{List of values for parameter initialization. If omitted, values
 are generated via \code{\link{glmer.nb}}}
@@ -51,7 +48,10 @@ iters/2.}
 
 \item{return_summary}{Logical flag to return results summary. Defaults to TRUE.}
 
-\item{ml_object}{(required) Output of \code{\link{predict.topics}} with ml
+\item{object}{(required) Output of code{\link{predict.topics}} with hmc
+selected as method.}
+
+\item{object}{(required) Output of \code{\link{predict.topics}} with ml
 selected as method.}
 }
 \value{
@@ -125,5 +125,5 @@ Stan Development Team. 2016. Stan Modeling Language Users Guide and
 Reference Manual, Version 2.14.0. http://mc-stan.org
 }
 \seealso{
-\code{\link[lme4]{glmer.nb}} \code{\link[rstan]{stan}} \code{\link{resume.effects}}
+\code{\link[lme4]{glmer.nb}} \code{\link[rstan]{stan}} \code{\link{resume}}
 }

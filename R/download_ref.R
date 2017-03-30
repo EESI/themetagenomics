@@ -15,17 +15,19 @@
 #'
 #' @export
 
-download_ref <- function(destination,reference='all',overwrite=FALSE,verbose=FALSE){
+download_ref <- function(destination,reference=c('all','gg_ko','gg_cog','silva_ko'),overwrite=FALSE,verbose=FALSE){
 
   dir.create(destination,showWarnings=FALSE,recursive=TRUE)
 
-  ref <- c('gg_ko','gg_cog','silva_ko')
+  reference <- match.arg(reference)
+  reference_lookup <- c('gg_ko','gg_cog','silva_ko','silva_ko')
 
   fns <- c('ko_13_5_precalculated.tab.gz',
            'cog_13_5_precalculated.tab.gz',
-           't4f_ref_profiles.rds')
+           't4f_ref_profiles.rds',
+           't4f_silva_to_kegg.rds')
 
-  if (reference != 'all')  fns <- fns[ref %in% reference]
+  if (reference != 'all')  fns <- fns[reference %in% reference_lookup]
 
   for (fn in fns){
 
@@ -33,7 +35,7 @@ download_ref <- function(destination,reference='all',overwrite=FALSE,verbose=FAL
 
       cat(sprintf('Downloading %s.\n',fn))
 
-      download.file(sprintf('https://github.com/sw1/themetagenomics_data/raw/master/%s',fn),
+      utils::download.file(sprintf('https://github.com/sw1/themetagenomics_data/raw/master/%s',fn),
                     destfile=file.path(destination,fn),
                     quiet=verbose,
                     method='libcurl',

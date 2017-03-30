@@ -3,11 +3,11 @@
 #' Given a covariate of interest, measure its relationship with the samples over
 #' topics distribution from the STM.
 #'
-#' @param topics_object (required) Ouput of \code{\link{find_topics}}.
+#' @param object (required) Ouput of \code{\link{find_topics}}.
 #' @param metadata Matrix or dataframe containing sample information with row or
 #'   column names corresponding to the otu_table.
 #' @param formula New formula for covariates of interest found in metadata,
-#'   different than the formula used to generate topics_object. Interactions,
+#'   different than the formula used to generate object. Interactions,
 #'   transformations, splines, and polynomial expansions are permitted.
 #' @param refs Character vector of length equal to the number of factors or
 #'   binary covariates in formula, indicating the reference level.
@@ -72,17 +72,17 @@
 #'
 #' @export
 
-est.topics <- function(topics_object,metadata,formula,refs,nsims=100,ui_level=.8,npoints=100,verbose=FALSE){
+est.topics <- function(object,metadata,formula,refs,nsims=100,ui_level=.8,npoints=100,verbose=FALSE){
 
-  fit <- topics_object$fit
+  fit <- object$fit
   K <- fit$settings$dim$K
 
   if (missing(formula)){
-    metadata <- topics_object$metadata
+    metadata <- object$metadata
     if (is.null(metadata)) stop('Please provide metadata')
     formula <- fit$settings$covariates$formula
     if (is.null(formula)) stop('Please provide a formula.')
-    if (missing(refs)) refs <- topics_object$refs
+    if (missing(refs)) refs <- object$refs
   }
 
   splines <- check_for_splines(formula,metadata)
@@ -123,7 +123,7 @@ est.topics <- function(topics_object,metadata,formula,refs,nsims=100,ui_level=.8
   if (verbose) cat('Estimating regression weights with global uncertainty.\n')
   estimated_effects <- stm::estimateEffect(formula,fit,modelframe,uncertainty='Global')
 
-  estimated_effects$modelframe_full <- topics_object$modelframe # maybe remove htis
+  estimated_effects$modelframe_full <- object$modelframe # maybe remove htis
   estimated_effects$modelframe <- modelframe
   estimated_effects$splines <- spline_info$info
 
@@ -138,7 +138,7 @@ est.topics <- function(topics_object,metadata,formula,refs,nsims=100,ui_level=.8
 
 }
 
-#' Backend to extract effects for \code{\link{estimate_topic_effects}}.
+#' Backend to extract effects for \code{\link{est.topics}}.
 #' @keywords internal
 est_topics_backend <- function(estimated_effects,theta,nsims=100,ui_level=.8,npoints=100,verbose=FALSE){
 
@@ -149,7 +149,7 @@ est_topics_backend <- function(estimated_effects,theta,nsims=100,ui_level=.8,npo
   ui_levels <- matrix(0.0,K,2,dimnames=list(NULL,ui_interval))
 
   if (verbose) cat('Simulating beta coeffiicents from MVN.\n')
-  simbetas <- stm:::simBetas(estimated_effects$parameters,nsims=nsims)
+  simbetas <- ppd_weights(estimated_effects$parameters,nsims=nsims)
   for (i in seq_along(simbetas)) colnames(simbetas[[i]]) <- names(estimated_effects$parameter[[1]][[1]]$est)
 
   spline_info <- estimated_effects$splines

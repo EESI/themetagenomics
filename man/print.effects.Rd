@@ -4,7 +4,7 @@
 \alias{print.effects}
 \title{Print summary for effects class resulting from topics}
 \usage{
-\method{print}{effects}(effects_object, ...)
+\method{print}{effects}(x, ...)
 }
 \description{
 Print summary for effects class resulting from topics

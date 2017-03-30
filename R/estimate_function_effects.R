@@ -5,7 +5,7 @@
 #' interaction term after accounting for topic and gene category effects. The
 #' model can be fit via either maximum likelihood or Hamiltonian MC.
 #'
-#' @param functions_object (required) Ouput of \code{\link{predict.topics}}.
+#' @param object (required) Ouput of \code{\link{predict.topics}}.
 #' @param topics_subset Vector of topic indexes to be evaluated. Recommended to be < 25.
 #' @param level Gene category level to evalulate. Defaults to 2.
 #' @param method String indicating either ml or hmc. Defaults to hmc.
@@ -48,7 +48,7 @@
 #' number of iterations. In such a case, the model estimates are returns so the user can perform
 #' HMC, but by initializing at these ML values.}
 #'
-#' @seealso \code{\link[lme4]{glmer.nb}} \code{\link[rstan]{stan}} \code{\link{resume.effects}}
+#' @seealso \code{\link[lme4]{glmer.nb}} \code{\link[rstan]{stan}} \code{\link{resume}}
 #'
 #' @references
 #' Bates, D., Maechler, M., Bolker, B., and Walker, S. (2015).
@@ -81,13 +81,13 @@
 #'
 #' @export
 
-est.functions <- function(functions_object,topics_subset,level=2,method=c('hmc','ml'),
+est.functions <- function(object,topics_subset,level=2,method=c('hmc','ml'),
                           verbose=FALSE,...){
 
   method <- match.arg(method)
 
-  fxn_table <- functions_object$fxn_table
-  fxn_meta <- functions_object$fxn_meta
+  fxn_table <- object$fxn_table
+  fxn_meta <- object$fxn_meta
 
   if (missing(topics_subset) & nrow(fxn_table) <= 25) topics_subset <- 1:nrow(fxn_table)
 
@@ -96,10 +96,10 @@ est.functions <- function(functions_object,topics_subset,level=2,method=c('hmc',
 
   fxn_meta <- lapply(fxn_meta,function(x) x[colnames(fxn_table)])
 
-  functions_object$fxn_table <- fxn_table
-  functions_object$fxn_meta <- fxn_meta
+  object$fxn_table <- fxn_table
+  object$fxn_meta <- fxn_meta
 
-  gene_table <- list(gene_table=format_gene_table(functions_object,level=level))
+  gene_table <- list(gene_table=format_gene_table(object,level=level))
 
   class(gene_table) <- method
   mm <- est(gene_table,verbose=verbose,...)

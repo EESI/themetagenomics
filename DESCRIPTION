@@ -1,11 +1,11 @@
 Package: themetagenomics
-Title: A Topic Modeling Workflow for Metagenomic Data
+Title: themetagenomics
 Version: 0.0.0.9000
 Authors@R: c(
     person("Stephen", "Woloszynek", , "sw424@drexel.edu", c("aut", "cre")),
     person("Drexel University", role = "cph")
     )
-Description: TBD
+Description: A Topic Modeling Library for 16S rRNA Amplicon Data
 URL: http://github.com/sw1/themetagenomics
 BugReports: http://github.com/sw1/themetagenomics/issues
 License: MIT + file LICENSE
@@ -15,20 +15,22 @@ Depends:
   R (>= 3.3.3),
   Rcpp (>= 0.12.8)
 Imports: 
+  ggplot2,
+  lme4,
+  plotly,
+  rstan,
+  shiny,
+  stats,
+  stats4
 Suggests:
   curl,
-  ggplot2,
   huge,
   igraph,
-  lme4 (>= 1.1.12),
   Matrix,
   networkD3,
-  plotly,
   proxy,
   RCurl,
-  rstan (>= 2.14.1),
   Rtsne,
-  shiny,
   stm (>= 1.1.4),
   vegan,
   viridis

@@ -1,12 +1,9 @@
-#' @import ggplot2 shiny plotly
-NULL
-
 #' @rdname vis
-#' @param lambda_step Value designating the lambda stepsize for calculating taxa relevance. Recommended to be
-#'   between .01 and .1. Defaults to .1.
+#' @param continuous_object Object of continuous binary, automatically converted from
+#' effects object.
 #' @param taxa_reg_n Number of most relevant taxa within topic to regress. Defaults to 8.
 
-vis.continuous <- function(continuous_object,lambda_step=.1,taxa_reg_n=8){
+vis.continuous <- function(continuous_object,lambda_step=.1,taxa_reg_n=8,...){
 
   topics <- continuous_object$topics
   topic_effects <- continuous_object$topic_effects

@@ -7,11 +7,11 @@
 \alias{predict_topics}
 \title{Predict topic functional content}
 \usage{
-\method{predict}{topics}(topics_object, reference_path, scalar = 100,
-  drop = TRUE, ...)
+\method{predict}{topics}(object, reference_path, scalar = 100, drop = TRUE,
+  ...)
 }
 \arguments{
-\item{topics_object}{(required) Output of \code{\link{find_topics}}.}
+\item{object}{(required) Output of \code{\link{find_topics}}.}
 
 \item{reference_path}{Location of the precalculated mapping file, which
 will determine the method of prediction used.}

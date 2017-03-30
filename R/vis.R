@@ -1,4 +1,6 @@
 #' @import ggplot2 shiny plotly
+#' @importFrom stats as.dendrogram dist hclust order.dendrogram cmdscale quantile terms
+#' @importFrom scales comma
 NULL
 
 #' Launch in interactive visualize to explore topic effects
@@ -132,8 +134,8 @@ NULL
 #' Zhao, T., & Liu., H. (2012) The huge Package for High-dimensional Undirected
 #' Graph Estimation in R. Journal of Machine Learning Research.
 #'
-#' @seealso \code{\link{networkD3}}, \code{\link{huge}}, \code{\link{topicCorr}},
-#' \code{\link{Rtsne}}
+#' @seealso \code{\link[networkD3]{igraph_to_networkD3}}, \code{\link[huge]{huge}}, \code{\link[stm]{topicCorr}},
+#' \code{\link[Rtsne]{Rtsne}}
 #'
 #' @examples
 #' formula <- ~s(age) + drug + sex
@@ -155,32 +157,32 @@ NULL
 #'
 #' vis(function_effects,topic_effects)
 #' @export
-vis <- function(effects_object,type=c('taxa','binary','continuous','functions'),...) UseMethod('vis')
+vis <- function(effects_object,...) UseMethod('vis')
 
 #' @export
-vis.effects <- function(effects_object1,effects_object2,type=c('taxa','binary','continuous','functions'),...){
+vis.effects <- function(effects_object,effects_object2,type=c('taxa','binary','continuous','functions'),...){
 
   type <- match.arg(type)
 
   if (type == 'functions' | !missing(effects_object2)){
 
-    effects_objects <- list(effects_object1,effects_object2)
+    effects_objects <- list(effects_object,effects_object2)
     types <- sapply(effects_objects,function(x) attr(x,'type'))
     effects_objects <- effects_objects[match(types,c('functions','topics'))]
 
     if (any(sapply(effects_objects,is.null))) stop('Must provide a topics effects-class and a functions effects-class.')
 
-    effects_object1 <- effects_objects[[1]]
+    effects_object <- effects_objects[[1]]
     effects_object2 <- effects_objects[[2]]
-    class(effects_object1) <- 'functions'
+    class(effects_object) <- 'functions'
 
-    vis(effects_object1,effects_object2,...)
+    vis(effects_object,effects_object2,...)
 
   }else{
 
-    class(effects_object1) <- type
+    class(effects_object) <- type
 
-    vis(topic_effects_object,...)
+    vis(effects_object,...)
 
   }
 
