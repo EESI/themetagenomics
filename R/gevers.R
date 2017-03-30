@@ -9,7 +9,7 @@
 #'
 #' @docType data
 #'
-#' @format A list containing a 200x991 matrix (OTU), a 991x7 matrix (TAX),and a
+#' @format A list containing a 200x991 matrix (OTU), a 991x7 matrix (TAX), and a
 #' 200x3 dataframe (META).
 #'
 #' @keywords datasets

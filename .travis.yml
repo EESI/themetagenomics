@@ -5,12 +5,16 @@ r:
   - release #3.3.0
   #- oldrel #3.2.5
   #- devel
+
 cache: packages
 
-warnings_are_errors: false
+r_github_packages:
+  - jimhester/covr
 
 after_success:
   - Rscript -e 'covr::codecov()'
+
+warnings_are_errors: true
 
 notifications:
   email:

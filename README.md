@@ -2,10 +2,10 @@
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 [![Build Status](https://travis-ci.com/sw1/themetagenomics.svg?token=8r1TnJBy8TyidNrmbPpa&branch=master)](https://travis-ci.com/sw1/themetagenomics) [![codecov](https://codecov.io/gh/sw1/themetagenomics/branch/master/graph/badge.svg?token=pmjXMfuHrw)](https://codecov.io/gh/sw1/themetagenomics) [![CRAN\_Status\_Badge](http://www.r-pkg.org/badges/version/themetagenomics)](https://cran.r-project.org/package=themetagenomics)
 
-Overiew
--------
+Overview
+--------
 
-Themetagenomics provides functions to explore topics generated from 16S rRNA sequencing information on both the abundance and functional levels.
+themetagenomics provides functions to explore topics generated from 16S rRNA sequencing information on both the abundance and functional levels.
 
 Relevant Literature
 -------------------
