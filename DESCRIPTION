@@ -22,7 +22,8 @@ Imports:
   scales,
   shiny,
   stats,
-  stats4
+  stats4,
+  stm (>= 1.1.4),
 Suggests:
   covr,
   curl,
@@ -33,7 +34,6 @@ Suggests:
   proxy,
   RCurl,
   Rtsne,
-  stm (>= 1.1.4),
   testthat,
   vegan,
   viridis

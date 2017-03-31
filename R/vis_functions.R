@@ -6,7 +6,8 @@
 #' @param ui_level Uncertainty level for plot intervals. Defaults to .8.
 #' @param gene_min Mininum count for gene set table. Defaults to 10.
 #' @param pw_min Maximium number of pathways to show in heatmap. for Defaults to 20.
-
+#'
+#' @export
 vis.functions <- function(effects_object,topic_effects,beta_min=1e-5,ui_level=.8,gene_min=10,pw_min=20,...){
 
   topics <- topic_effects$topics

@@ -1,7 +1,8 @@
 #' @rdname vis
 #'
 #' @param taxa_reg_n Number of most relevant taxa within topic to regress. Defaults to 8.
-
+#'
+#' @export
 vis.continuous <- function(effects_object,lambda_step=.1,taxa_reg_n=8,...){
 
   topics <- effects_object$topics

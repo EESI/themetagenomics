@@ -10,7 +10,8 @@
 #'   is set to simple. Defaults to .01.
 #' @param lambda_step Value designating the lambda stepsize for calculating
 #' taxa relevance. Recommended to be between .01 and .1. Defaults to .1.
-
+#'
+#' @export
 vis.taxa <- function(effects_object,taxa_bar_n=30,top_n=7,method=c('huge','simple'),corr_thresh=.01,lambda_step=.01,...){
 
   topics <- effects_object$topics

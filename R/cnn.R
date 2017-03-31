@@ -28,31 +28,27 @@
 cnn <- function(otu_table,rows_are_taxa,copy_numbers,drop=TRUE,verbose=FALSE){
 
   if (missing(copy_numbers)){
-
     copy_numbers <- as.matrix(utils::read.table(system.file('references/16S_13_5_precalculated.tab.gz',
                                                      package='themetagenomics'),
                                          sep='\t',header=FALSE,stringsAsFactors=FALSE))
-
   }else{
-
     if (ncol(copy_numbers) != 2) stop('copy_numbers must have 2 columns (otu id, copy number).')
-
     if (diff(colMeans(copy_numbers)) > 0){
-
-      warning('otu ids must be in column 1.')
+      warning('OTU IDs must be in column 1.')
       copy_numbers <- cbind(copy_numbers[,2],copy_numbers[,1])
-
     }
-
   }
 
-  if (rows_are_taxa == TRUE){
+  if (rows_are_taxa == TRUE) otu_table <- t(otu_table)
 
-    otu_table <- t(otu_table)
-
+  if (is.null(colnames(otu_table))){
+    warning('OTU table must have OTU IDs as column names. Returning unnormalized OTU table')
+    return(otu_table)
   }
-
-  if (is.null(rownames(otu_table))) stop('OTU table must have otu ids as row or column names.')
+  if (sum(colnames(otu_table) %in% copy_numbers[,1]) == 0){
+    stop('OTU IDs must be integer strings of the form GreenGenes 16.X. Returning unnormalized OTU table.')
+    return(otu_table)
+  }
 
   otus_to_load <- colnames(otu_table)
 

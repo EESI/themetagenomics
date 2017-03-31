@@ -173,7 +173,6 @@ vis <- function(effects_object,...) UseMethod('vis')
 #' @rdname vis
 #'
 #' @param type Type of visualization to perform.
-#'
 #' @export
 vis.effects <- function(effects_object,topic_effects,type=c('taxa','binary','continuous','functions'),...){
 

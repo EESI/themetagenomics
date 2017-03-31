@@ -1,7 +1,8 @@
 #' @rdname vis
 #'
 #' @param taxa_grp_n Number of taxa group names to display (remaining are renamed to other). Defaults to 7.
-
+#'
+#' @export
 vis.binary <- function(effects_object,taxa_grp_n=7,...){
 
   topics <- effects_object$topics
