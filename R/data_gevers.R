@@ -1,6 +1,6 @@
 #' Inflammatory bowel disease gut microbiome data
 #'
-#' This is a subset of samples from the 16S amplicon Gevers et al prediatric
+#' Subset of samples from the 16S amplicon Gevers et al prediatric
 #' inflammatory bowel disease (IBD) dataset. The data include 200 gut samples,
 #' 100 of which are controls, spanning 991 OTUs. Three tables are included: an
 #' OTU table generated via QIIME, picked against GreenGreens 13.5 at 97%
@@ -8,6 +8,9 @@
 #' includes diagnoiss and PCDAI scores, a continuous measure of disease burden.
 #'
 #' @docType data
+#' @name data_gevers
+#' @usage GEVERS
+#' @keywords datasets
 #'
 #' @format A list containing a 200x991 matrix (OTU), a 991x7 matrix (TAX), and a
 #' 200x3 dataframe (META).
@@ -25,4 +28,4 @@
 #' hist(log(GEVERS$OTU + 1),100)
 #' table(GEVERS$META$DIAGNOSIS)
 #' boxplot(subset(GEVERS$META,DIAGNOSIS == 'CD')[['PCDAI']])
-"GEVERS"
+NULL
