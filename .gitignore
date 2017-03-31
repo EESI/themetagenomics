@@ -7,3 +7,4 @@ inst/doc
 .httr-oauth
 ^.*\.o$
 ^.*\.so$
+packrat/lib*/

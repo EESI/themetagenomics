@@ -14,7 +14,7 @@ LazyData: TRUE
 Depends:
   R (>= 3.3.0), 
   Rcpp (>= 0.12.8)
-Imports: 
+Imports:
   ggplot2,
   lme4,
   plotly,
@@ -24,6 +24,7 @@ Imports:
   stats,
   stats4
 Suggests:
+  covr,
   curl,
   huge,
   igraph,
@@ -33,6 +34,7 @@ Suggests:
   RCurl,
   Rtsne,
   stm (>= 1.1.4),
+  testthat,
   vegan,
   viridis
 LinkingTo: Rcpp
