@@ -4,7 +4,7 @@ This is a submission
 
 ## Test environments
 * local OS X install, R X.X.X [TBD]
-* ubuntu XX.XX (on travis-ci), R 3.3.0
+* ubuntu XX.XX (on travis-ci), R 3.13.0
 * win-builder (devel and release) [TBD]
 
 ## R CMD check results
