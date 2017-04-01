@@ -55,7 +55,7 @@ NULL
 prepare_data <- function(otu_table,rows_are_taxa,tax_table,metadata,formula,refs,
                          cn_normalize=TRUE,drop=TRUE,verbose=FALSE){
 
-  if (max(otu_table) <= 1)
+    if (max(otu_table) <= 1)
     stop('Count table must contain counts (non-negative integers) and hence cannot be normalized.')
   if (is.null(colnames(otu_table)) | is.null(rownames(otu_table)))
     stop('otu_table must contain appropriate row and column names.')
@@ -83,7 +83,12 @@ prepare_data <- function(otu_table,rows_are_taxa,tax_table,metadata,formula,refs
   if (missing(tax_table)) miss$tax_table <- TRUE else miss$tax_table <- FALSE
   if (missing(metadata)) miss$metadata <- TRUE else miss$metadata <- FALSE
   if (missing(formula)) miss$formula <- TRUE else miss$formula <- FALSE
-  if (missing(refs)) miss$refs <- TRUE else miss$refs <- FALSE
+  if (missing(refs)){
+    miss$refs <- TRUE
+    refs <- NULL
+  }else{
+    miss$refs <- FALSE
+  }
 
   if (!miss$formula)
     if (miss$metadata)
@@ -184,7 +189,6 @@ prepare_data <- function(otu_table,rows_are_taxa,tax_table,metadata,formula,refs
     intersection <- intersect(colnames(otu_table),rownames(tax_table))
     otu_table <- otu_table[,intersection]
     tax_table <- tax_table[intersection,]
-    if (any(is.na(tax_table))) stop('NA values in tax_table. Please correct.\n')
   }
   if (any(is.na(otu_table))) stop('NA values in otu_table. Please correct.\n')
 
@@ -236,10 +240,10 @@ prepare_data <- function(otu_table,rows_are_taxa,tax_table,metadata,formula,refs
 
   if (splines){
     splineinfo <- extract_spline_info(formula,metadata)
-    modelframe <- create_modelframe(splineinfo$formula,refs,metadata)
+    modelframe <- create_modelframe(splineinfo$formula,metadata,refs)
     slots$splineinfo <- splineinfo
   }else{
-    modelframe <- create_modelframe(formula,refs,metadata)
+    modelframe <- create_modelframe(formula,metadata,refs)
   }
   rownames(metadata) <- rownames(otu_table)
 

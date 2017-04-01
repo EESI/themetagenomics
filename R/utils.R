@@ -23,7 +23,7 @@ dense_rank <- function(x) {
 }
 
 # Create modelframe that expands catagoricals into dummy variables
-create_modelframe <- function(formula,refs,metadata){
+create_modelframe <- function(formula,metadata,refs){
 
   rnames <- rownames(metadata)
 
