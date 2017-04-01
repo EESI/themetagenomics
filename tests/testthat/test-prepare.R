@@ -1,4 +1,4 @@
-context("prepare")
+context("prepare data")
 
 test_that('prepare_data works with no formula',{
   x <- prepare_data(otu_table=GEVERS$OTU,

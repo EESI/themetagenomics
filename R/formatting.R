@@ -1,10 +1,15 @@
 # sample vector of counts to document format
-format_to_docs <- function(doc,vocab){
+format_to_docs <- function(sample,vocab){
 
-  doc <- doc[doc != 0]
-  idx <- match(names(doc),vocab)
+  sample <- sample[sample != 0]
+  idx <- match(names(sample),vocab)
 
-  return(rbind(idx=idx,count=doc))
+  doc <- matrix(0L,2,length(sample),
+                dimnames=list(c('idx','count'),names(sample)))
+  doc[1,] <- idx
+  doc[2,] <- sample
+
+  return(doc)
 
 }
 

@@ -16,6 +16,7 @@ Depends:
   Rcpp (>= 0.12.8)
 Imports:
   ggplot2,
+  lda,
   lme4,
   Matrix,
   plotly,

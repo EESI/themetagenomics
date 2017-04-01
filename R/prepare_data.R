@@ -146,6 +146,10 @@ prepare_data <- function(otu_table,rows_are_taxa,tax_table,metadata,formula,refs
       tax_table <- tax_table[intersection,]
       slots$tax_table <- tax_table
     }
+
+    if (verbose) cat('Forcing otu_table to integer mode.\n')
+    storage.mode(otu_table) <- 'integer'
+
     slots$otu_table <- otu_table
 
     attr(slots,'splines') <- splines
@@ -287,6 +291,9 @@ prepare_data <- function(otu_table,rows_are_taxa,tax_table,metadata,formula,refs
                              length(na.omit(unique(tax_table[,5]))),
                              length(na.omit(unique(tax_table[,6]))),
                              length(na.omit(unique(tax_table[,7])))))
+
+  if (verbose) cat('Forcing otu_table to integer mode.\n')
+  storage.mode(otu_table) <- 'integer'
 
   slots$otu_table <- otu_table
   if (!miss$tax_table) slots$tax_table <- tax_table

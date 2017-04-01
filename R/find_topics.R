@@ -1,3 +1,6 @@
+#' @importFrom lda lda.collapsed.gibbs.sampler
+NULL
+
 #' Perform topic estimation on a themetadata object
 #'
 #' Given a themetadata object, this function converts the OTU counts across
@@ -134,7 +137,7 @@ find_topics.themetadata <- function(themetadata_object,K,sigma_prior=0,model=NUL
   docs <- lapply(seq_len(nrow(otu_table)), function(i) format_to_docs(otu_table[i,],vocab))
   names(docs) <- rownames(otu_table)
 
-  fit <- stm_wrapper(K=K,docs=docs,vocab=vocab,formula,metadata=metadata,
+  fit <- stm_wrapper(K=as.integer(K),docs=docs,vocab=vocab,formula,metadata=metadata,
                      sigma_prior=sigma_prior,model=model,iters=iters,tol=tol,
                      batches=batches,seed=seed,verbose=verbose,verbose_n=verbose_n,
                      init_type=init_type,control=control)
