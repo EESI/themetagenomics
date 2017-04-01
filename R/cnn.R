@@ -46,7 +46,7 @@ cnn <- function(otu_table,rows_are_taxa,copy_numbers,drop=TRUE,verbose=FALSE){
     return(otu_table)
   }
   if (sum(colnames(otu_table) %in% copy_numbers[,1]) == 0){
-    stop('OTU IDs must be integer strings of the form GreenGenes 16.X. Returning unnormalized OTU table.')
+    warning('OTU IDs must be integer strings of the form GreenGenes 16.X. Returning unnormalized OTU table.')
     return(otu_table)
   }
 
