@@ -12,30 +12,28 @@
 \alias{vis.topics}
 \title{Launch in interactive visualize to explore topic effects}
 \usage{
-vis(effects_object, ...)
+vis(object, ...)
 
-\method{vis}{effects}(effects_object, topic_effects, type = c("taxa",
-  "binary", "continuous", "functions"), ...)
+\method{vis}{effects}(object, topic_effects, type = c("taxa", "binary",
+  "continuous", "functions"), ...)
 
-\method{vis}{binary}(effects_object, taxa_grp_n = 7, ...)
+\method{vis}{binary}(object, taxa_grp_n = 7, ...)
 
-\method{vis}{continuous}(effects_object, lambda_step = 0.1, taxa_reg_n = 8,
-  ...)
+\method{vis}{continuous}(object, lambda_step = 0.1, taxa_reg_n = 8, ...)
 
-\method{vis}{functions}(effects_object, topic_effects, beta_min = 1e-05,
+\method{vis}{functions}(object, topic_effects, beta_min = 1e-05,
   ui_level = 0.8, gene_min = 10, pw_min = 20, ...)
 
-\method{vis}{taxa}(effects_object, taxa_bar_n = 30, top_n = 7,
-  method = c("huge", "simple"), corr_thresh = 0.01, lambda_step = 0.01,
-  ...)
+\method{vis}{taxa}(object, taxa_bar_n = 30, top_n = 7, method = c("huge",
+  "simple"), corr_thresh = 0.01, lambda_step = 0.01, ...)
 
-\method{vis}{topics}(topics_object, taxa_bar_n = 30, top_n = 7,
+\method{vis}{topics}(object, taxa_bar_n = 30, top_n = 7,
   method = c("huge", "simple"), corr_thresh = 0.01, lambda_step = 0.01,
   ...)
 }
 \arguments{
-\item{effects_object}{(required) Output of \code{\link{est.topics}} or
-\code{\link{est.functions}} with ml selected as method.}
+\item{object}{(required) Output of \code{\link{find_topics}}, or
+\code{\link{est.topics}}, or \code{\link{est.functions}}.}
 
 \item{...}{Additional arguments for methods.}
 
@@ -70,8 +68,6 @@ Defaults to huge.}
 
 \item{corr_thresh}{Threshold to set correlations to 0 when method
 is set to simple. Defaults to .01.}
-
-\item{topics_object}{(required) Output of \code{\link{find_topics}}}
 }
 \description{
 Launch in interactive visualize to explore topic effects

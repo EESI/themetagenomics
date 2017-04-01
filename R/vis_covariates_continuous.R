@@ -3,13 +3,13 @@
 #' @param taxa_reg_n Number of most relevant taxa within topic to regress. Defaults to 8.
 #'
 #' @export
-vis.continuous <- function(effects_object,lambda_step=.1,taxa_reg_n=8,...){
+vis.continuous <- function(object,lambda_step=.1,taxa_reg_n=8,...){
 
-  topics <- effects_object$topics
-  topic_effects <- effects_object$topic_effects
-  otu_table <- effects_object$topics$otu_table
-  tax_table <- effects_object$topics$tax_table
-  metadata <- effects_object$modelframe
+  topics <- object$topics
+  topic_effects <- object$topic_effects
+  otu_table <- object$topics$otu_table
+  tax_table <- object$topics$tax_table
+  metadata <- object$modelframe
 
   covariates <- colnames(metadata)
   cov_f <- sapply(metadata,class) == 'factor'

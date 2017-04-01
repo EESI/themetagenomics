@@ -12,11 +12,11 @@
 #' taxa relevance. Recommended to be between .01 and .1. Defaults to .1.
 #'
 #' @export
-vis.taxa <- function(effects_object,taxa_bar_n=30,top_n=7,method=c('huge','simple'),corr_thresh=.01,lambda_step=.01,...){
+vis.taxa <- function(object,taxa_bar_n=30,top_n=7,method=c('huge','simple'),corr_thresh=.01,lambda_step=.01,...){
 
-  topics <- effects_object$topics
-  topic_effects <- effects_object$topic_effects
-  tax_table <- effects_object$topics$tax_table
+  topics <- object$topics
+  topic_effects <- object$topic_effects
+  tax_table <- object$topics$tax_table
 
   method <- match.arg(method)
 

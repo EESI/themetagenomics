@@ -6,8 +6,8 @@ NULL
 
 #' Launch in interactive visualize to explore topic effects
 #'
-#' @param effects_object (required) Output of \code{\link{est.topics}} or
-#' \code{\link{est.functions}} with ml selected as method.
+#' @param object (required) Output of \code{\link{find_topics}}, or
+#' \code{\link{est.topics}}, or \code{\link{est.functions}}.
 #' @param ... Additional arguments for methods.
 #'
 #' @details
@@ -168,35 +168,35 @@ NULL
 #' vis(function_effects,topic_effects)
 #' }
 #' @export
-vis <- function(effects_object,...) UseMethod('vis')
+vis <- function(object,...) UseMethod('vis')
 
 #' @rdname vis
 #'
 #' @param type Type of visualization to perform.
 #' @export
-vis.effects <- function(effects_object,topic_effects,type=c('taxa','binary','continuous','functions'),...){
+vis.effects <- function(object,topic_effects,type=c('taxa','binary','continuous','functions'),...){
 
   type <- match.arg(type)
 
   if (type == 'functions' | !missing(topic_effects)){
 
-    effects_objects <- list(effects_object,topic_effects)
-    types <- sapply(effects_objects,function(x) attr(x,'type'))
-    effects_objects <- effects_objects[match(types,c('functions','topics'))]
+    objects <- list(object,topic_effects)
+    types <- sapply(objects,function(x) attr(x,'type'))
+    objects <- objects[match(types,c('functions','topics'))]
 
-    if (any(sapply(effects_objects,is.null))) stop('Must provide a topics effects-class and a functions effects-class.')
+    if (any(sapply(objects,is.null))) stop('Must provide a topics effects-class and a functions effects-class.')
 
-    effects_object <- effects_objects[[1]]
-    effects_object2 <- effects_objects[[2]]
-    class(effects_object) <- 'functions'
+    object <- objects[[1]]
+    object2 <- objects[[2]]
+    class(object) <- 'functions'
 
-    vis(effects_object,effects_object2,...)
+    vis(object,object2,...)
 
   }else{
 
-    class(effects_object) <- type
+    class(object) <- type
 
-    vis(effects_object,...)
+    vis(object,...)
 
   }
 

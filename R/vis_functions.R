@@ -8,7 +8,7 @@
 #' @param pw_min Maximium number of pathways to show in heatmap. for Defaults to 20.
 #'
 #' @export
-vis.functions <- function(effects_object,topic_effects,beta_min=1e-5,ui_level=.8,gene_min=10,pw_min=20,...){
+vis.functions <- function(object,topic_effects,beta_min=1e-5,ui_level=.8,gene_min=10,pw_min=20,...){
 
   topics <- topic_effects$topics
   tax_table <- topic_effects$topics$tax_table
@@ -30,8 +30,8 @@ vis.functions <- function(effects_object,topic_effects,beta_min=1e-5,ui_level=.8
 
   fit <- topics$fit
   K <- fit$settings$dim$K
-  N_pw <- length(unique(effects_object$model$summary$b_pwxtopic$pw))
-  pws <- unique(effects_object$model$summary$b_pwxtopic$pw)
+  N_pw <- length(unique(object$model$summary$b_pwxtopic$pw))
+  pws <- unique(object$model$summary$b_pwxtopic$pw)
 
   beta <- t(exp(fit$beta$logbeta[[1]]))
   rownames(beta) <- fit$vocab
@@ -39,14 +39,14 @@ vis.functions <- function(effects_object,topic_effects,beta_min=1e-5,ui_level=.8
   beta[beta < beta_min] <- beta_min
   logbeta_global <- log(beta)
 
-  uncertainty <- any(grepl('%',colnames(effects_object$model$summary$mu)))
+  uncertainty <- any(grepl('%',colnames(object$model$summary$mu)))
 
   int_mat <- matrix(0.0,N_pw,K,dimnames=list(pws,paste0('T',1:K)))
 
-  for (i in seq_len(nrow(effects_object$model$summary$b_pwxtopic))){
-    pw <- as.character(effects_object$model$summary$b_pwxtopic$pw[i])
-    k <- paste0('T',as.character(effects_object$model$summary$b_pwxtopic$topic[i]))
-    int_mat[pw,k] <- effects_object$model$summary$b_pwxtopic$mean[i]
+  for (i in seq_len(nrow(object$model$summary$b_pwxtopic))){
+    pw <- as.character(object$model$summary$b_pwxtopic$pw[i])
+    k <- paste0('T',as.character(object$model$summary$b_pwxtopic$topic[i]))
+    int_mat[pw,k] <- object$model$summary$b_pwxtopic$mean[i]
   }
 
   dd_row <- as.dendrogram(hclust(dist(int_mat,method='euclidean'),method='ward.D2'))
@@ -63,11 +63,11 @@ vis.functions <- function(effects_object,topic_effects,beta_min=1e-5,ui_level=.8
 
     sig_mat <- matrix(0,N_pw,K,dimnames=list(pws,paste0('T',1:K)))
 
-    sig <- rowSums(sign(effects_object$model$summary$b_pwxtopic[,ui_interval]))
+    sig <- rowSums(sign(object$model$summary$b_pwxtopic[,ui_interval]))
 
-    for (i in seq_len(nrow(effects_object$model$summary$b_pwxtopic))){
-      pw <- as.character(effects_object$model$summary$b_pwxtopic$pw[i])
-      k <- paste0('T',as.character(effects_object$model$summary$b_pwxtopic$topic[i]))
+    for (i in seq_len(nrow(object$model$summary$b_pwxtopic))){
+      pw <- as.character(object$model$summary$b_pwxtopic$pw[i])
+      k <- paste0('T',as.character(object$model$summary$b_pwxtopic$topic[i]))
       sig_mat[pw,k] <- sig[i]
     }
 
@@ -273,7 +273,7 @@ vis.functions <- function(effects_object,topic_effects,beta_min=1e-5,ui_level=.8
         k <- levels(df1$topic)[s[['x']]]
         pw <- levels(df1$pw)[s[['y']]]
 
-        gene_table <- effects_object$gene_table[paste0('T',effects_object$gene_table$topic) == k & effects_object$gene_table$pw == pw,c('count','ko','description')]
+        gene_table <- object$gene_table[paste0('T',object$gene_table$topic) == k & object$gene_table$pw == pw,c('count','ko','description')]
         gene_table <- gene_table[gene_table$count >= 10,]
         gene_table <- gene_table[order(gene_table$count,decreasing=TRUE),]
         colnames(gene_table) <- c('Count','ID','Description')

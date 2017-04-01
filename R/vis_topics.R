@@ -1,30 +1,28 @@
 #' @rdname vis
 #'
-#' @param topics_object (required) Output of \code{\link{find_topics}}
-#'
 #' @export
-vis.topics <- function(topics_object,taxa_bar_n=30,top_n=7,method=c('huge','simple'),corr_thresh=.01,lambda_step=.01,...){
+vis.topics <- function(object,taxa_bar_n=30,top_n=7,method=c('huge','simple'),corr_thresh=.01,lambda_step=.01,...){
 
-  tax_table <- topics_object$tax_table
+  tax_table <- object$tax_table
 
   method <- match.arg(method)
 
-  fit <- topics_object$fit
+  fit <- object$fit
   K <- fit$settings$dim$K
   vocab <- fit$vocab
   taxa <- tax_table[vocab,]
   taxon <- paste0(pretty_taxa_names(taxa),' (',vocab,')')
-  taxa <- rename_taxa_to_other(topics_object$docs,taxa,top_n=top_n,type='docs',as_factor=TRUE)
+  taxa <- rename_taxa_to_other(object$docs,taxa,top_n=top_n,type='docs',as_factor=TRUE)
   rownames(taxa) <- taxon
 
   corr <- stm::topicCorr(fit,method=method,cutoff=corr_thresh)
 
   colors <- c('gray35','gray60','gray85')
 
-  doc_lengths <- sapply(topics_object$docs,function(x) sum(x[2,]))
+  doc_lengths <- sapply(object$docs,function(x) sum(x[2,]))
 
   theta <- fit$theta
-  rownames(theta) <- names(topics_object$docs)
+  rownames(theta) <- names(object$docs)
   colnames(theta) <- paste0('T',1:K)
   if (min(theta) == 0){
     min_theta <- min(theta[theta > 0])

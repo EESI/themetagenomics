@@ -3,13 +3,13 @@
 #' @param taxa_grp_n Number of taxa group names to display (remaining are renamed to other). Defaults to 7.
 #'
 #' @export
-vis.binary <- function(effects_object,taxa_grp_n=7,...){
+vis.binary <- function(object,taxa_grp_n=7,...){
 
-  topics <- effects_object$topics
-  topic_effects <- effects_object$topic_effects
-  otu_table <- effects_object$topics$otu_table
-  tax_table <- effects_object$topics$tax_table
-  metadata <- effects_object$modelframe
+  topics <- object$topics
+  topic_effects <- object$topic_effects
+  otu_table <- object$topics$otu_table
+  tax_table <- object$topics$tax_table
+  metadata <- object$modelframe
 
   fit <- topics$fit
   K <- fit$settings$dim$K
