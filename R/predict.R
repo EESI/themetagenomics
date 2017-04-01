@@ -65,6 +65,17 @@ predict.topics <- function(object,
 
   reference <- match.arg(reference)
 
+  if (cn_normalize){
+    if (attr(object,'cnn')){
+      warning('Copy numbers already normalized via prepare_data. Switching cn_normalize to FALSE.')
+      cn_normalize <- FALSE
+    }
+  }else{
+    if (attr(object,'cnn') == FALSE){
+      warning('Copy numbers have yet to be normalized. Conisdering cn_normalize=TRUE.')
+    }
+  }
+
   fit <- object$fit
 
   beta <- round(scalar*exp(fit$beta$logbeta[[1]]))
@@ -78,11 +89,13 @@ predict.topics <- function(object,
                            sample_normalize=sample_normalize,
                            drop=drop)
 
-  if (grepl('silva',reference_path))
+  if (grepl('silva',reference))
     predictions <- t4f(beta,rows_are_taxa=FALSE,
+                       tax_table=object$tax_table,
                        reference_path=reference_path,
                        cn_normalize=cn_normalize,
                        sample_normalize=sample_normalize,
+                       scalar=scalar,
                        drop=drop,...)
 
 
@@ -103,6 +116,11 @@ predict.topics <- function(object,
     attr(predictions,'type') <- NULL
     attr(predictions,'ref') <- NULL
     attr(predictions,'db') <- NULL
+  }
+  if (attr(object,'cnn') == FALSE & cn_normalize == FALSE){
+    attr(predictions,'cnn') <- FALSE
+  }else{
+    attr(predictions,'cnn') <- TRUE
   }
 
   return(predictions)

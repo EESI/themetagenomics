@@ -108,6 +108,17 @@ prepare_data <- function(otu_table,rows_are_taxa,tax_table,metadata,formula,refs
       tax_table <- t(tax_table)
     }
 
+  # make silva like greengenes for downstream functions
+  if (!miss$tax_table){
+    if (!all(grepl('^[a-z]__',tax_table))){
+      tax_table_dimnames <- dimnames(tax_table)
+      tax_table[is.na(tax_table)] <- ''
+      gg_prefix <- c('k','p','c','o','f','g','s')
+      tax_table <- sapply(seq_along(gg_prefix),function(g) paste(gg_prefix[g],tax_table[,g],sep='__'))
+      dimnames(tax_table) <- tax_table_dimnames
+    }
+  }
+
   # if unsupervised
   if (miss$formula){
     if(is.null(dimnames(otu_table))){
@@ -146,7 +157,7 @@ prepare_data <- function(otu_table,rows_are_taxa,tax_table,metadata,formula,refs
   }
 
   classes <- sapply(metadata,class)
-  classes_counts <- c('n'=sum(classes=='numeric'),
+  classes_counts <- c('n'=sum(classes=='numeric' | classes=='integer'),
                       'c'=sum(classes=='character'),
                       'f'=sum(classes=='factor'))
   if (verbose) cat(sprintf('\nStarting stats:
@@ -248,7 +259,7 @@ prepare_data <- function(otu_table,rows_are_taxa,tax_table,metadata,formula,refs
   rownames(metadata) <- rownames(otu_table)
 
   classes <- sapply(metadata,class)
-  classes_counts <- c('n'=sum(classes=='numeric'),
+  classes_counts <- c('n'=sum(classes=='numeric' | classes=='integer'),
                       'c'=sum(classes=='character'),
                       'f'=sum(classes=='factor'))
   if (verbose) cat(sprintf('\nFinal stats:

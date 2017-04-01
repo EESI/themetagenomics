@@ -1,3 +1,6 @@
+#' @importFrom Matrix t colSums rowSums
+NULL
+
 #' Predict taxonomic functional content via tax4fun
 #'
 #' Given a taxonomic abundance table prepared with the Silva reference database,
@@ -24,6 +27,8 @@
 #'   normalization. Defaults to FALSE.
 #' @param sample_normalize Logical flag to normalize functional
 #'   predictions by the total functional abundance in a sample. Defaults to FALSE.
+#' @param scalar Value for scaling the topics over functions distrubution
+#'   to predicted counts. Defaults to 100.
 #' @param drop Logical flag to drop empty gene columns. Defaults to TRUE.
 #'
 #' @return A list containing
@@ -42,16 +47,20 @@
 #' @examples
 #' \dontrun{
 #' download_ref(destination='/references',reference='silva_ko')
-#' predicted_functions <- t4f(otu_table=GEVERS$OTU,rows_are_taxa=TRUE,
-#'                            reference='/references',
-#'                            short=TRUE,cn_normalize=TRUE,sample_normalize=TRUE,drop=TRUE)
+#' predicted_functions <- t4f(otu_table=DAVID$OTU,rows_are_taxa=FALSE,
+#'                            tax_table=DAVID$TAX,reference='/references',
+#'                            type='uproc',short=TRUE,cn_normalize=TRUE,
+#'                            sample_normalize=FALSE,scalar=NULL,drop=TRUE)
 #'                            }
 #'
 #' @export
 
 t4f <- function(otu_table,rows_are_taxa,tax_table,reference_path,type='uproc',
-                short=TRUE,cn_normalize=FALSE,sample_normalize=FALSE,
+                short=TRUE,cn_normalize=FALSE,sample_normalize=FALSE,scalar=100,
                 drop=TRUE){
+
+  if (is.null(scalar) | scalar == 0 | is.na(scalar))
+    scalar <- 1
 
   ref_profile_path <- file.path(reference_path,'t4f_ref_profiles.rds')
   map_path <- file.path(reference_path,'t4f_silva_to_kegg.rds')
@@ -59,7 +68,8 @@ t4f <- function(otu_table,rows_are_taxa,tax_table,reference_path,type='uproc',
   if (missing(tax_table)){
     taxa_ids <- colnames(otu_table)
   }else{
-    taxa_ids <- apply(tax_table,1,function(l){paste0(paste0(l[!is.na(l)],collapse=';'),';')})
+    if (all(grepl('^[a-z]__',tax_table))) tax_table <- gsub('^[a-z]__','',tax_table)
+    taxa_ids <- apply(tax_table,1,function(l){paste0(paste0(l[!is.na(l) & l != ''],collapse=';'),';')})
   }
 
   if (rows_are_taxa == TRUE) otu_table <- t(otu_table)
@@ -73,7 +83,6 @@ t4f <- function(otu_table,rows_are_taxa,tax_table,reference_path,type='uproc',
   kegg_lookup <- readRDS(system.file('references/kegg_lookup_table.rds',package='themetagenomics'))
   ref_profile <- readRDS(ref_profile_path)[[type]][[size]]
 
-  sample_name <- rownames(otu_table)
   silva_ids <- rownames(silva_to_kegg)
 
   overlap_taxa <- intersect(silva_ids,taxa_ids)
@@ -87,18 +96,18 @@ t4f <- function(otu_table,rows_are_taxa,tax_table,reference_path,type='uproc',
   if (sample_normalize) tax_to_kegg <- t(as.matrix(t(tax_to_kegg))/colSums(tax_to_kegg))
   fxn_table <- t(ref_profile %*% tax_to_kegg)
 
-  if (drop){
-    fxn_table <- fxn_table[,colSums(fxn_table)>0]
-  }
-
   desc_tmp <- unique(kegg_lookup[,c(1,5)])
   desc_tmp <- desc_tmp[desc_tmp[,1] %in% colnames(fxn_table),]
   desc <- desc_tmp[,2]
   names(desc) <- desc_tmp[,1]
 
-  if (drop){
-    fxn_table <- fxn_table[,names(desc) ]
-  }
+  if (drop) fxn_table <- fxn_table[,names(desc)]
+  if (drop) fxn_table <- fxn_table[,colSums(fxn_table) > 0]
+  t4f_meta <- cbind(NULL,ftu=1-rowSums(fxn_table)/sample_sums)
+
+  # scale to counts
+  fxn_table <- round(fxn_table*scalar/max(fxn_table))
+  if (drop) fxn_table <- fxn_table[,colSums(fxn_table) > 0]
 
   pw_tmp <- kegg_lookup[kegg_lookup[,1] %in% colnames(fxn_table),-5]
   pw_kos <- unique(pw_tmp[,1])
@@ -111,10 +120,7 @@ t4f <- function(otu_table,rows_are_taxa,tax_table,reference_path,type='uproc',
 
   fxn_meta <- list(KEGG_Description=desc,KEGG_Pathways=pw)
 
-  t4f_meta <- NULL
-  t4f_meta <- cbind(t4f_meta,ftu=1-rowSums(fxn_table)/sample_sums)
-
-  return(list(fxn_table=fxn_table,fxn_meta=fxn_meta,method_meta=t4f_meta))
+  return(list(fxn_table=as.matrix(fxn_table),fxn_meta=fxn_meta,method_meta=t4f_meta))
 
   # why do the references have 1 less row than the kegg id
   # why are there blank rows in the kegg id

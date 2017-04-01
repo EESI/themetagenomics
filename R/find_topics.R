@@ -143,6 +143,9 @@ find_topics.themetadata <- function(themetadata_object,K,sigma_prior=0,model=NUL
               modelframe=modelframe,spline_info=splineinfo$info) # change to splineinfo but check other f() first
   class(out) <- 'topics'
 
+  attr(out,'cnn') <- attr(themetadata_object,'cnn')
+  attr(out,'refs') <- attr(themetadata_object,'refs')
+
   return(out)
 
 }

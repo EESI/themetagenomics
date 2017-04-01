@@ -77,7 +77,7 @@ make_ppd_x <- function(estimated_effects,covariate,mod,npoints=100){
     if (check_for_splines(formula,metadata)){
       modelframe <- stats::model.matrix(formula,data=metadata)
       ppd_idx <- which(labels(modelframe)[[2]] %in% colnames(modelframe_full))
-      modelframe[,ppd_idx] <- matrix(rep(colMeans(modelframe[,ppd_idx]),nrow(modelframe)),nrow(modelframe),byrow=TRUE)
+      modelframe[,ppd_idx] <- matrix(rep(colMeans(modelframe[,ppd_idx,drop=FALSE]),nrow(modelframe)),nrow(modelframe),byrow=TRUE)
       return(list(modelframe))
     }else{
       modelframe <- stats::model.matrix(formula,data=metadata)
@@ -98,7 +98,7 @@ make_ppd_x <- function(estimated_effects,covariate,mod,npoints=100){
     newdata[[covariate]] <- seq(min(newdata[[covariate]]),max(newdata[[covariate]]),length.out=nrow(newdata))
     modelframe <- stats::model.matrix(formula,data=newdata)
     ppd_idx <- which(labels(modelframe)[[2]] %in% colnames(modelframe_full))
-    modelframe[,ppd_idx] <- matrix(rep(colMeans(modelframe[,ppd_idx]),nrow(modelframe)),nrow(modelframe),byrow=TRUE)
+    modelframe[,ppd_idx] <- matrix(rep(colMeans(modelframe[,ppd_idx,drop=FALSE]),nrow(modelframe)),nrow(modelframe),byrow=TRUE)
   }
 
   if (attr(covariate,'baseclass') == 'numeric' & attr(covariate,'multiclass') != 'spline'){
@@ -125,6 +125,7 @@ make_ppd_x <- function(estimated_effects,covariate,mod,npoints=100){
 # Create a lookup table that identifies splines and multiclass factors
 create_multiclasses_table <- function(modelframe,modelframe_full,splines=NULL){
   classes <- sapply(modelframe,class)
+  classes[classes == 'integer'] <- 'numeric'
   multiclasses <- classes
   multiclasses[which(sapply(modelframe,function(x) length(levels(x))) > 2)] <- 'multiclass'
   multiclasses[splines] <- 'spline'

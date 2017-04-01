@@ -6,7 +6,7 @@
 \usage{
 t4f(otu_table, rows_are_taxa, tax_table, reference_path, type = "uproc",
   short = TRUE, cn_normalize = FALSE, sample_normalize = FALSE,
-  drop = TRUE)
+  scalar = 100, drop = TRUE)
 }
 \arguments{
 \item{otu_table}{(required) Matrix or dataframe containing taxa abundances
@@ -36,6 +36,9 @@ normalization. Defaults to FALSE.}
 \item{sample_normalize}{Logical flag to normalize functional
 predictions by the total functional abundance in a sample. Defaults to FALSE.}
 
+\item{scalar}{Value for scaling the topics over functions distrubution
+to predicted counts. Defaults to 100.}
+
 \item{drop}{Logical flag to drop empty gene columns. Defaults to TRUE.}
 }
 \value{
@@ -55,9 +58,10 @@ abundance content across a set of functional genes.
 \examples{
 \dontrun{
 download_ref(destination='/references',reference='silva_ko')
-predicted_functions <- t4f(otu_table=GEVERS$OTU,rows_are_taxa=TRUE,
-                           reference='/references',
-                           short=TRUE,cn_normalize=TRUE,sample_normalize=TRUE,drop=TRUE)
+predicted_functions <- t4f(otu_table=DAVID$OTU,rows_are_taxa=FALSE,
+                           tax_table=DAVID$TAX,reference='/references',
+                           type='uproc',short=TRUE,cn_normalize=TRUE,
+                           sample_normalize=FALSE,scalar=NULL,drop=TRUE)
                            }
 
 }

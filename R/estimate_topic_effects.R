@@ -154,8 +154,8 @@ est_topics_backend <- function(estimated_effects,theta,nsims=100,ui_level=.8,npo
   ui_levels <- matrix(0.0,K,2,dimnames=list(NULL,ui_interval))
 
   if (verbose) cat('Simulating beta coeffiicents from MVN.\n')
-  simbetas <- ppd_weights(estimated_effects$parameters,nsims=nsims)
-  for (i in seq_along(simbetas)) colnames(simbetas[[i]]) <- names(estimated_effects$parameter[[1]][[1]]$est)
+  sim_weights <- ppd_weights(estimated_effects$parameters,nsims=nsims)
+  for (i in seq_along(sim_weights)) colnames(sim_weights[[i]]) <- names(estimated_effects$parameter[[1]][[1]]$est)
 
   spline_info <- estimated_effects$splines
   if (!is.null(spline_info)) spline_idx <- sapply(spline_info,function(x) x$var) else spline_idx <- NULL
@@ -180,7 +180,7 @@ est_topics_backend <- function(estimated_effects,theta,nsims=100,ui_level=.8,npo
     if (multiclasses$multiclass[i] == 'spline'){
       ppd <- make_ppd_x(estimated_effects,npoints=100)[[1]]
       for (k in seq_len(K)){
-        ppd_beta <- ppd %*% t(simbetas[[k]])
+        ppd_beta <- ppd %*% t(sim_weights[[k]])
         spearman <- vector(mode='double',length=ncol(ppd_beta))
         for (j in seq_len(ncol(ppd_beta))){
           spearman[j] <- cor(ppd_beta[,j],theta[,k],method='spearman')
@@ -188,13 +188,13 @@ est_topics_backend <- function(estimated_effects,theta,nsims=100,ui_level=.8,npo
         est[k,] <- c(mean(spearman),quantile(spearman,c(ui_offset,1-ui_offset)))
       }
     }else{
-      for (j in seq_len(K)) est[j,] <- c(mean(simbetas[[j]][,cov_i]),quantile(simbetas[[j]][,cov_i],c(ui_offset,1-ui_offset)))
+      for (j in seq_len(K)) est[j,] <- c(mean(sim_weights[[j]][,cov_i]),quantile(sim_weights[[j]][,cov_i],c(ui_offset,1-ui_offset)))
     }
 
     if (multiclasses$baseclass[i] == 'factor'){
       ppd <- make_ppd_x(estimated_effects,covariate=cov_i,npoints=100)[[1]]
       for (k in seq_len(K)){
-        ppd_beta <- ppd %*% t(simbetas[[k]])
+        ppd_beta <- ppd %*% t(sim_weights[[k]])
         diff <- ppd_beta[2,] - ppd_beta[1,]                                               ### check this ###
         est[k,] <- c(mean(diff),quantile(diff,c(ui_offset,1-ui_offset)))
       }
@@ -221,8 +221,8 @@ est_topics_backend <- function(estimated_effects,theta,nsims=100,ui_level=.8,npo
           ppd <- make_ppd_x(estimated_effects,covariate=cov_i,mod=mod,npoints=100)
 
           for (k in seq_len(K)){
-            sims <- ppd[[1]] %*% t(simbetas[[k]])
-            sims_switch <- ppd[[2]] %*% t(simbetas[[k]])
+            sims <- ppd[[1]] %*% t(sim_weights[[k]])
+            sims_switch <- ppd[[2]] %*% t(sim_weights[[k]])
             fitted[[mod]][[k]] <- cbind(rowMeans(sims),
                                         t(apply(sims,1,function(x) quantile(x,c(ui_offset,1-ui_offset)))),
                                         cov_vals)
@@ -243,7 +243,7 @@ est_topics_backend <- function(estimated_effects,theta,nsims=100,ui_level=.8,npo
         ppd <- make_ppd_x(estimated_effects,covariate=cov_i,npoints=100)[[1]]
 
         for (k in seq_len(K)){
-          sims <- ppd %*% t(simbetas[[k]])
+          sims <- ppd %*% t(sim_weights[[k]])
 
           # was fitted[[mod]][[k]] but there isn't a mod
           fitted[[k]] <- cbind(rowMeans(sims),

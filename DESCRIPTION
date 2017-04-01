@@ -17,6 +17,7 @@ Depends:
 Imports:
   ggplot2,
   lme4,
+  Matrix,
   plotly,
   rstan,
   scales,
@@ -29,7 +30,6 @@ Suggests:
   curl,
   huge,
   igraph,
-  Matrix,
   networkD3,
   proxy,
   RCurl,
