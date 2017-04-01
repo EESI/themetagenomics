@@ -8,7 +8,7 @@
 #' includes diagnoiss and PCDAI scores, a continuous measure of disease burden.
 #'
 #' @docType data
-#' @name data_gevers
+#' @name GEVERS
 #' @usage GEVERS
 #' @keywords datasets
 #'

@@ -6,7 +6,7 @@
 #' using the Silva reference database. The data span 350 time points.
 #'
 #' @docType data
-#' @name data_david
+#' @name DAVID
 #' @usage DAVID
 #' @keywords datasets
 #'
