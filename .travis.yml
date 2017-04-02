@@ -1,7 +1,7 @@
 # R for travis: see documentation at https://docs.travis-ci.com/user/languages/r
 
 language: r
-sudo: false #required
+sudo: required #false
 cache: packages
 warnings_are_errors: true
 r:
@@ -11,9 +11,38 @@ r:
 
 r_packages:
   - covr
+  - rstan
+
+r_github_packages:
+  - rstanarm
+
+env:
+  matrix:
+    include:
+        - os: linux
+          compiler: gcc
+          addons:
+            apt:
+              sources: ['ubuntu-toolchain-r-test']
+              packages: ['g++-4.9', 'valgrind']
+          env: COMPILER=g++-4.9
+
+before_install:
+ - mkdir -p ~/.R
+ - echo 'CXXFLAGS=-O3' > ~/.R/Makevars
+ - echo 'mtune=native' > ~/.R/Makevars
+ - echo 'Wno-unused-variable' > ~/.R/Makevars
+ - echo 'Wno-unused-function' > ~/.R/Makevars
+ - echo 'CXXFLAGS+=-flto' > ~/.R/Makevars
+ - echo 'ffat-lto-objects' > ~/.R/Makevars
+ - echo 'Wno-unused-local-typedef' > ~/.R/Makevars
+
+script:
+  - |
+    travis_wait R CMD build .
 
 after_success:
-  - tar -C .. -xf $PKG_TARBALL
+  - travis_wait 40 tar -C .. -xf $PKG_TARBALL
   - Rscript -e "library(covr); codecov(token='586cf964-23a1-4090-a503-3f9318e8f056')"
 
 notifications:
