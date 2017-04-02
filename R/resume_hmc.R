@@ -67,20 +67,29 @@ resume.effects <- function(object,init_type=c('last','orig'),inits,
 
   if (missing(inits)){
     init_type <- match.arg(init_type)
-    inits <- object$model$inits[[init_type]]
+
+    if (init_type == 'orig'){
+      inits <- object$model$inits$orig
+      if (length(inits) < chains)
+        inits <- lapply(seq_len(chains),function(x){
+          j <- sample(length(inits),1)
+          inits[[j]]
+        })
+    }
+
+    if (init_type == 'last') inits <- sample_last(object$model$fit,chains)
   }
 
-  if (length(inits) < chains)
-    inits <- lapply(seq_len(chains),function(x){
-      j <- sample(length(inits),1)
-      inits[[j]]
-      })
+
 
   mm <- resume(object$model$fit,
                stan_dat=object$model$data,
                inits=inits,warmup=warmup,
                gene_table=object$gene_table,pars=object$model$pars,
                iters=iters,chains=chains,return_summary=return_summary,verbose=verbose)
+
+  mm[['inits']] <- list(orig=object$model$inits$orig,
+                        last=inits)
 
   out <- list(model=mm,gene_table=object$gene_table)
   class(out) <- 'effects'
@@ -117,9 +126,6 @@ resume.stanfit <- function(object,stan_dat,inits,gene_table,
   out[['pars']] <- pars
   out[['fit']] <- fit
   out[['data']] <- stan_dat
-  out[['inits']] <- list(orig=inits,
-                         last=apply(fit,2,utils::relist,
-                              skeleton=create_skel(fit@model_pars,fit@par_dims)))
   out[['sampler']] <- rstan::get_sampler_params(fit)
 
   if (return_summary){

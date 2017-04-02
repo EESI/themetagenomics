@@ -115,7 +115,7 @@ t4f <- function(otu_table,rows_are_taxa,tax_table,reference_path,type='uproc',
   names(pw) <- pw_kos
   for (i in seq_len(nrow(pw_tmp))){
     ko <- pw_tmp[i,1]
-    pw[[ko]] <- c(pw[[ko]],list(pw_tmp[i,2:4]))
+    pw[[ko]] <- c(pw[[ko]],list(tolower(pw_tmp[i,2:4])))
   }
 
   fxn_meta <- list(KEGG_Description=desc,KEGG_Pathways=pw)

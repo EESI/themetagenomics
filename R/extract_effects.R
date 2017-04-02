@@ -55,7 +55,7 @@ extract.effects <- function(object,...){
                                            pars)
   rhat_pars <- pars[pars != 'yhat']
   rhat <- summary(fit,pars=rhat_pars)[['summary']][,'Rhat'] > 1.1
-  rhat_count <- sum(rhat)
+  rhat_count <- sum(rhat,na.rm=TRUE)
   if (rhat_count > 0){
     warning(sprintf('%s parameters with Rhat > 1.1. Consider more iterations.',rhat_count))
     out[['flagged']] <- names(which(rhat))

@@ -129,11 +129,13 @@ est.hmc <- function(object,inits,prior=c('t','normal','laplace'),t_df=c(7,7,7),i
 
     if (verbose) cat('Generating initial values via ML.\n')
 
-    mm_init <- glmer.nb(y ~ (1|pw) + (1|topic) + (1|pwxtopic),
+    mm_init <- suppressWarnings(
+      glmer.nb(y ~ (1|pw) + (1|topic) + (1|pwxtopic),
                         data=stan_table,
                         verbose=verbose,
                         control=glmerControl(calc.derivs=FALSE,
                                              optCtrl=list(maxfun=50))) # check if ok for level 3
+    )
 
     inits <- lapply(seq_len(chains),function(x) list(mu=fixef(mm_init),
                                                      phi=getME(mm_init,'glmer.nb.theta'),
@@ -189,9 +191,7 @@ est.hmc <- function(object,inits,prior=c('t','normal','laplace'),t_df=c(7,7,7),i
   out[['pars']] <- summary_pars
   out[['fit']] <- fit
   out[['data']] <- stan_dat
-  out[['inits']] <- list(orig=inits,
-                         last=apply(fit,2,utils::relist,
-                                   skeleton=create_skel(fit@model_pars,fit@par_dims)))
+  out[['inits']] <- list(orig=inits)
   out[['sampler']] <- rstan::get_sampler_params(fit)
 
 

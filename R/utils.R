@@ -221,6 +221,29 @@ create_skel <- function (pars,dims){
   lst
 }
 
+# sample last estimates from hmc
+sample_last <- function(fit,chains){
+
+  fit_chains <- seq_len(fit@sim$chains)
+  fit_samps <- seq(fit@sim$iter-chains+1,fit@sim$iter,1)
+
+  sims <- lapply(fit_chains,function(ch)
+    utils::relist(fit@sim$samples[[ch]],skeleton=create_skel(fit@model_pars,fit@par_dims)))
+
+  inits <- vector(mode='list',length=chains)
+  for (i in seq_len(chains)){
+
+    ch_i <- sample(fit_chains,1)
+    samp_i <- sample(fit_samps,1)
+
+    inits[[ch_i]] <- lapply(sims[[ch_i]],function(x) sapply(x,function(y) y[samp_i]))
+
+  }
+
+  return(inits)
+
+}
+
 # rmvnorm from stm
 rmvnorm <- function(n,mu,Sigma,chol_Sigma=chol(Sigma)){
   E <- matrix(rnorm(n*length(mu)),n,length(mu))
