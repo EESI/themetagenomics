@@ -41,14 +41,6 @@ script:
   - |
     travis_wait R CMD build .
 
-before_install:
- - echo "options(repos = c(CRAN='http://cran.rstudio.com'))" > ~/.Rprofile
- - mkdir -p ~/.R
- - echo 'CXXFLAGS=-O2' > ~/.R/Makevars
- - echo 'CC=clang' >> ~/.R/Makevars
- - echo 'CPP=clang' >> ~/.R/Makevars
- - echo 'CXX=clang++' >> ~/.R/Makevars
-
 after_success:
   - travis_wait 40 tar -C .. -xf $PKG_TARBALL
   - Rscript -e "library(covr); codecov(token='586cf964-23a1-4090-a503-3f9318e8f056')"
