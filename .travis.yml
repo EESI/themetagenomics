@@ -41,7 +41,7 @@ before_install:
 script:
   - |
     travis_wait R CMD build .
-=======
+
 env:
   global:
     - NOT_CRAN=true CXXFLAGS=-O2 CXX_OLEVEL=2 RCPP_VER=cran CXX=clang++ CPP=clang CC=clang
@@ -53,7 +53,6 @@ before_install:
  - echo 'CC=clang' >> ~/.R/Makevars
  - echo 'CPP=clang' >> ~/.R/Makevars
  - echo 'CXX=clang++' >> ~/.R/Makevars
->>>>>>> 224b9695b78611283c22afc92ca280e79383bc06
 
 after_success:
   - travis_wait 40 tar -C .. -xf $PKG_TARBALL
