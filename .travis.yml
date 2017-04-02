@@ -13,33 +13,32 @@ r_packages:
   - covr
   - rstan
 
-r_github_packages:
-  - rstanarm
-
 env:
+  global:
+    - NOT_CRAN=true CXXFLAGS=-O2 CXX_OLEVEL=2 RCPP_VER=cran CXX=clang++ CPP=clang CC=clang
   matrix:
-    include:
-        - os: linux
-          compiler: gcc
-          addons:
-            apt:
-              sources: ['ubuntu-toolchain-r-test']
-              packages: ['g++-4.9', 'valgrind']
-          env: COMPILER=g++-4.9
+    - CXX_OLEVEL=2 CXX=clang++
 
 before_install:
+ - echo "options(repos = c(CRAN='http://cran.rstudio.com'))" > ~/.Rprofile
  - mkdir -p ~/.R
- - echo 'CXXFLAGS=-O3' > ~/.R/Makevars
- - echo 'mtune=native' > ~/.R/Makevars
- - echo 'Wno-unused-variable' > ~/.R/Makevars
- - echo 'Wno-unused-function' > ~/.R/Makevars
- - echo 'CXXFLAGS+=-flto' > ~/.R/Makevars
- - echo 'ffat-lto-objects' > ~/.R/Makevars
- - echo 'Wno-unused-local-typedef' > ~/.R/Makevars
+ - echo 'CXXFLAGS=-O2' > ~/.R/Makevars
+ - echo 'CC=clang' >> ~/.R/Makevars
+ - echo 'CPP=clang' >> ~/.R/Makevars
+ - echo 'CXX=clang++' >> ~/.R/Makevars
+ - echo "CXX = `R CMD config CXX`" >> ~/.R/Makevars
+ - echo "CXXFLAGS = `R CMD config CXXFLAGS` -pedantic -g0" >> ~/.R/Makevars
+ - export CLANG_EXTRA_ARG=""
+ - if [[ $CXX = "clang++" ]] ;  then export CLANG_EXTRA_ARG=" -Qunused-arguments -fcolor-diagnostics " ; fi
+ - sed -i.bak "s/ g++/ ${CXX}${CLANG_EXTRA_ARG}/" ~/.R/Makevars
+ - sed -i.bak "s/O[0-3]/O$CXX_OLEVEL/" ~/.R/Makevars
 
 script:
   - |
     travis_wait R CMD build .
+
+after_script:
+  - echo ${NOT_CRAN}
 
 after_success:
   - travis_wait 40 tar -C .. -xf $PKG_TARBALL
