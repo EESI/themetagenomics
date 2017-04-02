@@ -83,7 +83,7 @@ prepare_data <- function(otu_table,rows_are_taxa,tax_table,metadata,formula,refs
   if (missing(tax_table)) miss$tax_table <- TRUE else miss$tax_table <- FALSE
   if (missing(metadata)) miss$metadata <- TRUE else miss$metadata <- FALSE
   if (missing(formula)) miss$formula <- TRUE else miss$formula <- FALSE
-  if (missing(refs)){
+  if (missing(refs) || is.null(refs)){
     miss$refs <- TRUE
     refs <- NULL
   }else{
@@ -227,31 +227,10 @@ prepare_data <- function(otu_table,rows_are_taxa,tax_table,metadata,formula,refs
     rownames(metadata) <- rnames
   }
 
-  classes <- sapply(metadata,class)
-  # manage factor references
-  if (sum(classes == 'factor') > 0){
-    # is missing, set as level 1
-    if (miss$refs){
-      warning('References are recommended for factors. Using the first level(s).')
-      refs_type <- 'level_1'
-      refs <- unlist(lapply(metadata[,classes == 'factor'],function(x) levels(x)[1]))
-    # otherwise, set per user specifications
-    }else{
-      refs_type <- 'user'
-      if (sum(classes == 'factor') != length(refs)) stop('A reference is required for each factor.')
-      ref_check <- all(sapply(seq_along(refs), function(i) refs[i] %in% lapply(metadata[,classes == 'factor'],levels)[[i]]))
-      if (!ref_check) stop('Reference(s) not found in factor(s).')
-
-      if (verbose) cat('Setting reference levels for factors.\n')
-      j <- 1
-      for (i in seq_along(classes)){
-        if (classes[i] == 'factor'){
-          metadata[,i] <- relevel(as.factor(metadata[,i]),ref=refs[j])
-          j <- j+1
-        }
-      }
-    }
-  }
+  expanded <- expand_multiclass(metadata=metadata,refs=refs,verbose=verbose)
+  metadata <- expanded$metadata
+  refs <- expanded$refs
+  refs_type <- expanded$refs_type
 
   if (splines){
     splineinfo <- extract_spline_info(formula,metadata)

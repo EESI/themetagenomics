@@ -106,7 +106,7 @@ make_ppd_x <- function(estimated_effects,covariate,mod,npoints=100){
     newdata[[covariate]] <- seq(min(newdata[[covariate]]),max(newdata[[covariate]]),length.out=nrow(newdata))
     modelframe <- stats::model.matrix(formula,data=newdata)
     if (ncol(modelframe) > 2)
-      modelframe[,colnames(modelframe) != covariate,drop=FALSE] <- matrix(rep(colMeans(modelframe[,colnames(modelframe) != covariate,drop=FALSE]),
+      modelframe[,colnames(modelframe) != covariate] <- matrix(rep(colMeans(modelframe[,colnames(modelframe) != covariate,drop=FALSE]),
                                                                           nrow(modelframe)),nrow(modelframe),byrow=TRUE)
   }
 
@@ -235,4 +235,40 @@ ppd_weights <- function(parameters,nsims=100){
                           lapply(parameters[[i]],function(x) rmvnorm(n=nsims,mu=x$est,Sigma=x$vcov)))
   }
   return(betas)
+}
+
+# expand multiclass factors into dummies
+expand_multiclass <- function(metadata,refs=NULL,verbose=FALSE){
+  classes <- sapply(metadata,class)
+
+  if (sum(classes == 'factor') == 0)
+    return(list(metadata=metadata,refs=NULL,refs_type=NULL))
+
+  # manage factor references
+  if (sum(classes == 'factor') > 0){
+    # is missing, set as level 1
+    if (is.null(refs)){
+      warning('References are recommended for factors. Using the first level(s).')
+      refs_type <- 'level_1'
+      refs <- unlist(lapply(metadata[,classes == 'factor',drop=FALSE],function(x) levels(x)[1]))
+      # otherwise, set per user specifications
+    }else{
+      refs_type <- 'user'
+      if (sum(classes == 'factor') != length(refs)) stop('A reference is required for each factor.')
+      ref_check <- all(sapply(seq_along(refs), function(i) refs[i] %in% lapply(metadata[,classes == 'factor'],levels)[[i]]))
+      if (!ref_check) stop('Reference(s) not found in factor(s).')
+
+      if (verbose) cat('Setting reference levels for factors.\n')
+      j <- 1
+      for (i in seq_along(classes)){
+        if (classes[i] == 'factor'){
+          metadata[,i] <- relevel(as.factor(metadata[,i]),ref=refs[j])
+          j <- j+1
+        }
+      }
+    }
+
+    return(list(metadata=metadata,refs=refs,refs_type=refs_type))
+
+  }
 }

@@ -84,53 +84,46 @@ est.topics <- function(object,metadata,formula,refs,nsims=100,ui_level=.8,npoint
     if (is.null(metadata)) stop('Please provide metadata')
     formula <- fit$settings$covariates$formula
     if (is.null(formula)) stop('Please provide a formula.')
-    if (missing(refs)) refs <- object$refs
   }
+  if (missing(refs)) refs <- object$refs
+
+  # ensure new data is OK
+  if (nrow(object$metadata) > nrow(metadata))
+    stop(paste('Samples in new data are not found in original fitted data.',
+               'New data must contain all of the samples originally fit, with no NA values.',
+               'Interpolate if necessary.'))
+  new_covs <- labels(terms(extract_spline_info(formula,metadata,remove_only=TRUE)))
+  metadata <- metadata[rownames(object$metadata),new_covs,drop=FALSE]
+  new_data <- prepare_data(otu_table=object$otu_table,rows_are_taxa=FALSE,tax_table=object$tax_table,
+                           metadata=metadata,formula=formula,refs=refs,cn_normalize=FALSE,drop=FALSE,
+                           verbose=FALSE)
+  metadata <- new_data$metadata
+  refs <- new_data$refs
 
   splines <- check_for_splines(formula,metadata)
   if (splines){
-    spline_info <- extract_spline_info(formula,metadata)
-    modelframe <- as.data.frame(unclass(model.frame(spline_info$formula,metadata)))
+    splineinfo <- extract_spline_info(formula,metadata)
+    modelframe <- as.data.frame(unclass(model.frame(splineinfo$formula,metadata)))
+    modelframe_full <- create_modelframe(splineinfo$formula,metadata,refs)
   }else{
-    spline_info <- NULL
+    splineinfo <- NULL
     modelframe <- as.data.frame(unclass(model.frame(formula,metadata)))
+    modelframe_full <- create_modelframe(formula,metadata,refs)
   }
   rownames(modelframe) <- rownames(metadata)
 
-  classes <- sapply(modelframe,class)
-  multiclasses <- classes
-  multiclasses[which(sapply(modelframe,function(x) length(levels(x))) > 2)] <- 'multiclass'
-
-  if (sum(classes == 'factor') > 0){
-    if (missing(refs)){
-      warning('References are recommended for factors. Using the first level(s).')
-      refs <- unlist(lapply(modelframe[,classes == 'factor'],function(x) levels(x)[1]))
-    }
-
-    if (sum(classes == 'factor') != length(refs)) stop('A reference is required for each factor.')
-    ref_check <- all(sapply(seq_along(refs), function(i) refs[i] %in% lapply(modelframe[,classes == 'factor'],levels)[[i]]))
-    if (!ref_check) stop('Reference(s) not found in factor(s).')
-
-    j <- 1
-    for (i in seq_along(classes)){
-      if (classes[i] == 'factor'){
-        modelframe[,i] <- relevel(as.factor(modelframe[,i]),ref=refs[j])
-        j <- j+1
-      }
-    }
-  }
+  expanded <- expand_multiclass(metadata=modelframe,refs=refs,verbose=verbose)
+  modelframe <- expanded$metadata
+  refs_type <- expanded$refs_type
 
   formula <- as.formula(sprintf('1:%s %s',K,paste0(formula,collapse=' ')))
 
   if (verbose) cat('Estimating regression weights with global uncertainty.\n')
   estimated_effects <- stm::estimateEffect(formula,fit,modelframe,uncertainty='Global')
 
-  modelframe_full <- object$modelframe
-  rownames(modelframe_full) <- rownames(modelframe)
-
-  estimated_effects$modelframe_full <- modelframe_full # maybe remove htis
+  estimated_effects$modelframe_full <- modelframe_full
   estimated_effects$modelframe <- modelframe
-  estimated_effects$splines <- spline_info$info
+  estimated_effects$splines <- splineinfo$info
 
   topic_effects <- est_topics_backend(estimated_effects,fit$theta,
                                       nsims=nsims,ui_level=ui_level,npoints=npoints,verbose=verbose)
@@ -138,6 +131,7 @@ est.topics <- function(object,metadata,formula,refs,nsims=100,ui_level=.8,npoint
   out <- list(topic_effects=topic_effects,topics=object,modelframe=modelframe_full)
   class(out) <- 'effects'
   attr(out,'type') <- 'topics'
+  attr(out,'refs') <- refs_type
 
   return(out)
 
@@ -151,14 +145,13 @@ est_topics_backend <- function(estimated_effects,theta,nsims=100,ui_level=.8,npo
 
   ui_offset <- (1-ui_level)/2
   ui_interval <- paste0(c(ui_offset,1-ui_offset)*100,'%')
-  ui_levels <- matrix(0.0,K,2,dimnames=list(NULL,ui_interval))
 
   if (verbose) cat('Simulating beta coeffiicents from MVN.\n')
   sim_weights <- ppd_weights(estimated_effects$parameters,nsims=nsims)
   for (i in seq_along(sim_weights)) colnames(sim_weights[[i]]) <- names(estimated_effects$parameter[[1]][[1]]$est)
 
-  spline_info <- estimated_effects$splines
-  if (!is.null(spline_info)) spline_idx <- sapply(spline_info,function(x) x$var) else spline_idx <- NULL
+  splineinfo <- estimated_effects$splines
+  if (!is.null(splineinfo)) spline_idx <- sapply(splineinfo,function(x) x$var) else spline_idx <- NULL
 
   multiclasses <- create_multiclasses_table(estimated_effects$modelframe,estimated_effects$modelframe_full,spline_idx)
   mods <- multiclasses[multiclasses$baseclass == 'factor','full']
@@ -195,7 +188,7 @@ est_topics_backend <- function(estimated_effects,theta,nsims=100,ui_level=.8,npo
       ppd <- make_ppd_x(estimated_effects,covariate=cov_i,npoints=100)[[1]]
       for (k in seq_len(K)){
         ppd_beta <- ppd %*% t(sim_weights[[k]])
-        diff <- ppd_beta[2,] - ppd_beta[1,]                                               ### check this ###
+        diff <- ppd_beta[2,] - ppd_beta[1,]             ### check this ###
         est[k,] <- c(mean(diff),quantile(diff,c(ui_offset,1-ui_offset)))
       }
     }
