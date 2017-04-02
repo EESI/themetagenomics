@@ -4,8 +4,9 @@
 \name{GEVERS}
 \alias{GEVERS}
 \title{Inflammatory bowel disease gut microbiome data}
-\format{A list containing a 200x991 matrix (OTU), a 991x7 matrix (TAX), and a
-200x3 dataframe (META).}
+\format{A list containing a 200x991 matrix (OTU), a 991x7 matrix (TAX), a
+200x3 dataframe (META), and topics and function effects output from a fit on
+a subset of the data.}
 \source{
 BioProject: PRJNA237362.
   (\href{https://www.ncbi.nlm.nih.gov/bioproject/?term=PRJNA237362}{PubMed})

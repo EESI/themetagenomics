@@ -5,7 +5,8 @@
 \alias{DAVID}
 \title{Human logitudinal microbiome data}
 \format{A list containing a 746x1493 matrix (ABUND), a 1493x7 matrix (TAX),
-and a 746x9 dataframe (META).}
+a 746x9 dataframe (META), and topics and function effects output from a fit on
+a subset of the data.}
 \source{
 BioProject: PRJEB6518
   (\href{https://www.ncbi.nlm.nih.gov/bioproject/?term=PRJEB6518}{PubMed})
