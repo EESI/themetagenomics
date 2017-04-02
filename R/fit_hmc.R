@@ -41,7 +41,7 @@ est.hmc <- function(object,inits,prior=c('t','normal','laplace'),t_df=c(7,7,7),i
     }
   }
 
-  cat(sprintf('Setting regression coefficient priors to\n%s\n',paste0(priors,collapse='')))
+  if (verbose) cat(sprintf('Setting regression coefficient priors to\n%s\n',paste0(priors,collapse='')))
 
   stan_dat <- list(N=nrow(gene_table),
                    J=length(unique(gene_table$pw)),
