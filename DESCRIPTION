@@ -39,11 +39,6 @@ Suggests:
   vegan,
   viridis,
 LinkingTo:
-  BH,
   Rcpp,
-  RcppEigen,
-  StanHeaders 
-NeedsCompilation: yes
-RcppModules: stan_fit4simple_mod, stan_fit4regression_mod
 RoxygenNote: 6.0.1
 VignetteBuilder: knitr

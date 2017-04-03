@@ -12,20 +12,19 @@ r:
 r_binary_packages:
  - testthat
  - Rcpp
- - RcppEigen
  - Matrix
 
 r_packages:
- - BH
- - StanHeaders
  - lda
  - stm
 
 r_github_packages:
-  - stan-dev/rstan
   - jyypma/nloptr
   - lme4/lme4
   - jimhester/covr
+
+before_install:
+  - Rscript -e 'devtools::install_github("stan-dev/rstan", ref = "develop", subdir = "rstan/rstan", build_vignettes = FALSE, dependencies = TRUE)'
 
 env:
   global:
