@@ -16,13 +16,15 @@ r_binary_packages:
  - Matrix
 
 r_packages:
+ - BH
+ - rstan
+ - StanHeaders
+ - rstanarm
+ - rstantools
  - lda
  - stm
- - StanHeaders
 
 r_github_packages:
-  - eddelbuettel/bh
-  - stan-dev/rstan
   - jyypma/nloptr
   - lme4/lme4
   - jimhester/covr
