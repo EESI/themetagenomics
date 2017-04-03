@@ -35,7 +35,6 @@ env:
     - CXX_OLEVEL=2 CXX=clang++
 
 before_install:
- - sudo apt-get install gcc-4.8 -y
  - echo "options(repos = c(CRAN='http://cran.rstudio.com'))" > ~/.Rprofile
  - mkdir -p ~/.R
  - echo 'CXXFLAGS=-O2' > ~/.R/Makevars
