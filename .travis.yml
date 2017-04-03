@@ -12,13 +12,13 @@ r:
 r_binary_packages:
  - testthat
  - Rcpp
- - lda,
- - lme4,
  - Matrix
- - stm
 
 r_packages:
  - rstan
+ - lda
+ - stm
+ - lme4
 
 r_github_packages:
   - jimhester/covr

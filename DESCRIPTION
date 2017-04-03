@@ -31,14 +31,17 @@ Suggests:
   curl,
   huge,
   igraph,
+  knitr,
   networkD3,
   proxy,
   RCurl,
+  rmarkdown,
   Rtsne,
   testthat,
   vegan,
-  viridis
+  viridis,
 LinkingTo:
   Rcpp
 NeedsCompilation: yes
 RoxygenNote: 6.0.1
+VignetteBuilder: knitr
