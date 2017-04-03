@@ -2,7 +2,6 @@
 
 language: r
 sudo: required #false
-dist: trusty
 cache: packages
 warnings_are_errors: true
 r:
@@ -32,7 +31,20 @@ env:
   global:
     - _R_CHECK_FORCE_SUGGESTS_=false
 
+addons:
+  apt:
+    sources:
+      - ubuntu-toolchain-r-test
+    packages:
+      - gcc-4.9
+      - g++-4.9
+
 before_install:
+  - mkdir ~/.R
+  - cat <<EOF > ~/.R/Makevars
+  - CXX1X=g++-4.9
+  - CXX1XSTD=-std=c++11
+  - CXX=g++-4.9
   - Rscript -e 'install.packages("devtools")'
   - Rscript -e 'devtools::install_version("slam",version="0.1-37",repos="http://cran.us.r-project.org")'
   - Rscript -e 'devtools::install_version("proxy",version="0.4-16",repos="http://cran.us.r-project.org")'
