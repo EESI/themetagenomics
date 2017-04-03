@@ -15,3 +15,7 @@ test_that('predict via ml works',{
   expect_warning(est(DAVID$functions,level=3,iters=5,method='ml'))
 
 })
+
+test_that('rccp works',{
+  expect_equal(example(cxxfunction, package = "inline", run.dontrun = TRUE)$value,10)
+})
