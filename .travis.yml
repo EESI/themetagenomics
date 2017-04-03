@@ -17,12 +17,12 @@ r_binary_packages:
 
 r_packages:
  - BH
- - rstan
  - StanHeaders
  - lda
  - stm
 
 r_github_packages:
+  - stan-dev/rstan
   - jyypma/nloptr
   - lme4/lme4
   - jimhester/covr
