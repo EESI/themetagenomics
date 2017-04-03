@@ -15,6 +15,7 @@ r_binary_packages:
  - Matrix
 
 r_packages:
+ - rstan
  - lda
  - stm
 
@@ -24,8 +25,9 @@ r_github_packages:
   - jimhester/covr
 
 before_install:
-  - Rscript -e 'install.packages(c("devtools"))'
-  - Rscript -e 'devtools::install_github("stan-dev/rstan", ref = "develop", subdir = "rstan/rstan", build_vignettes = FALSE, dependencies = TRUE)'
+  - sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y
+  - sudo apt-get update -q
+  - sudo apt-get install gcc-4.9 -y
 
 env:
   global:
