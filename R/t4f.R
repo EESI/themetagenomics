@@ -55,9 +55,11 @@ NULL
 #'
 #' @export
 
-t4f <- function(otu_table,rows_are_taxa,tax_table,reference_path,type='uproc',
+t4f <- function(otu_table,rows_are_taxa,tax_table,reference_path,type=c('uproc','pauda'),
                 short=TRUE,cn_normalize=FALSE,sample_normalize=FALSE,scalar=100,
                 drop=TRUE){
+
+  type <- match.arg(type)
 
   if (is.null(scalar) | scalar == 0 | is.na(scalar))
     scalar <- 1

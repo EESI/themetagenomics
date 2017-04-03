@@ -5,7 +5,7 @@ sudo: required #false
 cache: packages
 warnings_are_errors: true
 r:
-  #- release #3.3.0
+  - release #3.3.0
   - oldrel #3.2.5
   #- devel
 
@@ -46,3 +46,9 @@ notifications:
   email:
     on_success: change
     on_failure: always
+  slack:
+    rooms:
+      secure: bKII6/k9Vx4LtmStJjRVYH7wPBDJDBxCLGe1JlFsoKhnUZcaetVMzSHLlUt0ATuZs4trK3MuoQujI1p4sLnfqirFl8aBbOoOAVLB9aP5XWBi1eGYohjxVsBxKoti3vFFeb0s78dLxb97XhFQIS7zxv1kNuzeMkePhIxSSp1/uTxsKue8Q5c49wcu2yilMBxG7xJnCNmIg+oU+DN2FApZzVRdcv48qERjJbU6zVIcf7PyZwY0/ce6MZ7J37aemvv5jJZo7IXTLG/p4ExNXknEgwRzl85LfRuHadcvYnTkoo0AshTP4pR3F9zOpimPYRUT0zwV1cbtRg86JBIitjJxI24k4lfrh9hUtDJHCHFzalRW/qv41KU801qwIA9cVq9gkISjevNMWwkQGwZz4kOG7i+UWv4gWfEAZyuk5ogiM/4LMalkRW1cusUaaRVrReVGYmPIu/23g/6X6TdHfyFN0C4hFMjrlM29FPfHUQskuNC3ejXcOKzf4KkINUkSuGq3lpBY/iBQBOW8DUnMdDDHo9MYApInAPag0j9Jq8vu0RCUpTwwG83Ti5ri6NzMjyjHMqpafu2lARe+RR1W8Qmvzga1SRrd2CrFKp3pxtLb+zKnbuLhnca9dZfB3IeNM/bUSxyBo3x++BfBlFZt6A5Iv+oNgknJwcfSRisODlRiQwM=
+    on_success: change
+    on_failure: always
+    on_pull_requests: true

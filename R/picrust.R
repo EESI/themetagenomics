@@ -58,7 +58,7 @@ picrust <- function(otu_table,rows_are_taxa,reference=c('gg_ko','gg_cog'),refere
   if (cn_normalize) otu_table <- cnn(otu_table,rows_are_taxa=FALSE,drop=drop)
 
   if (reference == 'gg_ko') ref_fn <- 'ko_13_5_precalculated.tab.gz'
-  if (reference == 'cog_ko') ref_fn <- 'cog_13_5_precalculated.tab.gz'
+  if (reference == 'gg_cog') ref_fn <- 'cog_13_5_precalculated.tab.gz'
 
   out <- picrust_otu(file.path(reference_path,ref_fn),colnames(otu_table))
   fxn_mapping <- out$genome_table_out
