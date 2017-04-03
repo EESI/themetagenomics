@@ -18,10 +18,10 @@ r_packages:
  - rstan
  - lda
  - stm
- - lme4
 
 r_github_packages:
   - jimhester/covr
+  - lme4/lme4
 
 env:
   global:
