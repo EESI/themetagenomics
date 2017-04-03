@@ -5,37 +5,35 @@ sudo: required #false
 cache: packages
 warnings_are_errors: true
 r:
-  - release #3.3.0
-  #- oldrel #3.2.5
+  #- release #3.3.0
+  - oldrel #3.2.5
   #- devel
 
 r_binary_packages:
- - testthat
- - Rcpp
+ - devtools
+ - lda
+ - lme4
+ - ggplot2
  - Matrix
+ - plotly
+ - scales
+ - shiny
+ - Rcpp
+ - testthat
 
 r_packages:
  - rstan
- - lda
  - stm
 
 r_github_packages:
-  - jyypma/nloptr
-  - lme4/lme4
   - jimhester/covr
-
-before_install:
-  - sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y
-  - sudo apt-get update -q
-  - sudo apt-get install gcc-4.9 -y
 
 env:
   global:
     - _R_CHECK_FORCE_SUGGESTS_=false
 
 after_success:
-  - travis_wait 40 tar -C .. -xf $PKG_TARBALL
-  - travis_wait 40 Rscript -e 'covr::codecov(token="586cf964-23a1-4090-a503-3f9318e8f056",line_exclusions=list("R/vis.R","R/vis_covariates_binary.R","R/vis_covariates_continuous.R","R/vis_taxa.R","R/vis_topics.R","R/vis_functions.R","download_ref"))'
+  - Rscript -e 'covr::codecov(token="586cf964-23a1-4090-a503-3f9318e8f056",line_exclusions=list("R/vis.R","R/vis_covariates_binary.R","R/vis_covariates_continuous.R","R/vis_taxa.R","R/vis_topics.R","R/vis_functions.R","download_ref"))'
 
 notifications:
   email:
