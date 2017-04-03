@@ -12,17 +12,21 @@ r:
 r_binary_packages:
  - testthat
  - Rcpp
+ - RcppEigen
  - Matrix
 
 r_packages:
- - rstan
+ -
  - lda
  - stm
+ - StanHeaders
 
 r_github_packages:
-  - jimhester/covr
+  - eddelbuettel/bh
+  - stan-dev/rstan
   - jyypma/nloptr
   - lme4/lme4
+  - jimhester/covr
 
 env:
   global:
@@ -32,6 +36,7 @@ env:
     - CXX_OLEVEL=2 CXX=clang++
 
 before_install:
+ - sudo apt-get install gcc-4.8 -y
  - echo "options(repos = c(CRAN='http://cran.rstudio.com'))" > ~/.Rprofile
  - mkdir -p ~/.R
  - echo 'CXXFLAGS=-O2' > ~/.R/Makevars

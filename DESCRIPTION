@@ -39,7 +39,10 @@ Suggests:
   vegan,
   viridis,
 LinkingTo:
-  Rcpp
+  BH,
+  Rcpp,
+  RcppEigen,
+  StanHeaders 
 NeedsCompilation: yes
 RoxygenNote: 6.0.1
 VignetteBuilder: knitr
