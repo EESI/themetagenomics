@@ -15,7 +15,6 @@ r_binary_packages:
  - lme4
  - ggplot2
  - Matrix
- - plotly
  - scales
  - shiny
  - Rcpp
