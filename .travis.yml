@@ -37,6 +37,7 @@ before_install:
  - echo 'CC=clang' >> ~/.R/Makevars
  - echo 'CPP=clang' >> ~/.R/Makevars
  - echo 'CXX=clang++' >> ~/.R/Makevars
+ - sudo apt-get install libnlopt-dev
 
 after_success:
   - travis_wait 40 tar -C .. -xf $PKG_TARBALL
