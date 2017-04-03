@@ -19,13 +19,10 @@ r_packages:
  - BH
  - rstan
  - StanHeaders
- - rstanarm
- - rstantools
  - lda
  - stm
 
 r_github_packages:
-  - stan-dev/shinystan
   - jyypma/nloptr
   - lme4/lme4
   - jimhester/covr
