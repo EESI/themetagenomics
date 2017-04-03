@@ -25,6 +25,7 @@ r_packages:
  - stm
 
 r_github_packages:
+  - stan-dev/shinystan
   - jyypma/nloptr
   - lme4/lme4
   - jimhester/covr
@@ -32,18 +33,6 @@ r_github_packages:
 env:
   global:
     - _R_CHECK_FORCE_SUGGESTS_=false
-    - NOT_CRAN=true CXXFLAGS=-O2 CXX_OLEVEL=2 RCPP_VER=cran CXX=clang++ CPP=clang CC=clang
-  matrix:
-    - CXX_OLEVEL=2 CXX=clang++
-
-before_install:
- - echo "options(repos = c(CRAN='http://cran.rstudio.com'))" > ~/.Rprofile
- - mkdir -p ~/.R
- - echo 'CXXFLAGS=-O2' > ~/.R/Makevars
- - echo 'CC=clang' >> ~/.R/Makevars
- - echo 'CPP=clang' >> ~/.R/Makevars
- - echo 'CXX=clang++' >> ~/.R/Makevars
- - sudo apt-get install libnlopt-dev
 
 after_success:
   - travis_wait 40 tar -C .. -xf $PKG_TARBALL
