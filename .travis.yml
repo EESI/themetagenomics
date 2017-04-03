@@ -24,6 +24,7 @@ r_github_packages:
   - jimhester/covr
 
 before_install:
+  - Rscript -e 'install.packages(c("devtools"))'
   - Rscript -e 'devtools::install_github("stan-dev/rstan", ref = "develop", subdir = "rstan/rstan", build_vignettes = FALSE, dependencies = TRUE)'
 
 env:
