@@ -9,8 +9,8 @@ r:
   #- oldrel #3.2.5
   #- devel
 
-r_packages:
-  - covr
+r_github_packages:
+  - jimhester/covr
 
 after_success:
   - Rscript -e 'library(covr); codecov(token="586cf964-23a1-4090-a503-3f9318e8f056",function_exclusions=c("print","vis"))'
