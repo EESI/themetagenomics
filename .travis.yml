@@ -2,6 +2,7 @@
 
 language: r
 sudo: required #false
+dist: trusty
 cache: packages
 warnings_are_errors: true
 r:
