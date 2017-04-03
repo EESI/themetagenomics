@@ -28,13 +28,11 @@ Imports:
   stm (>= 1.1.4),
 Suggests:
   covr,
-  curl,
   huge,
   igraph,
   knitr,
   networkD3,
   proxy,
-  RCurl,
   rmarkdown,
   Rtsne,
   testthat,
