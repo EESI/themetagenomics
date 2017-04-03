@@ -34,6 +34,7 @@ env:
 before_install:
   - Rscript -e 'install.packages("devtools")'
   - Rscript -e 'devtools::install_version("slam",version="0.1-37",repos="http://cran.us.r-project.org")'
+  - Rscript -e 'devtools::install_version("proxy",version="0.4-16",repos="http://cran.us.r-project.org")'
 
 after_success:
   - Rscript -e 'covr::codecov(token="586cf964-23a1-4090-a503-3f9318e8f056",line_exclusions=list("R/vis.R","R/vis_covariates_binary.R","R/vis_covariates_continuous.R","R/vis_taxa.R","R/vis_topics.R","R/vis_functions.R","download_ref"))'
