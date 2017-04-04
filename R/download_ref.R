@@ -1,9 +1,7 @@
 #' Download functional prediction reference tables
 #'
 #' A function to download the KO and COG 13.5 GreenGenes reference tables for
-#' PICRUSt prediction or the KO reference table for tax4fun prediction. The
-#' files are downloaded from the master branch at
-#' \url{https://gitlab.com/sw1/themetagenomics_data/}.
+#' PICRUSt prediction or the KO reference table for tax4fun prediction.
 #'
 #' @param destination Location of the folder to save the reference files.
 #' @param reference A string for either gg_ko, gg_cog, silva_ko, or
@@ -12,7 +10,7 @@
 #' to FALSE.
 #' @param verbose Logical flag to print progress information. Defaults to FALSE.
 #'
-#' @seealso \code{\link{picrust}} \code{\link{t4f}}
+#' @seealso \url{https://gitlab.com/sw1/themetagenomics_data/} \code{\link{picrust}} \code{\link{t4f}}
 #'
 #' @examples
 #' \dontrun{
