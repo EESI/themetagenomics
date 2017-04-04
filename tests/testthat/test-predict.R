@@ -11,7 +11,7 @@ test_that('picrust for cog and kegg both work',{
                     cn_normalize=TRUE,
                     drop=TRUE)
 
-  y <- find_topics(x,K=10,verbose=FALSE)
+  y <- find_topics(x,K=5,verbose=FALSE)
 
   tmp <- tempdir()
   download_ref(tmp,reference='gg_ko',overwrite=FALSE)
