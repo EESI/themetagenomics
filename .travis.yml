@@ -23,7 +23,7 @@ r_binary_packages:
  - testthat
 
 r_packages:
- - travis_wait rstan
+ - rstan
  - stm
 
 r_github_packages:
