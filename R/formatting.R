@@ -48,7 +48,7 @@ format_gene_metadata <- function(picrust_out){
 }
 
 # format functional output to gene table for inference
-format_gene_table <- function(functions,level,pw_targets,keep){
+format_gene_table <- function(functions,level,pw_targets,keep=NULL){
 
   description_idx <- grepl('Description',names(functions$fxn_meta))
   prefix <- gsub('^(.*)\\_Description$','\\1',names(functions$fxn_meta)[description_idx])
