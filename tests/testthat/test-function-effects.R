@@ -15,5 +15,5 @@ test_that('glmer works',{
 test_that('stan works',{
   DAT <- readRDS(system.file('testdata','otufuncdata.rds',package='themetagenomics'))
   hmc <- suppressMessages(suppressWarnings(est(DAT,level=2,iters=50,chains=1,method='hmc')))
-  expect_is(ml,'effects')
+  expect_is(hmc,'effects')
 })
