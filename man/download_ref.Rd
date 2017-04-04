@@ -21,8 +21,7 @@ to FALSE.}
 \description{
 A function to download the KO and COG 13.5 GreenGenes reference tables for
 PICRUSt prediction or the KO reference table for tax4fun prediction. The
-files are downloaded from the master branch at
-\link{https://gitlab.com/sw1/themetagenomics_data/}.
+data are stored at \url{https://gitlab.com/sw1/themetagenomics_data/}.
 }
 \examples{
 \dontrun{
