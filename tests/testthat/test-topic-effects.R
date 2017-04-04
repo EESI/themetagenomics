@@ -4,7 +4,7 @@ test_that('est.topics returns correct results for different formulae',{
 
   DAT <- readRDS(system.file('testdata','otudata.rds',package='themetagenomics'))
 
-  set.seed(423)
+  set.seed(23)
 
   x <- prepare_data(otu_table=DAT$OTU,
                     rows_are_taxa=FALSE,
@@ -15,7 +15,7 @@ test_that('est.topics returns correct results for different formulae',{
                     cn_normalize=TRUE,
                     drop=TRUE)
 
-  y <- find_topics(x,K=5,init_type='Spectral')
+  y <- find_topics(x,K=5,init_type='Spectral',tol=1e-03)
 
   z1 <- est(y)
 
@@ -34,7 +34,7 @@ test_that('est.topics returns correct results for different formulae',{
                     cn_normalize=TRUE,
                     drop=TRUE)
 
-  y <- find_topics(x,K=5,init_type='Spectral')
+  y <- find_topics(x,K=5,init_type='Spectral',tol=1e-03)
   expect_identical(y$modelframe,est(y)$modelframe)
 
   expect_error(est(y,metadata=DAT$META[1:7,],formula=~DIAGNOSIS))
@@ -74,13 +74,13 @@ test_that('est.topics returns correct results for different formulae',{
                     cn_normalize=FALSE,
                     drop=TRUE)
 
-  y <- find_topics(x,K=5,init_type='Spectral')
+  y <- find_topics(x,K=5,init_type='Spectral',tol=1e-03)
   z2 <- est(y)
 
   expect_true(mean(abs(z1$topic_effects$`SiteUBERON:feces`$est[,1]-z2$topic_effects$`SiteUBERON:feces`$est[,1])) < .1)
   expect_true(mean(abs(z1$topic_effects$Day$est[,1]-z2$topic_effects$Day$est[,1])) < .1)
 
-  set.seed(423)
+  set.seed(23)
 
   x <- prepare_data(otu_table=DAT$ABUND,
                     rows_are_taxa=FALSE,
@@ -91,7 +91,7 @@ test_that('est.topics returns correct results for different formulae',{
                     cn_normalize=FALSE,
                     drop=TRUE)
 
-  y <- find_topics(x,K=5,init_type='Spectral')
+  y <- find_topics(x,K=5,init_type='Spectral',tol=1e-03)
   z1 <- est(y)
 
   expect_identical(colnames(est(y)[[1]][[1]][[1]]),c('estimate','10%','90%'))
@@ -107,13 +107,13 @@ test_that('est.topics returns correct results for different formulae',{
                     cn_normalize=FALSE,
                     drop=TRUE)
 
-  y <- find_topics(x,K=5,init_type='Spectral')
+  y <- find_topics(x,K=5,init_type='Spectral',tol=1e-03)
   z2 <- est(y)
 
   expect_true(mean(abs(z1$topic_effects$`SiteUBERON:feces`$est[,1]-z2$topic_effects$`SiteUBERON:feces`$est[,1])) < .1)
   expect_true(mean(abs(z1$topic_effects$Day$est[,1]-z2$topic_effects$Day$est[,1])) < .1)
 
-  set.seed(123)
+  set.seed(23)
 
   x <- prepare_data(otu_table=DAT$ABUND,
                     rows_are_taxa=FALSE,
@@ -124,7 +124,7 @@ test_that('est.topics returns correct results for different formulae',{
                     cn_normalize=FALSE,
                     drop=TRUE)
 
-  y <- find_topics(x,K=5,init_type='Spectral')
+  y <- find_topics(x,K=5,init_type='Spectral',tol=1e-03)
   z1 <- est(y)
 
   expect_identical(colnames(est(y)[[1]][[1]][[1]]),c('estimate','10%','90%'))
@@ -140,7 +140,7 @@ test_that('est.topics returns correct results for different formulae',{
                     cn_normalize=FALSE,
                     drop=TRUE)
 
-  y <- find_topics(x,K=5,init_type='Spectral')
+  y <- find_topics(x,K=5,init_type='Spectral',tol=1e-03)
   z2 <- est(y)
 
   expect_true(mean(abs(z1$topic_effects$Multi2$est[,1]-z2$topic_effects$Multi2$est[,1])) < .1)

@@ -26,6 +26,11 @@ install.packages('themetagenomics')
 # To install the developmental version via Github:
 # install.packages('devtools')
 devtools::install_github('sw1/themetagenomics')
+
+# For R version 3.2.x, first run
+devtools::install_version('slam',version='0.1-37',repos='http://cran.us.r-project.org')
+devtools::install_version('proxy',version='0.4-16',repos='http://cran.us.r-project.org')
+devtools::install_github('kbenoit/quanteda')
 ```
 
 Development
