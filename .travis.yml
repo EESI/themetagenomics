@@ -12,18 +12,18 @@ r:
 
 r_binary_packages:
  - ggplot2
+ - inline
  - lda
  - lme4
  - Matrix
+ - RcppArmadillo
+ - Rcpp
  - scales
  - shiny
  - testthat
 
 r_packages:
- - inline
- - RcppArmadillo
- - Rcpp
- - rstan
+ - travis_wait rstan
  - stm
 
 r_github_packages:
