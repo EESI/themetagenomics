@@ -16,6 +16,8 @@ test_that('predict via ml works',{
 
 })
 
+Sys.setenv("R_TESTS" = "")
+
 test_that('rccp works',{
   expect_equal(example(cxxfunction, package = "inline", run.dontrun = TRUE)$value,10)
 })
