@@ -11,8 +11,7 @@
 #' @keywords datasets
 #'
 #' @format A list containing a 746x1493 matrix (ABUND), a 1493x7 matrix (TAX),
-#' a 746x9 dataframe (META), and topics and function effects output from a fit on
-#' a subset of the data.
+#' and a 746x9 dataframe (META).
 #'
 #' @references David, L. A., Materna, A. C., Friedman, J., Campos-Baptista, M.
 #'   I., Blackburn, M. C., Perrotta, A., Erdman, S. E., and Alm, E. J. (2014).

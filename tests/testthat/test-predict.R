@@ -2,10 +2,12 @@ context('prediction functions')
 
 test_that('picrust for cog and kegg both work',{
 
-  x <- prepare_data(otu_table=GEVERS$OTU,
+  DAT <- readRDS(system.file('testdata','otudata.rds',package='themetagenomics'))
+
+  x <- prepare_data(otu_table=DAT$OTU,
                     rows_are_taxa=FALSE,
-                    tax_table=GEVERS$TAX,
-                    metadata=GEVERS$META,
+                    tax_table=DAT$TAX,
+                    metadata=DAT$META,
                     formula=~DIAGNOSIS,
                     refs='Not IBD',
                     cn_normalize=TRUE,
@@ -27,22 +29,17 @@ test_that('picrust for cog and kegg both work',{
   expect_identical(min(z1$method_meta) >= 0,min(z2$method_meta) >= 0)
   expect_identical(max(z1$method_meta) <= 1,max(z2$method_meta) <= 1)
 
-  z3 <- predict(y,reference='gg_ko',reference_path=tmp,sample_normalize=TRUE)
-  expect_true(all(rowSums(z3$fxn_table) == 1))
-
 })
-
-
-context('prediction functions')
 
 test_that('t4f works for different params',{
 
-  x <- prepare_data(otu_table=DAVID$ABUND,
+  DAT <- readRDS(system.file('testdata','seqdata.rds',package='themetagenomics'))
+
+  x <- prepare_data(otu_table=DAT$ABUND,
                     rows_are_taxa=FALSE,
-                    tax_table=DAVID$TAX,
-                    metadata=DAVID$META,
+                    tax_table=DAT$TAX,
+                    metadata=DAT$META,
                     formula=~Day,
-                    refs='Not IBD',
                     cn_normalize=FALSE,
                     drop=TRUE)
 
