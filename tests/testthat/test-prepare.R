@@ -43,6 +43,7 @@ test_that('prepare_data works with binary factor',{
 test_that('prepare_data works with continuous covariate',{
 
   DAT <- readRDS(system.file('testdata','otudata.rds',package='themetagenomics'))
+  DAT$META$PCDAI[1] <- NA
 
   x <- prepare_data(otu_table=DAT$OTU,
                     rows_are_taxa=FALSE,
