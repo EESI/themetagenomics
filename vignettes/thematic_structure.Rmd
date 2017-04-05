@@ -10,7 +10,7 @@ vignette: >
 ---
 
 ```{r,echo=FALSE}
-knitr::opts_chunk$set(collapse = TRUE, comment = "#>")
+knitr::opts_chunk$set(collapse=TRUE,comment='#>')
 set.seed(1014)
 ```
 
@@ -145,7 +145,7 @@ FUNCTION_EFFECTS2 <- resume(FUNCTION_EFFECTS,init_type='last',iters=600,chains=2
 Finally, we can visualize our output in the same way we did before. For function visualizations, however, we need to pass in *both* the function effects object and the topic effects we fit before.
 
 ```{r,eval=FALSE}
-vis(FUNCTION_EFFECTS,TOPIC_EFFECTS,ui_level=.95)
+vis(FUNCTION_EFFECTS2,TOPIC_EFFECTS,ui_level=.95)
 ```
 
 Again, we are guided by the scatter plot at the top. The second row contains a heatmap showing the topics over taxa distribution, which we were indirectly introduced to in previous plots. We can hover over clusters to identify the key bacteria. This heatmap simply allows us to tie the significant functions to specific clusters of co-occuring taxa. Also note we can adjust the distance metric used for clustering. Now, if we move down to the third row, we'll see the function-topic heatmap:

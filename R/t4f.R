@@ -28,8 +28,9 @@ NULL
 #' @param sample_normalize Logical flag to normalize functional
 #'   predictions by the total functional abundance in a sample. Defaults to FALSE.
 #' @param scalar Value for scaling the topics over functions distrubution
-#'   to predicted counts. Defaults to 100.
-#' @param drop Logical flag to drop empty gene columns. Defaults to TRUE.
+#'   to predicted counts.
+#' @param drop Logical flag to drop empty gene columns after prediction. Defaults to TRUE.
+#' @param verbose Logical flag to print progress information. Defaults to FALSE.
 #'
 #' @return A list containing
 #' \describe{
@@ -56,26 +57,26 @@ NULL
 #' @export
 
 t4f <- function(otu_table,rows_are_taxa,tax_table,reference_path,type=c('uproc','pauda'),
-                short=TRUE,cn_normalize=FALSE,sample_normalize=FALSE,scalar=100,
-                drop=TRUE){
+                short=TRUE,cn_normalize=FALSE,sample_normalize=FALSE,scalar,
+                drop=TRUE,verbose=FALSE){
+
+  if (any(is.na(otu_table)))
+    stop('Please remove NA values from abundance table.')
 
   type <- match.arg(type)
-
-  if (is.null(scalar) | scalar == 0 | is.na(scalar))
-    scalar <- 1
 
   ref_profile_path <- file.path(reference_path,'t4f_ref_profiles.rds')
   map_path <- file.path(reference_path,'t4f_silva_to_kegg.rds')
 
+  if (rows_are_taxa == TRUE) otu_table <- t(otu_table)
+
   if (missing(tax_table)){
     taxa_ids <- colnames(otu_table)
   }else{
+    tax_table <- tax_table[colnames(otu_table),]
     if (all(grepl('^[a-z]__',tax_table))) tax_table <- gsub('^[a-z]__','',tax_table)
     taxa_ids <- apply(tax_table,1,function(l){paste0(paste0(l[!is.na(l) & l != ''],collapse=';'),';')})
   }
-
-  if (rows_are_taxa == TRUE) otu_table <- t(otu_table)
-
   colnames(otu_table) <- taxa_ids
 
   if (short) size <- 'short' else size <- 'long'
@@ -91,11 +92,19 @@ t4f <- function(otu_table,rows_are_taxa,tax_table,reference_path,type=c('uproc',
 
   sample_sums <- rowSums(otu_table)
   otu_table <- otu_table[,overlap_taxa]
+  sample_sums_mapped <- rowSums(otu_table)
   silva_to_kegg <- silva_to_kegg[overlap_taxa,]
 
   tax_to_kegg <- t(silva_to_kegg) %*% t(otu_table)
   if (cn_normalize) tax_to_kegg <- tax_to_kegg/copy_numbers
-  if (sample_normalize) tax_to_kegg <- t(as.matrix(t(tax_to_kegg))/colSums(tax_to_kegg))
+  if (sample_normalize){
+    empty_samps <- colSums(tax_to_kegg) == 0
+    if (sum(empty_samps) > 0){
+      if (verbose) cat(sprintf('Empty mappings detected, dropping %s samples.\n',sum(empty_samps)))
+      tax_to_kegg <- tax_to_kegg[,!empty_samps]
+    }
+    tax_to_kegg <- t(as.matrix(t(tax_to_kegg))/colSums(tax_to_kegg))
+  }
   fxn_table <- t(ref_profile %*% tax_to_kegg)
 
   desc_tmp <- unique(kegg_lookup[,c(1,5)])
@@ -103,13 +112,18 @@ t4f <- function(otu_table,rows_are_taxa,tax_table,reference_path,type=c('uproc',
   desc <- desc_tmp[,2]
   names(desc) <- desc_tmp[,1]
 
-  if (drop) fxn_table <- fxn_table[,names(desc)]
-  if (drop) fxn_table <- fxn_table[,colSums(fxn_table) > 0]
-  t4f_meta <- cbind(NULL,ftu=1-rowSums(fxn_table)/sample_sums)
+  if (drop){
+    if (verbose) cat('Dropping post-prediction empty rows and columns.\n')
+    fxn_table <- fxn_table[,names(desc)]
+    fxn_table <- fxn_table[,colSums(fxn_table) > 0]
+  }
+  t4f_meta <- cbind(NULL,ftu=1-sample_sums_mapped/sample_sums)
 
   # scale to counts
-  fxn_table <- round(fxn_table*scalar/max(fxn_table))
-  if (drop) fxn_table <- fxn_table[,colSums(fxn_table) > 0]
+  if (!missing(scalar)) {
+    fxn_table <- round(fxn_table*scalar/max(fxn_table))
+    if (drop) fxn_table <- fxn_table[,colSums(fxn_table) > 0]
+  }
 
   pw_tmp <- kegg_lookup[kegg_lookup[,1] %in% colnames(fxn_table),-5]
   pw_kos <- unique(pw_tmp[,1])
@@ -125,6 +139,5 @@ t4f <- function(otu_table,rows_are_taxa,tax_table,reference_path,type=c('uproc',
   return(list(fxn_table=as.matrix(fxn_table),fxn_meta=fxn_meta,method_meta=t4f_meta))
 
   # why do the references have 1 less row than the kegg id
-  # why are there blank rows in the kegg id
   # why RA normalize
 }

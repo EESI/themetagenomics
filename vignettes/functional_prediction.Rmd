@@ -1,0 +1,110 @@
+---
+title: "Predicting Functional Content"
+author: "Stephen Woloszynek"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Predicting Functional Content}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r,echo=FALSE}
+knitr::opts_chunk$set(collapse=TRUE,comment='#>')
+set.seed(1014)
+```
+
+Currently, we provide two approaches for prediction functional content from 16S rRNA amplicon ambundance data: PICRUSt, which utilizes GreenGreens 13.5 assigned OTUs, and Tax4Fun, which can handle Silva assignments.
+
+## PICRUSt
+
+We'll start by making functional predictions using PICRUSt on the Gevers et al. inflammatory bowel disease dataset. The dataset can be easily accessed by simply typing **GEVERS**, which is a list that contains an OTU table, a dataframe of metadata, and a taxonomy table. First, note that the OTU table has both rownames and column names that correspond to the metadata and taxonomy table, respectively. The latter is most important for functional prediction, since the algorithm looks for these names when mapping the OTU table to functional annotations. For PICRUSt, these names have to be OTU ids, so they'll be long integer codes.
+
+```{r}
+library(themetagenomics)
+
+GEVERS$OTU[1:5,1:5]
+```
+These column names correspond with the row names in the taxonomy table:
+
+```{r}
+GEVERS$TAX[1:5,1:3]
+```
+
+To run PICRUSt, we first have to download the reference files. We can choose between KO terms or COG terms, or we can simply download the entire set of files, which is what the download command defaults to. We'll stick with KO terms for now, and we'll download it to a temporary directly. It's probably best for you to downlaod them to a permenant location. If you would like to download these files manually, the repo can be found here: https://gitlab.com/sw1/themetagenomics_data/.
+
+```{r}
+tmp <- tempdir()
+download_ref(tmp,reference='gg_ko',overwrite=FALSE)
+```
+
+We now have our GreenGenes KO terms reference file in a temporary directory for easy access. Before we perform the actual prediction, we could manually normalize for OTU copy number via the *cnn* command, but we provide an argument within the PICRUSt function to make our approach a little more steamlined. Now, we'll run PICRUSt. Our implementation uses Rcpp, so it's fast, but behaves analogously to the python scripts you may be familiar with. 
+
+```{r}
+system.time(FUNCTIONS <- picrust(GEVERS$OTU,rows_are_taxa=FALSE,
+                                 reference='gg_ko',reference_path=tmp,
+                                 cn_normalize=TRUE,sample_normalize=FALSE,
+                                 drop=TRUE))
+```
+
+The sample_normalize flag simply controls whether you want raw counts or relative abundances as your output. The output is another list with 3 elements: the function table that contains the KO term counts across samples, the KEGG metadata that describes the KO terms, and PICRUSt specific metadata that has the NSTI quality control score for each OTU.
+
+```{r}
+FUNCTIONS$fxn_table[1:5,1:5]
+```
+
+The metadata file is a list of lists.
+
+```{r}
+names(FUNCTIONS$fxn_meta)
+```
+
+which contains the descriptions for each KO term
+
+```{r}
+head(FUNCTIONS$fxn_meta$KEGG_Description)
+```
+
+and the hierarchy information
+
+```{r}
+head(FUNCTIONS$fxn_meta$KEGG_Pathways)
+```
+
+Each element in these lists are named, so they're easily accessible. For example, say we wanted information on K05846:
+
+```{r}
+FUNCTIONS$fxn_meta$KEGG_Description['K05846']
+FUNCTIONS$fxn_meta$KEGG_Pathways['K05846']
+```
+The hierarchy information is ordered based on its depth, so environmental information processing is the most genereal level, whereas abc transporters is the most specific.
+
+## Tax4Fun
+
+If we used Silva assignments instead of GreenGenes, we no longer can use PICRUSt. Instead, we can take advantage of Tax4Fun. For this, we'll use the David et al. time series dataset, which is accessable via the **DAVID** command. Like GEVERS, DAVID is a list containing an abundance table, a metadata dataframe, and a taxonomy table. Note, however, that we are no longer working with OTU IDs (since this table was created via the Dada2 pipeline).
+
+```{r}
+DAVID$ABUND[1:5,1:5]
+```
+
+The column names are arbitrary codes that represent the final sequences from the Dada2 error model. Of more use to us is the difference in the taxonomy names
+
+```{r}
+DAVID$TAX[1:5,1:3]
+```
+
+Note that they no longer contain the taxonomy prefixes we saw in the GreenGenes assignments. To generate predictions, we again need to download reference files. We'll use the same command, but change the reference argument to "silva_ko."
+
+```{r}
+tmp <- tempdir()
+download_ref(tmp,reference='silva_ko',overwrite=FALSE)
+```
+
+Now, we'll use the **t4f** command, which takes quite a few of Tax4Fun specific arguments. We can choose the protein domain classification method performed when generating the references (UPROC or PAUDA) and whether we'd prefer to use short or long read references. Unlike PICRUSt, copy number normalization occurs with respect to the KO terms and *not* the OTUs, but in terms of the function, the argument is the same as in the picrust command. Sample normalization also occurs during the mapping step and not after predictions are made, so your decision to sample normalize may be influenced accordingly. 
+
+```{r}
+system.time(FUNCTIONS <- t4f(DAVID$ABUND,rows_are_taxa=FALSE,tax_table=DAVID$TAX,
+                             reference_path=tmp,type='uproc',short=TRUE,
+                             cn_normalize=TRUE,sample_normalize=TRUE,drop=TRUE))
+```
+The output is analogous to what we saw when using PICRUSt except for the method metadata. For PICRUSt, this contained the NSTI quality score; for Tax4Fun, on the other hand, this contains the FTU scores, the fraction of OTUs that weren't mapped to KO terms.

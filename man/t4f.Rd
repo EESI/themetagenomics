@@ -6,7 +6,7 @@
 \usage{
 t4f(otu_table, rows_are_taxa, tax_table, reference_path, type = c("uproc",
   "pauda"), short = TRUE, cn_normalize = FALSE, sample_normalize = FALSE,
-  scalar = 100, drop = TRUE)
+  scalar, drop = TRUE, verbose = FALSE)
 }
 \arguments{
 \item{otu_table}{(required) Matrix or dataframe containing taxa abundances
@@ -37,9 +37,11 @@ normalization. Defaults to FALSE.}
 predictions by the total functional abundance in a sample. Defaults to FALSE.}
 
 \item{scalar}{Value for scaling the topics over functions distrubution
-to predicted counts. Defaults to 100.}
+to predicted counts.}
 
-\item{drop}{Logical flag to drop empty gene columns. Defaults to TRUE.}
+\item{drop}{Logical flag to drop empty gene columns after prediction. Defaults to TRUE.}
+
+\item{verbose}{Logical flag to print progress information. Defaults to FALSE.}
 }
 \value{
 A list containing
