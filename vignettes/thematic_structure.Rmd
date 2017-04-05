@@ -45,6 +45,8 @@ CLEAN <- prepare_data(otu_table=DAVID$ABUND,
 
 The output is a themetadata class object, containing our preprocessed data. All NA values in the relavent metadata have been dropped. Column names and row names were ensured to both exist and be consistent across objects. Also, factors were expanded into dummy variables and empty rows and columns were dropped. This object can be directly passed into our STM wrapper, **find_topics**. The only thing we have to do is specify the number of topics, which we'll keep small for the sake of time.
 
+## Topics
+
 ```{r}
 system.time(TOPICS <- find_topics(CLEAN,K=15))
 ```
@@ -107,3 +109,51 @@ There's a clear trend: the probability of a sample containing topic 7 is highest
 We now have some understanding of which taxa are associated with the trend we're seeing in topic 7, specifically B. plebeius, B. crossotus, and C. eutactus. They each have high probability in the first half of the series, which abruptly plummets. One further adjustment you can make is by scrolling through different values of lambda, which controls the taxa relevance. It defaults to 1, which implies that you are effectively seeing the $\beta$ posterior -- that is, the probability of a taxa given a topic. By lower lambda, you begin to scale this value by the probability of the taxa across the entire dataset. This may shed some light on taxa that are not only highly probable within a given topic, but also more probable *relative* to other topics. This is again topic 7, but with lambda set to 0.1:
 
 ![](theme_cont_t7_abund_2.png)
+
+## Functions
+
+We'll slightly shift gears now. We're going to explore the predicted functional content in our topics. Because this data was fit with Dada2 using Silva, we have to use **Tax4Fun** and not PICRUSt. We can predict KEGG annotations by simply using the predict method on our topics object from before. Recall how we *didn't* copy number normalize? Now we will.
+
+```{r}
+system.time({
+tmp <- tempdir()
+download_ref(tmp,reference='silva_ko',overwrite=FALSE)
+FUNCTIONS <- predict(TOPICS,reference='silva_ko',reference_path=tmp,cn_normalize=TRUE,sample_normalize=FALSE,scalar=25)
+})
+```
+
+This functions object contains all of the predicted KO terms for Silva annotated abundances. There are a few settings you can adjust when running Tax4Fun, so definitely experiment, but the argument worth noting is scalar. Typically, we pass counts into PICRUSt or Tax4Fun; however, since we are using topic frequencies, we need to scale our topic over taxa distribution into pseudocounts. The scalar argument dictates what we are going to scale the maximum abundances to. It defaults to 100, but for the sake of time (since these models can take a while to fit), we set it to 25. 
+
+Now that we have these predicted functions, we need to identify meaningful genes as a function of topic. We'll do that via a hierarchical model. We could try our luck using *maximum likelihood* (ML), but given the sparisity of this type of data, rarely do these models converge. Instead, we'll initialize our target parameters using ML and then fit our model via *Hameltonian Monte Carlo* (HMC) using *Stan*. Like the other commands we've seen thusfar, we use a method called **est** on our functions class. There are a few arguments we can adjust. First, we can choose the level of the KEGG hierarchy to use as our levels in our pathway factor. We'll choose level 3 since level 2 is often too broad to pick up any effects. Second, we can choose the prior. These default to t-distributions. We'll go with something a little more informative to speed of convergence: 3 normal priors. We could also choose a Laplace prior, which effectively is the Bayesian lasso. Considering how high dimensional these pathway groupings can be, it is probably worth exploring. 
+
+It should be noted that we are choosing the number of chains (so the number of runs to perform from independent starting conditions) and also the number of cores (to run these chains in parallel). For this vignette, it'll be set to 2, since most machines should be able to parallelize across 2 cores. It is recommended to use more cores if they are available, however.
+
+
+```{r,eval=FALSE}
+FUNCTION_EFFECTS <- est(FUNCTIONS,level=3,iters=300,
+                        chains=2,cores=2,
+                        return_summary=TRUE,
+                        prior=c('normal','normal','normal'))
+```
+
+Prioritizing speed left us with a model that was plauged with convergence issues (this could also be due to the degree of filtering we did using a scalar of 25). We'll refit the model with more iterations, but pass in our current fit to speed past the time usually devoted to compiling. We'll now initialize at our last sample from our current fit. We'll use the method **resume** and double our original number of iterations:
+
+```{r,eval=FALSE}
+FUNCTION_EFFECTS2 <- resume(FUNCTION_EFFECTS,init_type='last',iters=600,chains=2,cores=2)
+```
+
+Finally, we can visualize our output in the same way we did before. For function visualizations, however, we need to pass in *both* the function effects object and the topic effects we fit before.
+
+```{r,eval=FALSE}
+vis(FUNCTION_EFFECTS,TOPIC_EFFECTS,ui_level=.95)
+```
+
+Again, we are guided by the scatter plot at the top. The second row contains a heatmap showing the topics over taxa distribution, which we were indirectly introduced to in previous plots. We can hover over clusters to identify the key bacteria. This heatmap simply allows us to tie the significant functions to specific clusters of co-occuring taxa. Also note we can adjust the distance metric used for clustering. Now, if we move down to the third row, we'll see the function-topic heatmap:
+
+![](theme_func_hm.png)
+
+This heatmap shows essentially the function-topic interactions from the hierarchical model we just fit. Since we have weights that vary as a function of topic and other weights that vary as a function of pathway, these weights show shifts in gene abundance specific to certain function-topic combinations. Yellow and blue imply high and low abundances of genes within a given function-topic combination, respectively. The crosses indicate whether the interaction weight enclosed 0 given the user defined uncertainty interval (95% in this case). Let's focus on topic 8. One noteable interaction involves bacterial chemtaxis. If we click this cell, a table will generate below:
+
+![](theme_func_tbl.png)
+
+These are the genes found within this particular function-topic combination, ordered in terms of decreasing abundance. With this information, we can identify gene sets of interest in topics we have previously identified as important with respect to our target covariates. 

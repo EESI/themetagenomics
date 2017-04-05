@@ -22,7 +22,7 @@ vis(object, ...)
 \method{vis}{continuous}(object, lambda_step = 0.1, taxa_reg_n = 8, ...)
 
 \method{vis}{functions}(object, topic_effects, beta_min = 1e-05,
-  ui_level = 0.8, gene_min = 10, pw_min = 20, ...)
+  ui_level = 0.8, gene_min = 0, pw_min = 20, ...)
 
 \method{vis}{taxa}(object, taxa_bar_n = 30, top_n = 7, method = c("huge",
   "simple"), corr_thresh = 0.01, lambda_step = 0.01, ...)
@@ -53,7 +53,7 @@ distribution to set to 0. Defaults to 1e-5.}
 
 \item{ui_level}{Uncertainty level for plot intervals. Defaults to .8.}
 
-\item{gene_min}{Mininum count for gene set table. Defaults to 10.}
+\item{gene_min}{Mininum count for gene set table. Defaults to 0.}
 
 \item{pw_min}{Maximium number of pathways to show in heatmap. for Defaults to 20.}
 

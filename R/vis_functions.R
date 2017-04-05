@@ -4,11 +4,11 @@
 #' @param beta_min Minimum probability in topics over taxa
 #'   distribution to set to 0. Defaults to 1e-5.
 #' @param ui_level Uncertainty level for plot intervals. Defaults to .8.
-#' @param gene_min Mininum count for gene set table. Defaults to 10.
+#' @param gene_min Mininum count for gene set table. Defaults to 0.
 #' @param pw_min Maximium number of pathways to show in heatmap. for Defaults to 20.
 #'
 #' @export
-vis.functions <- function(object,topic_effects,beta_min=1e-5,ui_level=.8,gene_min=10,pw_min=20,...){
+vis.functions <- function(object,topic_effects,beta_min=1e-5,ui_level=.8,gene_min=0,pw_min=20,...){
 
   topics <- topic_effects$topics
   tax_table <- topic_effects$topics$tax_table
@@ -274,7 +274,7 @@ vis.functions <- function(object,topic_effects,beta_min=1e-5,ui_level=.8,gene_mi
         pw <- levels(df1$pw)[s[['y']]]
 
         gene_table <- object$gene_table[paste0('T',object$gene_table$topic) == k & object$gene_table$pw == pw,c('count','ko','description')]
-        gene_table <- gene_table[gene_table$count >= 10,]
+        gene_table <- gene_table[gene_table$count >= gene_min,]
         gene_table <- gene_table[order(gene_table$count,decreasing=TRUE),]
         colnames(gene_table) <- c('Count','ID','Description')
 

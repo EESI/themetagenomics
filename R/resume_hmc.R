@@ -18,6 +18,7 @@ NULL
 #' @param warmup For HMC, proportion of iterations devoted to warmup. Defaults to
 #' iters/2.
 #' @param chains For HMC, number of parallel chains. Defaults to 1.
+#' @param cores For HMC, number of cores to parallelize chains. Defaults to 1.
 #' @param return_summary Logical flag to return results summary. Defaults to TRUE.
 #' @param verbose Logical flag to print progress information. Defaults to FALSE.
 #' @param ... Additional arguments for methods.
@@ -59,7 +60,7 @@ resume <- function(object,...) UseMethod('resume')
 #' @rdname resume
 #' @export
 resume.effects <- function(object,init_type=c('last','orig'),inits,
-                           iters,warmup=iters/2,chains=1,
+                           iters,warmup=iters/2,chains=1,cores=1,
                            return_summary=TRUE,verbose=FALSE,...){
 
   if (attr(object,'type') != 'functions')
@@ -86,7 +87,8 @@ resume.effects <- function(object,init_type=c('last','orig'),inits,
                stan_dat=object$model$data,
                inits=inits,warmup=warmup,
                gene_table=object$gene_table,pars=object$model$pars,
-               iters=iters,chains=chains,return_summary=return_summary,verbose=verbose)
+               iters=iters,chains=chains,cores=cores,
+               return_summary=return_summary,verbose=verbose)
 
   mm[['inits']] <- list(orig=object$model$inits$orig,
                         last=inits)
@@ -102,24 +104,25 @@ resume.effects <- function(object,init_type=c('last','orig'),inits,
 
 #' @export
 resume.stanfit <- function(object,stan_dat,inits,gene_table,
-                           pars,iters,warmup=iters/2,chains=1,
+                           pars,iters,warmup=iters/2,
+                           chains=1,cores=1,
                            return_summary=TRUE,verbose=FALSE,
                            ...){
 
-  if (chains > 1){
+  if (cores > 1){
     if (verbose) cat('Preparing parallelization.\n')
     options_old <- options()
 
     on.exit(options(options_old),add=TRUE)
 
     rstan::rstan_options(auto_write=TRUE)
-    options(mc.cores=chains)
+    options(mc.cores=cores)
   }
 
   fit <- rstan::stan(fit=object,data=stan_dat,
                      init=inits,warmup=warmup,
                      pars=c('theta'),include=FALSE,
-                     iter=iters,chains=chains,
+                     iter=iters,chains=chains,cores=cores,
                      verbose=verbose)
 
   out <- list()

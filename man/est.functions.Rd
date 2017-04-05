@@ -13,7 +13,7 @@
 
 \method{est}{hmc}(object, inits, prior = c("t", "normal", "laplace"),
   t_df = c(7, 7, 7), iters = 300, warmup = iters/2, chains = 1,
-  return_summary = TRUE, verbose = FALSE, ...)
+  cores = 1, return_summary = TRUE, verbose = FALSE, ...)
 
 \method{est}{ml}(object, iters = 1000, verbose = FALSE, ...)
 }
@@ -44,7 +44,9 @@ HMC and ML, respectively.}
 \item{warmup}{For HMC, proportion of iterations devoted to warmup. Defaults to
 iters/2.}
 
-\item{chains}{For HMC, number of parallel chains. Defaults to 1.}
+\item{chains}{For HMC, number of independent chains. Defaults to 1.}
+
+\item{cores}{For HMC, number of cores to parallelize chains. Defaults to 1.}
 
 \item{return_summary}{Logical flag to return results summary. Defaults to TRUE.}
 }

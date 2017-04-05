@@ -9,12 +9,14 @@
 #' HMC and ML, respectively.
 #' @param warmup For HMC, proportion of iterations devoted to warmup. Defaults to
 #' iters/2.
-#' @param chains For HMC, number of parallel chains. Defaults to 1.
+#' @param chains For HMC, number of independent chains. Defaults to 1.
+#' @param cores For HMC, number of cores to parallelize chains. Defaults to 1.
 #' @param return_summary Logical flag to return results summary. Defaults to TRUE.
 #'
 #' @export
 
-est.hmc <- function(object,inits,prior=c('t','normal','laplace'),t_df=c(7,7,7),iters=300,warmup=iters/2,chains=1,
+est.hmc <- function(object,inits,prior=c('t','normal','laplace'),t_df=c(7,7,7),iters=300,warmup=iters/2,
+                    chains=1,cores=1,
                     return_summary=TRUE,verbose=FALSE,...){
 
   gene_table <- object$gene_table
@@ -167,14 +169,14 @@ est.hmc <- function(object,inits,prior=c('t','normal','laplace'),t_df=c(7,7,7),i
 
   }
 
-  if (chains > 1){
+  if (cores > 1){
     if (verbose) cat('Preparing parallelization.\n')
     options_old <- options()
 
     on.exit(options(options_old),add=TRUE)
 
     rstan::rstan_options(auto_write=TRUE)
-    options(mc.cores=chains)
+    options(mc.cores=cores)
   }
 
   if (verbose) cat('Fitting model via HMC.\n')
@@ -183,7 +185,8 @@ est.hmc <- function(object,inits,prior=c('t','normal','laplace'),t_df=c(7,7,7),i
                      pars=c('theta'),include=FALSE,
                      init=inits,
                      warmup=warmup,
-                     iter=iters,chains=chains,
+                     iter=iters,
+                     chains=chains,cores=cores,
                      verbose=verbose)
 
   out <- list()
