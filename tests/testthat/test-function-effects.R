@@ -2,25 +2,20 @@ context("test function effects")
 
 Sys.setenv("R_TESTS" = "")
 
-test_that('rccp works',{
-  expect_equal(example(cxxfunction, package = "inline", run.dontrun = TRUE)$value,10)
-})
-
 test_that('picrust results gives similar results for ml and hmc',{
 
   DAT <- readRDS(system.file('testdata','otufuncdata.rds',package='themetagenomics'))
   overlap <- c('mu','phi','b_pw_sigma','b_topic_sigma','b_pwxtopic_sigma','b_pw','b_topic','b_pwxtopic','yhat')
 
-  suppressMessages(suppressWarnings({
-    ml <- est(DAT,level=2,iters=5,method='ml')
-    hmc <- est(DAT,level=2,iters=50,chains=1,
-               return_summary=TRUE,
-               prior=c('t','t','normal'),
-               t_df=c(7,7),seed=123)
-    hmc_summary <- extract(hmc)
-    resume_orig <- resume(hmc,init_type='orig',iters=50,chains=1,return_summary=TRUE,seed=123)
-    resume_last <- resume(hmc,init_type='last',iters=50,chains=1,return_summary=TRUE,seed=123)
-  }))
+  ml <- suppressMessages(suppressWarnings(est(DAT,level=2,iters=5,method='ml')))
+  hmc <- suppressMessages(suppressWarnings(est(DAT,level=2,iters=50,chains=1,
+             return_summary=TRUE,
+             prior=c('t','t','normal'),
+             t_df=c(7,7),seed=123)))
+  hmc_summary <- suppressMessages(suppressWarnings(extract(hmc)))
+  resume_orig <- suppressMessages(suppressWarnings(resume(hmc,init_type='orig',iters=50,chains=1,return_summary=TRUE,seed=123)))
+  resume_last <- suppressMessages(suppressWarnings(resume(hmc,init_type='last',iters=50,chains=1,return_summary=TRUE,seed=123)))
+
 
   expect_warning(extract(hmc))
   expect_identical(unlist(lapply(hmc$model$summary[overlap],rownames)),
@@ -39,16 +34,14 @@ test_that('tax4fun results gives similar results for ml and hmc',{
   DAT <- readRDS(system.file('testdata','seqfuncdata.rds',package='themetagenomics'))
   overlap <- c('mu','phi','b_pw_sigma','b_topic_sigma','b_pwxtopic_sigma','b_pw','b_topic','b_pwxtopic','yhat')
 
-  suppressMessages(suppressWarnings({
-    ml <- est(DAT,level=2,iters=5,method='ml')
-    hmc <- est(DAT,level=2,iters=50,chains=1,
+    ml <- suppressMessages(suppressWarnings(est(DAT,level=2,iters=5,method='ml')))
+    hmc <- suppressMessages(suppressWarnings(est(DAT,level=2,iters=50,chains=1,
                return_summary=TRUE,
                prior=c('t','t','normal'),
-               t_df=c(7,7),seed=123)
-    hmc_summary <- extract(hmc)
-    resume_orig <- resume(hmc,init_type='orig',iters=50,chains=1,return_summary=TRUE,seed=123)
-    resume_last <- resume(hmc,init_type='last',iters=50,chains=1,return_summary=TRUE,seed=123)
-  }))
+               t_df=c(7,7),seed=123)))
+    hmc_summary <- suppressMessages(suppressWarnings(extract(hmc)))
+    resume_orig <- suppressMessages(suppressWarnings(resume(hmc,init_type='orig',iters=50,chains=1,return_summary=TRUE,seed=123)))
+    resume_last <- suppressMessages(suppressWarnings(resume(hmc,init_type='last',iters=50,chains=1,return_summary=TRUE,seed=123)))
 
   expect_warning(extract(hmc))
   expect_identical(unlist(lapply(hmc$model$summary[overlap],rownames)),
