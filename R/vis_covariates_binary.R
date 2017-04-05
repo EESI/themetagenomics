@@ -144,12 +144,12 @@ vis.binary <- function(object,taxa_grp_n=7,...){
           df1 <- try(data.frame(abundance=matrix(otu_subset,ncol=1),
                                 otu=rownames(otu_subset),
                                 p=beta_subset,
-                                sample=rep(colnames(otu_subset),each=nrow(otu_subset)),
-                                covariate=metadata[colnames(otu_subset),EST()$covariate]),
+                                sample=rep(colnames(otu_subset),each=nrow(otu_subset))),
                      silent=TRUE)
 
           validate(need(!(class(df1) == 'try-error'),'Too many points filtered. Lower the minimum beta probability.'))
 
+          df1$covariate <- metadata[df1$sample,EST()$covariate]
           df1$covariate <- factor(df1$covariate,levels=EST()$cov_names,ordered=TRUE)
           df1$taxon <- paste0(pretty_names[df1$otu],' (',df1$otu,')')
 

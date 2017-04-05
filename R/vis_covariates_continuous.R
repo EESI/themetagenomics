@@ -197,7 +197,7 @@ vis.continuous <- function(object,lambda_step=.1,taxa_reg_n=8,...){
             geom_pointrange(size=2) +
             theme_minimal() +
             labs(x='',y='Estimate') +
-            scale_color_manual(values=c('gray','indianred3','dodgerblue3')) +
+            scale_color_manual(values=c('gray','indianred3','dodgerblue3'),drop=FALSE) +
             scale_fill_brewer(type='qual',palette=6,direction=-1) +
             theme(legend.position='none',
                   axis.text.x=element_text(angle=-90,hjust=0,vjust=.5))
@@ -248,9 +248,9 @@ vis.continuous <- function(object,lambda_step=.1,taxa_reg_n=8,...){
           df_temp <- data.frame(abundance=matrix(otu_subset,ncol=1),
                                 otu=rownames(otu_subset),
                                 sample=rep(colnames(otu_subset),each=nrow(otu_subset)),
-                                covariate=metadata[colnames(otu_subset),EST()$covariate],
-                                switch=metadata[colnames(otu_subset),input$choose_mod],
                                 stringsAsFactors=FALSE)
+          df_temp$covariate <- metadata[df_temp$sample,EST()$covariate]
+          df_temp$switch <- metadata[df_temp$sample,input$choose_mod]
           df_temp$p <- theta[df_temp$sample,current_k]
           df_temp$taxon <- paste0(pretty_names[df_temp$otu],' (',df_temp$otu,')')
           df_temp$taxon <- factor(df_temp$taxon,levels=unique(df_temp$taxon),ordered=TRUE)
@@ -259,7 +259,7 @@ vis.continuous <- function(object,lambda_step=.1,taxa_reg_n=8,...){
             geom_blank() +
             geom_point(data=df_temp,aes_(~covariate,~abundance,color=~p),alpha=.5,size=1.2) +
             scale_y_log10(labels=scales::comma) +
-            viridis::scale_color_viridis('Beta Prob.') +
+            viridis::scale_color_viridis('Theta Prob.') +
             theme_classic() +
             theme(aspect.ratio=.5) +
             labs(x=EST()$covariate,y='Abundance')
