@@ -3,11 +3,9 @@
 ^\.Rproj\.user$
 ^cran-comments\.md$
 ^revdep$
-^data-raw$
 ^\.httr-oauth$
 ^codecov\.yml$
 ^_pkgdown\.yml$
 ^\.Rprofile$
 ^README\.Rmd$
 ^packrat/
-^docs$
