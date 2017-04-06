@@ -2,6 +2,7 @@ packrat/
 .Rprofile
 .Rproj.user
 .Rhistory
+inst/doc
 .RData
 .httr-oauth
 ^.*\.o$
