@@ -2,8 +2,7 @@ Package: themetagenomics
 Title: themetagenomics
 Version: 0.0.0.9000
 Authors@R: c(
-    person("Stephen", "Woloszynek", email = "sw424@drexel.edu", role = c("aut", "cre")),
-    person("Drexel University", role = "cph")
+    person("Stephen", "Woloszynek", email = "sw424@drexel.edu", role = c("aut", "cre"))
     )
 Description: A Topic Modeling Library for 16S rRNA Amplicon Data.
 URL: http://github.com/sw1/themetagenomics
@@ -12,7 +11,7 @@ License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: TRUE
 Depends:
-  R (>= 3.2.0), 
+  R (>= 3.2.5), 
   Rcpp (>= 0.11.3)
 Imports:
   ggplot2,

@@ -5,8 +5,12 @@ cache: packages
 warnings_are_errors: true
 r:
   - release #3.3.0
-  #- oldrel #3.2.5
+  - oldrel #3.2.5
   #- devel
+
+os:
+  - linux
+  - osx
 
 latex: true
 r_build_args: '--no-build-vignettes'
