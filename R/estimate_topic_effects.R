@@ -239,7 +239,7 @@ est_topics_backend <- function(estimated_effects,theta,nsims=100,ui_level=.8,npo
           sims <- ppd %*% t(sim_weights[[k]])
 
           # was fitted[[mod]][[k]] but there isn't a mod
-          fitted[[k]] <- cbind(rowMeans(sims),
+          fitted[[1]][[k]] <- cbind(rowMeans(sims),
                                       t(apply(sims,1,function(x) quantile(x,c(ui_offset,1-ui_offset)))),
                                       cov_vals)
         }

@@ -103,24 +103,38 @@ vis.functions <- function(object,topic_effects,beta_min=1e-5,ui_level=.8,gene_mi
 
     ui <- fluidPage(
 
-      titlePanel('Topic-Function Effects'),
+      tags$head(tags$style(type='text/css','.side{font-size: 10px;} .side{color: gray;} .side{font-weight: bold;}')),
+      tags$head(tags$style(type='text/css','.below{font-size: 10px;} .below{color: gray;} .below{font-weight: bold;}')),
+      tags$head(tags$style(type='text/css','.capt{font-size: 9px;} .capt{color: gray;} .capt{font-weight: bold;} .capt{margin-top: -20px;}')),
 
-      fixedRow(
-        column(2,selectInput('choose', label='Covariate',
-                             choices=covariates,selected=covariates[[1]])),
-        column(10,plotlyOutput('est',height='200px'))
-        ),
+      titlePanel('Topic-Function Effects'),
 
       fixedRow(
         column(1,''),
         column(10,htmlOutput('text')),
         column(1,'')
+      ),
+
+      fixedRow(
+        column(2,selectInput('choose', label='Covariate',
+                             choices=covariates,selected=covariates[[1]]),
+               fixedRow(column(1,''),
+                        column(11,tags$div(paste0('Choosing a covariate determines which weight estimates will shown',
+                                                  ' The order of the topics will be adjusted accordingly. By clicking',
+                                                  ' an estimate, all figures below will rerender.'),class='side')))),
+        column(10,plotlyOutput('est',height='200px'))
         ),
+
+
       fixedRow(
         column(2,radioButtons('dist_tax',label=strong('Distance'),
                               choices=list('Bray Curtis'='bray','Jaccard'='jaccard','Euclidean'='euclidean',
                                            'Hellinger'='hellinger','Chi Squared'='chi2','Jensen Shannon'='jsd'),
-                              selected='bray')),
+                              selected='bray'),
+               fixedRow(column(1,''),
+                        column(11,tags$div(paste0("The distance used for hierarchical clustering (Ward's methods) of the topics over taxa",
+                                                  ' distribution. Topics are ordered based on the weights in the scatter plot above.',
+                                                  ' Names of taxa are shown when hovering over the heatmap.'),class='side')))),
         column(10,plotlyOutput('tax'))
       ),
 
@@ -256,7 +270,7 @@ vis.functions <- function(object,topic_effects,beta_min=1e-5,ui_level=.8,gene_mi
 
       output$text <- renderUI({
 
-        HTML(sprintf('The choices on the <b>left</b> sets the type of distance metric to use for hierarchical clustering in the taxa heatmap <b>below</b>.
+        HTML(sprintf('Topics are ordered through as a function of the posterior estimates for the selected covariate.
                       The functional heatmap is interactive; by clicking a given cell, a table will appear at the bottom of the page reporting the gene
                       set that makes up that topic-pathway combination. Crosses on the functional heatmap cells indicates weights that did not enclose 0
                       at the %s%% uncertaintly level.',round(100*ui_level,0)))

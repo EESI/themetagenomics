@@ -16,7 +16,7 @@ vis.continuous <- function(object,lambda_step=.1,taxa_reg_n=8,...){
 
   cov_cont <- covariates[!cov_f]
   cov_fact <- covariates[cov_f]
-  names(cov_fact) <- tolower(cov_fact)
+  # names(cov_fact) <- tolower(cov_fact)
   names(cov_cont) <- tolower(unlist(cov_cont))
 
   mod_fact <- names(topic_effects[[cov_cont[1]]]$fitted_switch)
@@ -119,11 +119,19 @@ vis.continuous <- function(object,lambda_step=.1,taxa_reg_n=8,...){
 
     ui <- fluidPage(
 
+      tags$head(tags$style(type='text/css','.side{font-size: 10px;} .side{color: gray;} .side{font-weight: bold;}')),
+      tags$head(tags$style(type='text/css','.below{font-size: 10px;} .below{color: gray;} .below{font-weight: bold;}')),
+      tags$head(tags$style(type='text/css','.capt{font-size: 9px;} .capt{color: gray;} .capt{font-weight: bold;} .capt{margin-top: -10px;}')),
+
       titlePanel('Topic-Covariate Effects'),
 
       fixedRow(
         column(2,selectInput('choose_cov', label='Covariate',
-                             choices=cov_cont,selected=cov_cont[[1]])),
+                             choices=cov_cont,selected=cov_cont[[1]]),
+               fixedRow(column(1,''),
+                        column(11,tags$div(paste0('Choosing a covariate determines which weight estimates will shown',
+                                                  ' The order of the topics will be adjusted accordingly. By clicking',
+                                                  ' an estimate, all figures below will rerender.'),class='side')))),
         column(10,plotlyOutput('est',height='200px'))
       ),
 
@@ -149,6 +157,17 @@ vis.continuous <- function(object,lambda_step=.1,taxa_reg_n=8,...){
                                                    label='',
                                                    c('Ignore zeros'=1,'Normalize'=2,'Split'=3),
                                                    selected=c(1,2))))
+      ),
+
+      fixedRow(
+        column(3,conditionalPanel(condition='output.show_mods',
+                                  tags$div(paste0('Choice of factor to split scatter plots.'),class='capt'))),
+        column(6,conditionalPanel(condition='output.show',
+                                  tags$div(paste0('Relative weighting that influences taxa shown in the scatterplots',
+                                 ' If equal to 1, p(taxa|topic)l if 0, p(taxa|topic)/p(taxa).'),class='capt'))),
+        column(3,conditionalPanel(condition='output.show',
+                                  tags$div(paste0('Adjust scatter plots by ignoring zeros for smoothing, normalizing to relative abundances,',
+                                 ' or splitting the plots as a function of the selected factor (if present).'),class='capt')))
       ),
 
       plotlyOutput('ss'),
@@ -279,12 +298,20 @@ vis.continuous <- function(object,lambda_step=.1,taxa_reg_n=8,...){
       observeEvent(event_data('plotly_click',source='reg_est'),
                    {
                      output$text <- renderUI({
-                       HTML(sprintf("The check box on the <b>left</b> sets whether to ignore zeros for the best fit lines and whether raw counts or
-                                    relative abundances will be shown. The scatter plots <b>below</b> show the top %s taxa in terms of their
-                                    probability in the topics over taxa distributions versus %s. Each point represents the abundance of that taxa
-                                    in that sample. Each point is colored based on the probability of that sample occuring in the chosen topic. The
-                                    large scatter plot shows all %s taxa combined.",
-                                    taxa_reg_n,EST()$covariate,taxa_reg_n))
+                       HTML(sprintf("The scatterplot below shows the sample over topic distribution as a function of %s.
+                                    If additional factors were present in the model formula,
+                                    then their posterior predictive estimates will be shown as a function of the given
+                                    factor being set to 1 and 0 with all other covariates held fixed (i.e., averaged across samples).
+                                    These factors can be cycled through via the selection box. Each point represents a sample's probability of
+                                    containing the selected topic.
+                                    The next set of scatterplots show the top %s highest probability taxa in the selected topic -- that is,
+                                    p(taxa|k). Each point is the taxa's abundance in the raw data for a given sample, shaded based on the probability of that
+                                    sample occuring in the chosen topic. By adjusting lambda, the top %s taxa in terms of p(taxa|k)/p(taxa) will be shown.
+                                    The large scatter plot in the bottom row shows all %s taxa combined.",
+                                    EST()$covariate,
+                                    taxa_reg_n,
+                                    taxa_reg_n,
+                                    taxa_reg_n))
                      })
                    }
                        )
@@ -309,7 +336,7 @@ vis.continuous <- function(object,lambda_step=.1,taxa_reg_n=8,...){
 
           }
 
-          if (any(input$z %in% '3'))
+          if (any(input$z %in% '3') & input$choose_mod != '')
             p_ss <- p_ss + facet_wrap(switch~taxon,ncol=6) + theme(strip.text.x=element_text(size=7,margin=margin(t=15,b=15)))
 
           ggplotly(p_ss)
@@ -327,15 +354,24 @@ vis.continuous <- function(object,lambda_step=.1,taxa_reg_n=8,...){
           validate(need(!is.null(s),'Please choose a topic by clicking a point.'))
 
           k <- EST()$k_levels[s[['x']]]
-          topic_fitted <- topic_effects[[EST()$covariate]]$fitted[[input$choose_mod]][[k]]
-          topic_switch <- topic_effects[[EST()$covariate]]$fitted_switch[[input$choose_mod]][[k]]
 
-          df_th <- data.frame(Value=theta[rownames(metadata),k],Covariate=metadata[,EST()$covariate])
-          df_fit <- data.frame(topic_fitted)
-          df_switch <- data.frame(topic_switch)
-          colnames(df_fit) <- c('Value','Lower','Upper','Covariate')
-          colnames(df_switch) <- c('Value','Lower','Upper','Covariate')
-          R <- range(c(df_th$Covariate,df_fit$covariate,df_switch$covariate))
+          if (input$choose_mod != ''){
+            topic_fitted <- topic_effects[[EST()$covariate]]$fitted[[input$choose_mod]][[k]]
+            topic_switch <- topic_effects[[EST()$covariate]]$fitted_switch[[input$choose_mod]][[k]]
+            df_th <- data.frame(Value=theta[rownames(metadata),k],Covariate=metadata[,EST()$covariate])
+            df_fit <- data.frame(topic_fitted)
+            df_switch <- data.frame(topic_switch)
+            colnames(df_fit) <- c('Value','Lower','Upper','Covariate')
+            colnames(df_switch) <- c('Value','Lower','Upper','Covariate')
+            R <- range(c(df_th$Covariate,df_fit$covariate,df_switch$covariate))
+          }else{
+            topic_fitted <- topic_effects[[EST()$covariate]]$fitted[[1]][[k]]
+            df_th <- data.frame(Value=theta[rownames(metadata),k],Covariate=metadata[,EST()$covariate])
+            df_fit <- data.frame(topic_fitted)
+            colnames(df_fit) <- c('Value','Lower','Upper','Covariate')
+            R <- range(c(df_th$Covariate,df_fit$covariate))
+          }
+
 
           p1 <- plot_ly(df_th,x=df_th$Covariate)
           p1 <- add_trace(p1,
@@ -363,30 +399,52 @@ vis.continuous <- function(object,lambda_step=.1,taxa_reg_n=8,...){
                           line = list(width=5,color = 'rgba(205,85,85,0.9)'),
                           showlegend=TRUE,
                           name=input$choose_mod)
-          p1 <- add_lines(p1,
-                          x=~df_switch$Covariate,y=~df_switch$Lower,
-                          type='scatter',mode='lines',
-                          line=list(color='transparent'),
-                          showlegend=FALSE,
-                          name='Reference/Control')
-          p1 <- add_lines(p1,
-                          x=~df_switch$Covariate,y=~df_switch$Upper,
-                          type='scatter',mode='lines',
-                          fill='tonexty',
-                          fillcolor='rgba(24,116,205,.2)',
-                          line=list(color='transparent'),
-                          showlegend=FALSE,
-                          name='Reference/Control')
-          p1 <- add_lines(p1,
-                          x=~df_switch$Covariate,y=~df_switch$Value,
-                          type='scatter',mode='lines',
-                          line=list(width=5,color='rgba(24,116,205,.9)'),
-                          showlegend=TRUE,
-                          name='Reference/Control')
-          p1 <- layout(p1,title=k,
-                       legend=list(orientation='h'),
-                       paper_bgcolor='rgb(255,255,255)',
-                       xaxis=list(title=sprintf('%s',EST()$covariate),
+
+          if (input$choose_mod != ''){
+            p1 <- add_lines(p1,
+                            x=~df_switch$Covariate,y=~df_switch$Lower,
+                            type='scatter',mode='lines',
+                            line=list(color='transparent'),
+                            showlegend=FALSE,
+                            name='Reference/Control')
+            p1 <- add_lines(p1,
+                            x=~df_switch$Covariate,y=~df_switch$Upper,
+                            type='scatter',mode='lines',
+                            fill='tonexty',
+                            fillcolor='rgba(24,116,205,.2)',
+                            line=list(color='transparent'),
+                            showlegend=FALSE,
+                            name='Reference/Control')
+            p1 <- add_lines(p1,
+                            x=~df_switch$Covariate,y=~df_switch$Value,
+                            type='scatter',mode='lines',
+                            line=list(width=5,color='rgba(24,116,205,.9)'),
+                            showlegend=TRUE,
+                            name='Reference/Control')
+            p1 <- layout(p1,title=k,
+                         legend=list(orientation='h'),
+                         paper_bgcolor='rgb(255,255,255)',
+                         xaxis=list(title=sprintf('%s',EST()$covariate),
+                                      gridcolor='rgb(255,255,255)',
+                                      showgrid=TRUE,
+                                      showline=FALSE,
+                                      showticklabels=TRUE,
+                                      tickcolor='rgb(127,127,127)',
+                                      ticks='outside',
+                                      zeroline=FALSE),
+                         yaxis=list(title=sprintf('p(topic %s|sample)',k),
+                                      gridcolor='rgb(255,255,255)',
+                                      showgrid=TRUE,
+                                      showline=FALSE,
+                                      showticklabels=TRUE,
+                                      tickcolor='rgb(127,127,127)',
+                                      ticks='outside',
+                                      zeroline=FALSE))
+          }else{
+            p1 <- layout(p1,title=k,
+                         showlegend=FALSE,
+                         paper_bgcolor='rgb(255,255,255)',
+                         xaxis=list(title=sprintf('%s',EST()$covariate),
                                     gridcolor='rgb(255,255,255)',
                                     showgrid=TRUE,
                                     showline=FALSE,
@@ -394,7 +452,7 @@ vis.continuous <- function(object,lambda_step=.1,taxa_reg_n=8,...){
                                     tickcolor='rgb(127,127,127)',
                                     ticks='outside',
                                     zeroline=FALSE),
-                       yaxis=list(title=sprintf('p(topic %s|sample)',k),
+                         yaxis=list(title=sprintf('p(topic %s|sample)',k),
                                     gridcolor='rgb(255,255,255)',
                                     showgrid=TRUE,
                                     showline=FALSE,
@@ -402,6 +460,7 @@ vis.continuous <- function(object,lambda_step=.1,taxa_reg_n=8,...){
                                     tickcolor='rgb(127,127,127)',
                                     ticks='outside',
                                     zeroline=FALSE))
+          }
           p1
 
         })
@@ -439,7 +498,7 @@ vis.continuous <- function(object,lambda_step=.1,taxa_reg_n=8,...){
               stat_smooth(data=P()$df,aes_(~covariate,~abundance),color='darkred',size=1.1,method='lm',linetype=2,se=FALSE)
           }
 
-          if (any(input$z %in% '3'))
+          if (any(input$z %in% '3') & input$choose_mod != '')
             p_full <- p_full + facet_wrap(~switch,ncol=1)
 
           ggplotly(p_full)

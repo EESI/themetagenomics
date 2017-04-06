@@ -125,12 +125,15 @@ vis.taxa <- function(object,taxa_bar_n=30,top_n=7,method=c('huge','simple'),corr
 
   new_order <- default
 
-
   shinyApp(
 
     ui <- fluidPage(
 
-      titlePanel('Topic Features'),
+      tags$head(tags$style(type='text/css','.side{font-size: 10px;} .side{color: gray;} .side{font-weight: bold;}')),
+      tags$head(tags$style(type='text/css','.below{font-size: 10px;} .below{color: gray;} .below{font-weight: bold;}')),
+      tags$head(tags$style(type='text/css','.capt{font-size: 9px;} .capt{color: gray;} .capt{font-weight: bold;} .capt{margin-top: -20px;}')),
+
+      titlePanel('Taxa Features'),
 
       fixedRow(
         column(1,''),
@@ -142,7 +145,11 @@ vis.taxa <- function(object,taxa_bar_n=30,top_n=7,method=c('huge','simple'),corr
 
       fixedRow(
         column(2,selectInput('choose', label='Covariate',
-                             choices=covariates,selected=covariates[[1]])),
+                             choices=covariates,selected=covariates[[1]]),
+               fixedRow(column(1,''),
+                        column(11,tags$div(paste0('Choosing a covariate determines which weight estimates will shown',
+                                                    ' The order of the topics will be adjusted accordingly. By clicking',
+                                                    ' an estimate, all figures below will rerender.'),class='side')))),
         column(10,plotlyOutput('est',height='200px'))
       ),
 
@@ -166,8 +173,30 @@ vis.taxa <- function(object,taxa_bar_n=30,top_n=7,method=c('huge','simple'),corr
       ),
 
       fixedRow(
+        column(1,tags$div('Number of components to plot.',class='capt')),
+        column(3,tags$div('Type of distance and method for ordination.',class='capt')),
+        column(1,tags$div('Reset topic selection.',class='capt')),
+        column(2,tags$div('Current selected topic.',class='capt')),
+        column(3,tags$div(paste0('Relative weighting that influences taxa shown in barplot.',
+                                 ' If equal to 1, p(taxa|topic)l if 0, p(taxa|topic)/p(taxa).'),class='capt')),
+        column(2,tags$div('Taxonomic group to dictate bar plot shading',class='capt'))
+      ),
+
+      fixedRow(
         column(6,offset=0,height='600px',plotlyOutput('ord')),
         column(6,offset=0,height='600px',plotOutput('bar'))
+      ),
+
+      fixedRow(
+        column(6,tags$div(paste0('Ordination of the samples over topics distribution theta, colored according to',
+                                 ' the weights shown in the scatter plot above. The radius of a given point',
+                                 ' represents the marginal topic frequency. The amount of variation explained is',
+                                 ' annotated on each axis.'),class='below')),
+        column(6,tags$div(paste0('Bar plot representing the taxa frequencies. When no topic is selected, the overall',
+                                 ' taxa frequencies are shown, colored based on the selected taxonomy and ordered in',
+                                 ' in terms of saliency. When a topic is chosen, the red bars show the margina taxa',
+                                 ' frequency within the selected topic, ordered in terms of relevency, which in turn',
+                                 ' can be reweighted by adjusting the lambda slider.'),class='below'))
       ),
 
       br(),
@@ -254,22 +283,24 @@ vis.taxa <- function(object,taxa_bar_n=30,top_n=7,method=c('huge','simple'),corr
 
        ui_interval <- paste0(100-2*as.numeric(gsub('%','',colnames(topic_effects[[EST()$covariate]][['est']])[2])),'%')
 
-       HTML(sprintf("The scatter plot shows the weight esimates and %s uncertainty intervals for the
-                    %s-topic proportion effect. In all figures, red and blue implie positive and negative weights with
-                    interavls that do not enclose 0, respectively, whereas gray colored weights do enclose 0.
+       HTML(sprintf("Below are the results of a %s topic STM. THe scatter plot shows the posterior estimates and %s uncertainty
+                    intervals for the chosen covariate, %s. In all figures, red and blue implies positive and negative weights with
+                    intervals that do not enclose 0, respectively.
                     Different covariates can be chosen via the selection box (upper-left).
                     The next row shows the ordination of the topics over taxa distribution (left) and the frequencies of
                     the top %s taxa (in terms of saliency) across all topics. By selecting a topic, the relative
                     frequencies of the taxa within that topic are shown in red. The ordination figure can be shown in
                     either 2D or 3D and the ordination method can be adjusted. Lambda adjusts the relevance calculation.
                     Choosing the taxon adjusts the group coloring for the bar plot. Clicking Reset resets the topic selection.",
-                    ui_interval,taxa_bar_n,tolower(EST()$covariate),taxa_bar_n))
+                    K,ui_interval,tolower(EST()$covariate),taxa_bar_n))
      })
 
      output$text2 <- renderUI({
-       HTML(sprintf("Below shows topic correlations from the samples over topics distribution. Links suggests positive
-                    correlation between two topics.",
-                    taxa_bar_n,EST()$covariate,taxa_bar_n))
+       HTML(paste0('Below shows topic-to-topic correlations from the samples over topics distribution. The edges represent positive',
+                   ' correlation between two topics, with the size of the edge reflecting to the magnitude of the correlation.',
+                   ' The size and color of the nodes are slightly different than the ordination figure. Here, in addition to the color',
+                   ' reflecting the direction of the covariate weight estimate, the size indicates the magnitude of the estimate and',
+                   ' not the marginal topic frequencies like that which is shown in the ordination figure.'))
      })
 
      output$ord <- renderPlotly({
@@ -456,9 +487,9 @@ vis.taxa <- function(object,taxa_bar_n=30,top_n=7,method=c('huge','simple'),corr
 
        g_d3 <- networkD3::igraph_to_networkD3(g,group=members)
 
-       g_d3$links$edge_width <- 25*sapply(seq_len(nrow(g_d3$links)),function(r) corr$poscor[g_d3$links$source[r]+1,g_d3$links$target[r]+1])
+       g_d3$links$edge_width <- 10*(.1+sapply(seq_len(nrow(g_d3$links)),function(r) corr$poscor[g_d3$links$source[r]+1,g_d3$links$target[r]+1]))
        g_d3$nodes$color <- 25*ifelse(1:K %in% effects_sig,1,0)*sign(topic_effects[[EST()$covariate]]$est[,1])
-       g_d3$nodes$node_size <- 25*norm10(c(0,abs(topic_effects[[EST()$covariate]]$est[,1])))[-1]
+       g_d3$nodes$node_size <- 10*(.5+norm10(c(0,abs(topic_effects[[EST()$covariate]]$est[,1])))[-1])
        g_d3$nodes$name <- paste0('T',g_d3$nodes$name)
 
        networkD3::forceNetwork(Links=g_d3$links,Nodes=g_d3$nodes,

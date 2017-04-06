@@ -36,11 +36,19 @@ vis.binary <- function(object,taxa_grp_n=7,...){
 
     ui <- fluidPage(
 
+      tags$head(tags$style(type='text/css','.side{font-size: 10px;} .side{color: gray;} .side{font-weight: bold;}')),
+      tags$head(tags$style(type='text/css','.below{font-size: 10px;} .below{color: gray;} .below{font-weight: bold;}')),
+      tags$head(tags$style(type='text/css','.capt{font-size: 9px;} .capt{color: gray;} .capt{font-weight: bold;} .capt{margin-top: -20px;}')),
+
       titlePanel('Topic-Covariate Effects'),
 
       fixedRow(
         column(2,selectInput('choose', label='Covariate',
-                             choices=covariates,selected=covariates[[1]])),
+                             choices=covariates,selected=covariates[[1]]),
+               fixedRow(column(1,''),
+                        column(11,tags$div(paste0('Choosing a covariate determines which weight estimates will shown',
+                                                  ' The order of the topics will be adjusted accordingly. By clicking',
+                                                  ' an estimate, all figures below will rerender.'),class='side')))),
         column(10,plotlyOutput('est',height='200px'))
       ),
 
