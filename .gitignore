@@ -14,7 +14,6 @@ packrat/
 # Compiled Object files
 *.slo
 *.lo
-*.so
 *.o
 *.obj
 
