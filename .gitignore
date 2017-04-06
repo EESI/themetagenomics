@@ -1,9 +1,34 @@
+# Package libraries
+packrat/lib*/
 packrat/
+
+# R package files
+*.Rproj
+*.Rproj.user
+*.Rhistory
+.Rapp.history
 .Rprofile
 .Rproj.user
-.Rhistory
 .RData
-.httr-oauth
-^.*\.o$
-^.*\.so$
-packrat/lib*/
+
+# Compiled Object files
+*.slo
+*.lo
+*.so
+*.o
+*.obj
+
+# Precompiled Headers
+*.gch
+*.pch
+
+# Compiled Dynamic libraries
+*.so
+*.dylib
+*.dll
+
+# Compiled Static libraries
+*.lai
+*.la
+*.a
+*.lib
