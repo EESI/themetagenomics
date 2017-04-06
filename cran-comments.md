@@ -3,8 +3,8 @@ This is a submission
 ---
 
 ## Test environments
-* OS X Yosemite (on travis-ci): R-oldrel, R-release,
-* ubuntu 12.04 (on travis-ci): R-oldrel, R-release
+* OS X Yosemite (on travis-ci): R-release,
+* ubuntu 12.04 (on travis-ci): R-release
 * win-builder [TBD]
 
 ## R CMD check results
