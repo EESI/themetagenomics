@@ -3,7 +3,6 @@
 ^\.Rproj\.user$
 ^cran-comments\.md$
 ^revdep$
-^\.httr-oauth$
 ^codecov\.yml$
 ^_pkgdown\.yml$
 ^\.Rprofile$
