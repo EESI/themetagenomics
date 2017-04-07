@@ -25,9 +25,10 @@ install.packages('themetagenomics')
 
 # To install the developmental version via Github:
 # install.packages('devtools')
-devtools::install_github('sw1/themetagenomics')
+devtools::install_github('sw1/themetagenomics',build_vignettes=TRUE)
 
-# For R version 3.2.x, first run
+# For R version 3.2.x, you will need older dependencies to install STM.
+# Before installing themetagenomics, first run
 devtools::install_version('slam',version='0.1-37',repos='http://cran.us.r-project.org')
 devtools::install_version('proxy',version='0.4-16',repos='http://cran.us.r-project.org')
 devtools::install_github('kbenoit/quanteda')

@@ -32,7 +32,6 @@ Suggests:
   inline,
   knitr,
   networkD3,
-  pander,
   proxy,
   rmarkdown,
   RcppArmadillo,
