@@ -16,34 +16,6 @@ test_that('picrust results gives similar results for ml and hmc',{
   resume_orig <- suppressMessages(suppressWarnings(resume(hmc,init_type='orig',iters=50,chains=1,return_summary=TRUE,seed=123)))
   resume_last <- suppressMessages(suppressWarnings(resume(hmc,init_type='last',iters=50,chains=1,return_summary=TRUE,seed=123)))
 
-
-  expect_warning(extract(hmc))
-  expect_identical(unlist(lapply(hmc$model$summary[overlap],rownames)),
-                   unlist(lapply(ml$model$summary[overlap],rownames)))
-  expect_identical(unlist(lapply(hmc$model$summary[overlap],rownames)),
-                   unlist(lapply(hmc_summary$summary[overlap],rownames)))
-  expect_identical(unlist(lapply(hmc$model$summary[overlap],rownames)),
-                   unlist(lapply(resume_orig$model$summary[overlap],rownames)))
-  expect_identical(unlist(lapply(hmc$model$summary[overlap],rownames)),
-                   unlist(lapply(resume_last$model$summary[overlap],rownames)))
-
-})
-
-test_that('tax4fun results gives similar results for ml and hmc',{
-
-  DAT <- readRDS(system.file('testdata','seqfuncdata.rds',package='themetagenomics'))
-  overlap <- c('mu','phi','b_pw_sigma','b_topic_sigma','b_pwxtopic_sigma','b_pw','b_topic','b_pwxtopic','yhat')
-
-    ml <- suppressMessages(suppressWarnings(est(DAT,level=2,iters=5,method='ml')))
-    hmc <- suppressMessages(suppressWarnings(est(DAT,level=2,iters=50,chains=1,
-               return_summary=TRUE,
-               prior=c('t','t','normal'),
-               t_df=c(7,7),seed=123)))
-    hmc_summary <- suppressMessages(suppressWarnings(extract(hmc)))
-    resume_orig <- suppressMessages(suppressWarnings(resume(hmc,init_type='orig',iters=50,chains=1,return_summary=TRUE,seed=123)))
-    resume_last <- suppressMessages(suppressWarnings(resume(hmc,init_type='last',iters=50,chains=1,return_summary=TRUE,seed=123)))
-
-  expect_warning(extract(hmc))
   expect_identical(unlist(lapply(hmc$model$summary[overlap],rownames)),
                    unlist(lapply(ml$model$summary[overlap],rownames)))
   expect_identical(unlist(lapply(hmc$model$summary[overlap],rownames)),

@@ -263,7 +263,7 @@ vis.taxa <- function(object,taxa_bar_n=30,top_n=7,method=c('huge','simple'),corr
             geom_pointrange(size=2) +
             theme_minimal() +
             labs(x='',y='Estimate') +
-            scale_color_manual(values=c('gray','indianred3','dodgerblue3')) +
+            scale_color_manual(values=c('gray','indianred3','dodgerblue3'),drop=FALSE)) +
             scale_fill_brewer(type='qual',palette=6,direction=-1) +
             theme(legend.position='none',
                   axis.text.x=element_text(angle=-90,hjust=0,vjust=.5))
