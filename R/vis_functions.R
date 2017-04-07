@@ -172,7 +172,7 @@ vis.functions <- function(object,topic_effects,beta_min=1e-5,ui_level=.8,gene_mi
             geom_pointrange(size=2) +
             theme_minimal() +
             labs(x='',y='Estimate') +
-            scale_color_manual(values=c('gray','indianred3','dodgerblue3'),drop=FALSE)) +
+            scale_color_manual(values=c('gray','indianred3','dodgerblue3'),drop=FALSE) +
             scale_fill_brewer(type='qual',palette=6,direction=-1) +
             theme(legend.position='none',
                   axis.text.x=element_text(angle=-90,hjust=0,vjust=.5))
