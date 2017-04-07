@@ -42,7 +42,7 @@ download_ref <- function(destination,reference=c('all','gg_ko','gg_cog','silva_k
       cat(sprintf('Downloading %s.\n',fn))
 
       suppressWarnings(
-      utils::download.file(sprintf('http://gitlab.com/sw1/themetagenomics_data/raw/master/%s',fn),
+      utils::download.file(sprintf('https://gitlab.com/sw1/themetagenomics_data/raw/master/%s',fn),
                     destfile=file.path(destination,fn),
                     method='auto',
                     mode='w',
