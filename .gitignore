@@ -27,3 +27,6 @@
 *.la
 *.a
 *.lib
+
+# Libraries
+packrat/

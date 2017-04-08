@@ -16,8 +16,12 @@
 #' @export
 
 est.hmc <- function(object,inits,prior=c('t','normal','laplace'),t_df=c(7,7,7),iters=300,warmup=iters/2,
-                    chains=1,cores=1,
+                    chains=1,cores=1,seed=sample.int(.Machine$integer.max,1),
                     return_summary=TRUE,verbose=FALSE,...){
+
+  set.seed(check_seed(seed))
+  mod_seed <- sample.int(.Machine$integer.max,1)
+  next_seed <- sample.int(.Machine$integer.max,1)
 
   gene_table <- object$gene_table
 
@@ -125,8 +129,6 @@ est.hmc <- function(object,inits,prior=c('t','normal','laplace'),t_df=c(7,7,7),i
                            topic=stan_dat$topic,
                            pwxtopic=stan_dat$pwxtopic)
 
-
-
   if (missing(inits)){
 
     if (verbose) cat('Generating initial values via ML.\n')
@@ -187,6 +189,7 @@ est.hmc <- function(object,inits,prior=c('t','normal','laplace'),t_df=c(7,7,7),i
                      warmup=warmup,
                      iter=iters,
                      chains=chains,cores=cores,
+                     seed=mod_seed,
                      verbose=verbose)
 
   out <- list()
@@ -210,6 +213,8 @@ est.hmc <- function(object,inits,prior=c('t','normal','laplace'),t_df=c(7,7,7),i
       out[['flagged']] <- names(which(rhat))
     }
   }
+
+  out[['seeds']] <- list(seed=seed,mod_seed=mod_seed,next_seed=next_seed)
 
   return(out)
 

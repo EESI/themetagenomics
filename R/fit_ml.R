@@ -2,7 +2,9 @@
 #'
 #' @export
 
-est.ml <- function(object,iters=1000,verbose=FALSE,...){
+est.ml <- function(object,iters=1000,verbose=FALSE,seed=sample.int(.Machine$integer.max,1),...){
+
+  set.seed(check_seed(seed))
 
   gene_table <- object$gene_table
 
@@ -43,7 +45,6 @@ est.ml <- function(object,iters=1000,verbose=FALSE,...){
   out <- list(summary=extract_summary)
 
   out[['fit']] <- mm
-
 
   return(out)
 

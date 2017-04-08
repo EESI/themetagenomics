@@ -16,7 +16,7 @@ Depends:
 Imports:
   ggplot2,
   lda,
-  lme4,
+  lme4 (>= 1.1.12),
   Matrix,
   plotly (>= 4.5.6),
   rstan (>= 2.14.0),
@@ -41,5 +41,5 @@ Suggests:
   viridis,
 LinkingTo:
   Rcpp
-RoxygenNote: 6.0.1
+RoxygenNote: 6.0.1.9000
 VignetteBuilder: knitr

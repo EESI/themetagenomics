@@ -173,8 +173,12 @@ vis <- function(object,...) UseMethod('vis')
 #' @rdname vis
 #'
 #' @param type Type of visualization to perform.
+#' @param seed Seed for the random number generator to reproduce previous
+#'   results.
 #' @export
-vis.effects <- function(object,topic_effects,type=c('taxa','binary','continuous','functions'),...){
+vis.effects <- function(object,topic_effects,type=c('taxa','binary','continuous','functions'),seed=object$seed$next_seed,...){
+
+  set.seed(check_seed(seed))
 
   type <- match.arg(type)
 

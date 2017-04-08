@@ -9,6 +9,8 @@
 #' @param topics_subset Vector of topic indexes to be evaluated. Recommended to be < 25.
 #' @param level Gene category level to evalulate. Defaults to 2.
 #' @param method String indicating either ml or hmc. Defaults to hmc.
+#' @param seed Seed for the random number generator to reproduce previous
+#'   results.
 #' @param verbose Logical flag to print progress information. Defaults to FALSE.
 #' @param ... Additional arguments for methods.
 #'
@@ -85,7 +87,11 @@
 #' @export
 
 est.functions <- function(object,topics_subset,level=2,method=c('hmc','ml'),
-                          verbose=FALSE,...){
+                          seed=object$seeds$next_seed,verbose=FALSE,...){
+
+  set.seed(check_seed(seed))
+  mod_seed <- sample.int(.Machine$integer.max,1)
+  next_seed <- sample.int(.Machine$integer.max,1)
 
   method <- match.arg(method)
 
@@ -105,9 +111,9 @@ est.functions <- function(object,topics_subset,level=2,method=c('hmc','ml'),
   gene_table <- list(gene_table=format_gene_table(object,level=level))
 
   class(gene_table) <- method
-  mm <- est(gene_table,verbose=verbose,...)
+  mm <- est(gene_table,seed=mod_seed,verbose=verbose,...)
 
-  out <- list(model=mm,gene_table=gene_table$gene_table)
+  out <- list(model=mm,gene_table=gene_table$gene_table,seeds=list(seed=seed,model_seed=mod_seed,next_seed=next_seed))
   class(out) <- 'effects'
   attr(out,'type') <- 'functions'
   attr(out,'method') <- method

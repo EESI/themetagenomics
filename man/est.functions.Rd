@@ -9,13 +9,15 @@
 \title{Estimate predicted function-topic effects}
 \usage{
 \method{est}{functions}(object, topics_subset, level = 2, method = c("hmc",
-  "ml"), verbose = FALSE, ...)
+  "ml"), seed = object$seeds$next_seed, verbose = FALSE, ...)
 
 \method{est}{hmc}(object, inits, prior = c("t", "normal", "laplace"),
   t_df = c(7, 7, 7), iters = 300, warmup = iters/2, chains = 1,
-  cores = 1, return_summary = TRUE, verbose = FALSE, ...)
+  cores = 1, seed = sample.int(.Machine$integer.max, 1),
+  return_summary = TRUE, verbose = FALSE, ...)
 
-\method{est}{ml}(object, iters = 1000, verbose = FALSE, ...)
+\method{est}{ml}(object, iters = 1000, verbose = FALSE,
+  seed = sample.int(.Machine$integer.max, 1), ...)
 }
 \arguments{
 \item{object}{(required) Ouput of \code{\link{predict.topics}}.}
@@ -25,6 +27,9 @@
 \item{level}{Gene category level to evalulate. Defaults to 2.}
 
 \item{method}{String indicating either ml or hmc. Defaults to hmc.}
+
+\item{seed}{Seed for the random number generator to reproduce previous
+results.}
 
 \item{verbose}{Logical flag to print progress information. Defaults to FALSE.}
 

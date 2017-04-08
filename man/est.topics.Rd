@@ -6,7 +6,8 @@
 \title{Estimate topic effects}
 \usage{
 \method{est}{topics}(object, metadata, formula, refs, nsims = 100,
-  ui_level = 0.8, npoints = 100, verbose = FALSE, ...)
+  ui_level = 0.8, npoints = 100, seed = object$seeds$next_seed,
+  verbose = FALSE, ...)
 }
 \arguments{
 \item{object}{(required) Ouput of \code{\link{find_topics}}.}
@@ -28,6 +29,9 @@ covariate effects. Defaults to 100.}
 .95.}
 
 \item{npoints}{Number of posterior predictive samples to draw. Defaults to 100.}
+
+\item{seed}{Seed for the random number generator to reproduce previous
+results.}
 
 \item{verbose}{Logical flag to print progress information. Defaults to FALSE.}
 

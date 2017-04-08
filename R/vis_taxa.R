@@ -494,7 +494,7 @@ vis.taxa <- function(object,taxa_bar_n=30,top_n=7,method=c('huge','simple'),corr
 
        networkD3::forceNetwork(Links=g_d3$links,Nodes=g_d3$nodes,
                                Source='source',Target='target',
-                               charge=-200,
+                               charge=-25,
                                opacity=.7,
                                fontSize=12,
                                zoom=TRUE,

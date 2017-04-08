@@ -15,7 +15,7 @@
 vis(object, ...)
 
 \method{vis}{effects}(object, topic_effects, type = c("taxa", "binary",
-  "continuous", "functions"), ...)
+  "continuous", "functions"), seed = object$seed$next_seed, ...)
 
 \method{vis}{binary}(object, taxa_grp_n = 7, ...)
 
@@ -40,6 +40,9 @@ vis(object, ...)
 \item{topic_effects}{Output of \code{\link{est.topics}}.}
 
 \item{type}{Type of visualization to perform.}
+
+\item{seed}{Seed for the random number generator to reproduce previous
+results.}
 
 \item{taxa_grp_n}{Number of taxa group names to display (remaining are renamed to other). Defaults to 7.}
 

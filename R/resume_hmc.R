@@ -19,6 +19,8 @@ NULL
 #' iters/2.
 #' @param chains For HMC, number of parallel chains. Defaults to 1.
 #' @param cores For HMC, number of cores to parallelize chains. Defaults to 1.
+#' @param seed Seed for the random number generator to reproduce previous
+#'   results.
 #' @param return_summary Logical flag to return results summary. Defaults to TRUE.
 #' @param verbose Logical flag to print progress information. Defaults to FALSE.
 #' @param ... Additional arguments for methods.
@@ -61,7 +63,11 @@ resume <- function(object,...) UseMethod('resume')
 #' @export
 resume.effects <- function(object,init_type=c('last','orig'),inits,
                            iters,warmup=iters/2,chains=1,cores=1,
+                           seed=object$seeds$next_seed,
                            return_summary=TRUE,verbose=FALSE,...){
+
+  set.seed(check_seed(seed))
+  mod_seed <- sample.int(.Machine$integer.max,1)
 
   if (attr(object,'type') != 'functions')
     stop('Effects object must contain functional infrormation.')
@@ -88,10 +94,12 @@ resume.effects <- function(object,init_type=c('last','orig'),inits,
                inits=inits,warmup=warmup,
                gene_table=object$gene_table,pars=object$model$pars,
                iters=iters,chains=chains,cores=cores,
-               return_summary=return_summary,verbose=verbose)
+               return_summary=return_summary,seed=object$model$seeds$next_seed,
+               verbose=verbose)
 
   mm[['inits']] <- list(orig=object$model$inits$orig,
                         last=inits)
+  mm[['seeds']] <- list(seed=seed,mod_seed=mod_seed,next_seed=object$seeds$next_seed)
 
   out <- list(model=mm,gene_table=object$gene_table)
   class(out) <- 'effects'
@@ -106,8 +114,14 @@ resume.effects <- function(object,init_type=c('last','orig'),inits,
 resume.stanfit <- function(object,stan_dat,inits,gene_table,
                            pars,iters,warmup=iters/2,
                            chains=1,cores=1,
-                           return_summary=TRUE,verbose=FALSE,
+                           return_summary=TRUE,
+                           seed=sample.int(.Machine$integer.max,1),
+                           verbose=FALSE,
                            ...){
+
+  set.seed(check_seed(seed))
+  mod_seed <- sample.int(.Machine$integer.max,1)
+  next_seed <- sample.int(.Machine$integer.max,1)
 
   if (cores > 1){
     if (verbose) cat('Preparing parallelization.\n')
@@ -123,7 +137,7 @@ resume.stanfit <- function(object,stan_dat,inits,gene_table,
                      init=inits,warmup=warmup,
                      pars=c('theta'),include=FALSE,
                      iter=iters,chains=chains,cores=cores,
-                     verbose=verbose)
+                     seed=mod_seed,verbose=verbose)
 
   out <- list()
   out[['pars']] <- pars
@@ -142,6 +156,8 @@ resume.stanfit <- function(object,stan_dat,inits,gene_table,
       out[['flagged']] <- names(which(rhat))
     }
   }
+
+  out[['seeds']] <- list(seed=seed,mod_seed=mod_seed,next_seed=next_seed)
 
   return(out)
 

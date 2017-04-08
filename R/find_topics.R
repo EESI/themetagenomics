@@ -97,7 +97,7 @@ NULL
 #' @export
 find_topics <- function(themetadata_object,K,sigma_prior=0,model=NULL,iters=500,
                         tol=1e-5,batches=1,init_type=c('Spectral','LDA','Random'),
-                        seed=NULL,verbose=FALSE,verbose_n=5,
+                        seed=themetadata_object$seed,verbose=FALSE,verbose_n=5,
                         control=list()){
 
   UseMethod('find_topics')
@@ -107,8 +107,12 @@ find_topics <- function(themetadata_object,K,sigma_prior=0,model=NULL,iters=500,
 #' @export
 find_topics.themetadata <- function(themetadata_object,K,sigma_prior=0,model=NULL,iters=500,
                                     tol=1e-5,batches=1,init_type=c('Spectral','LDA','Random'),
-                                    seed=NULL,verbose=FALSE,verbose_n=5,
+                                    seed=themetadata_object$seeds$next_seed,verbose=FALSE,verbose_n=5,
                                     control=list()){
+
+  set.seed(check_seed(seed))
+  mod_seed <- sample.int(.Machine$integer.max,1)
+  next_seed <- sample.int(.Machine$integer.max, 1)
 
   if (missing(K) | K <= 0)
     stop('The number of topic K must be supplied and be a positive non-negative integer.')
@@ -139,11 +143,12 @@ find_topics.themetadata <- function(themetadata_object,K,sigma_prior=0,model=NUL
 
   fit <- stm_wrapper(K=as.integer(K),docs=docs,vocab=vocab,formula,metadata=metadata,
                      sigma_prior=sigma_prior,model=model,iters=iters,tol=tol,
-                     batches=batches,seed=seed,verbose=verbose,verbose_n=verbose_n,
+                     batches=batches,seed=mod_seed,
+                     verbose=verbose,verbose_n=verbose_n,
                      init_type=init_type,control=control)
 
   out <- list(fit=fit,docs=docs,vocab=vocab,otu_table=otu_table,tax_table=tax_table,metadata=metadata,refs=refs,
-              modelframe=modelframe,spline_info=splineinfo$info) # change to splineinfo but check other f() first
+              modelframe=modelframe,spline_info=splineinfo$info,seeds=list(seed=seed,mod_seed=mod_seed,next_seed=next_seed))
   class(out) <- 'topics'
 
   attr(out,'cnn') <- attr(themetadata_object,'cnn')
@@ -156,7 +161,7 @@ find_topics.themetadata <- function(themetadata_object,K,sigma_prior=0,model=NUL
 #' Wrapper for stm
 #' @keywords internal
 stm_wrapper <- function(K,docs,vocab,formula=NULL,metadata=NULL,sigma_prior=0,
-                        model=NULL,iters=500,tol=1e-05,batches=1,seed=NULL,
+                        model=NULL,iters=500,tol=1e-05,batches=1,seed=sample.int(.Machine$integer.max,1),
                         verbose=FALSE,verbose_n=5,init_type=c('Spectral','LDA','Random'),
                         control=control){
 

@@ -5,7 +5,8 @@
 \title{Prepare themetadata object from data for topic modeling pipeline}
 \usage{
 prepare_data(otu_table, rows_are_taxa, tax_table, metadata, formula, refs,
-  cn_normalize = TRUE, drop = TRUE, verbose = FALSE)
+  cn_normalize = TRUE, drop = TRUE,
+  seed = sample.int(.Machine$integer.max, 1), verbose = FALSE)
 }
 \arguments{
 \item{otu_table}{(required) Matrix or dataframe containing taxa abundances
@@ -32,6 +33,10 @@ binary covariates in formula, indicating the reference level.}
 normalization. Defaults to TRUE.}
 
 \item{drop}{Logical flag to drop empty rows and columns. Defaults to TRUE.}
+
+\item{seed}{Seed for random number generation. This seed will be passed to
+each function that uses this prepared data unless otherwise overridden.
+Defaults to a random integer between 1 and the maximum integer supported by R.}
 
 \item{verbose}{Logical flag to print progress information. Defaults to FALSE.}
 }

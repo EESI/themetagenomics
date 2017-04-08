@@ -25,6 +25,9 @@ NULL
 #' @param cn_normalize Logical flag for performing 16S rRNA copy number
 #'   normalization. Defaults to TRUE.
 #' @param drop Logical flag to drop empty rows and columns. Defaults to TRUE.
+#' @param seed Seed for random number generation. This seed will be passed to
+#'   each function that uses this prepared data unless otherwise overridden.
+#'   Defaults to a random integer between 1 and the maximum integer supported by R.
 #' @param verbose Logical flag to print progress information. Defaults to FALSE.
 #'
 #' @return An object of class themetadata containing
@@ -53,9 +56,13 @@ NULL
 #'                     cn_normalize=TRUE,drop=TRUE)
 #' @export
 prepare_data <- function(otu_table,rows_are_taxa,tax_table,metadata,formula,refs,
-                         cn_normalize=TRUE,drop=TRUE,verbose=FALSE){
+                         cn_normalize=TRUE,drop=TRUE,seed=sample.int(.Machine$integer.max,1),
+                         verbose=FALSE){
 
-    if (max(otu_table) <= 1)
+  set.seed(check_seed(seed))
+  next_seed <- sample.int(.Machine$integer.max,1)
+
+  if (max(otu_table) <= 1)
     stop('Count table must contain counts (non-negative integers) and hence cannot be normalized.')
   if (is.null(colnames(otu_table)) | is.null(rownames(otu_table)))
     stop('otu_table must contain appropriate row and column names.')
@@ -72,7 +79,8 @@ prepare_data <- function(otu_table,rows_are_taxa,tax_table,metadata,formula,refs
                 formula=NULL,
                 refs=NULL,
                 splineinfo=NULL,
-                modelframe=NULL)
+                modelframe=NULL,
+                seeds=list(seed=seed,next_seed=next_seed))
   refs_type <- NULL
   splines <- NULL
   class(slots) <- 'themetadata'

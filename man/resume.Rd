@@ -8,8 +8,9 @@
 resume(object, ...)
 
 \method{resume}{effects}(object, init_type = c("last", "orig"), inits, iters,
-  warmup = iters/2, chains = 1, cores = 1, return_summary = TRUE,
-  verbose = FALSE, ...)
+  warmup = iters/2, chains = 1, cores = 1,
+  seed = object$seeds$next_seed, return_summary = TRUE, verbose = FALSE,
+  ...)
 }
 \arguments{
 \item{object}{(required) Ouput of \code{\link{est.functions}}.}
@@ -31,6 +32,9 @@ iters/2.}
 \item{chains}{For HMC, number of parallel chains. Defaults to 1.}
 
 \item{cores}{For HMC, number of cores to parallelize chains. Defaults to 1.}
+
+\item{seed}{Seed for the random number generator to reproduce previous
+results.}
 
 \item{return_summary}{Logical flag to return results summary. Defaults to TRUE.}
 

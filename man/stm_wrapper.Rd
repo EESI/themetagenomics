@@ -6,8 +6,9 @@
 \usage{
 stm_wrapper(K, docs, vocab, formula = NULL, metadata = NULL,
   sigma_prior = 0, model = NULL, iters = 500, tol = 1e-05,
-  batches = 1, seed = NULL, verbose = FALSE, verbose_n = 5,
-  init_type = c("Spectral", "LDA", "Random"), control = control)
+  batches = 1, seed = sample.int(.Machine$integer.max, 1),
+  verbose = FALSE, verbose_n = 5, init_type = c("Spectral", "LDA",
+  "Random"), control = control)
 }
 \description{
 Wrapper for stm

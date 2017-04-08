@@ -16,6 +16,8 @@
 #' @param ui_level Width of uncertainty interval for reporting effects. Defaults to
 #'   .95.
 #' @param npoints Number of posterior predictive samples to draw. Defaults to 100.
+#' @param seed Seed for the random number generator to reproduce previous
+#'   results.
 #' @param verbose Logical flag to print progress information. Defaults to FALSE.
 #' @param ... Additional arguments for methods.
 #'
@@ -74,7 +76,11 @@
 #'
 #' @export
 
-est.topics <- function(object,metadata,formula,refs,nsims=100,ui_level=.8,npoints=100,verbose=FALSE,...){
+est.topics <- function(object,metadata,formula,refs,nsims=100,ui_level=.8,npoints=100,
+                       seed=object$seeds$next_seed,verbose=FALSE,...){
+
+  set.seed(check_seed(seed))
+  next_seed <- sample.int(.Machine$integer.max,1)
 
   fit <- object$fit
   K <- fit$settings$dim$K
@@ -128,7 +134,7 @@ est.topics <- function(object,metadata,formula,refs,nsims=100,ui_level=.8,npoint
   topic_effects <- est_topics_backend(estimated_effects,fit$theta,
                                       nsims=nsims,ui_level=ui_level,npoints=npoints,verbose=verbose)
 
-  out <- list(topic_effects=topic_effects,topics=object,modelframe=modelframe_full)
+  out <- list(topic_effects=topic_effects,topics=object,modelframe=modelframe_full,seeds=list(seed=seed,next_seed=next_seed))
   class(out) <- 'effects'
   attr(out,'type') <- 'topics'
   attr(out,'refs') <- refs_type

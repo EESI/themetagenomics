@@ -28,6 +28,8 @@ vis.binary <- function(object,taxa_grp_n=7,...){
   cov_f <- sapply(metadata,class) == 'factor'
   covariates <- covariates[cov_f]
 
+  if (length(covariates) == 0) stop('For binary, formula provided must have contained a binary, categorical, or factor covariate.')
+
   est_range <- range(c(sapply(topic_effects, function(x) unlist(x$est))))
 
   s <- NULL

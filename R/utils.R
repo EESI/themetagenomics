@@ -295,3 +295,17 @@ expand_multiclass <- function(metadata,refs=NULL,verbose=FALSE){
 
   }
 }
+
+# check if seed is correct format; adapted from rstan
+check_seed <- function(seed,warn=0){
+  if (is.character(seed) && grepl('[^0-9]',seed)) {
+    if (warn == 0)
+      stop('Seed needs to be string of digits.')
+    else
+      message('Seed needs to be string of digits.')
+    return(NULL)
+  }
+  if (is.numeric(seed)) seed <- as.integer(seed)
+  if (is.na(seed)) seed <- sample.int(.Machine$integer.max, 1)
+  return(seed)
+}

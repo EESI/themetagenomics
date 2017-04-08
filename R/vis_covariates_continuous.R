@@ -15,8 +15,10 @@ vis.continuous <- function(object,lambda_step=.1,taxa_reg_n=8,...){
   cov_f <- sapply(metadata,class) == 'factor'
 
   cov_cont <- covariates[!cov_f]
+
+  if (length(cov_cont) == 0) stop('For continuous, formula provided must have contained a continuous, numeric, or integer covariate.')
+
   cov_fact <- covariates[cov_f]
-  # names(cov_fact) <- tolower(cov_fact)
   names(cov_cont) <- tolower(unlist(cov_cont))
 
   mod_fact <- names(topic_effects[[cov_cont[1]]]$fitted_switch)
