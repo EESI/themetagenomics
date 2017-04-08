@@ -1,7 +1,3 @@
-# Package libraries
-packrat/lib*/
-packrat/
-
 # R package files
 *.Rproj
 *.Rproj.user
