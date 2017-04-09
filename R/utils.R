@@ -309,3 +309,7 @@ check_seed <- function(seed,warn=0){
   if (is.na(seed)) seed <- sample.int(.Machine$integer.max, 1)
   return(seed)
 }
+
+# return platform sep
+
+platform_sep <- function() if (.Platform$OS.type == 'windows') return('\\') else return('/')

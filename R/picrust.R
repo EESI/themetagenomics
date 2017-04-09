@@ -60,7 +60,7 @@ picrust <- function(otu_table,rows_are_taxa,reference=c('gg_ko','gg_cog'),refere
   if (reference == 'gg_ko') ref_fn <- 'ko_13_5_precalculated.tab.gz'
   if (reference == 'gg_cog') ref_fn <- 'cog_13_5_precalculated.tab.gz'
 
-  out <- picrust_otu(file.path(reference_path,ref_fn),colnames(otu_table))
+  out <- picrust_otu(file.path(reference_path,ref_fn,fsep=platform_sep()),colnames(otu_table))
   fxn_mapping <- out$genome_table_out
   rownames(fxn_mapping) <- out$matches
   colnames(fxn_mapping) <- out$gene_ids
