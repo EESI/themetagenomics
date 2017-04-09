@@ -37,11 +37,6 @@ env:
   global:
     - _R_CHECK_FORCE_SUGGESTS_=false
 
-before_install:
-  - Rscript -e 'install.packages("devtools")'
-  - Rscript -e 'devtools::install_version("slam",version="0.1-37",repos="http://cran.us.r-project.org")'
-  - Rscript -e 'devtools::install_version("proxy",version="0.4-16",repos="http://cran.us.r-project.org")'
-
 script:
   - |
     travis_wait R CMD build .

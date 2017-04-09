@@ -157,7 +157,7 @@ vis(TOPIC_EFFECTS,type='continuous')
 
 This app should look familiar. Again, we'll start from the top. As mentioned before, these estimates have a different interpretation. Had we assumed a linear association between topic frequency and time, looking at the weights themselves (i.e., the slopes) would suffice, but we used a spline. We therefore show the Spearman correlation estimates between the posterior predictive distribution and the raw samples over topics distribution. This at least gives us an idea of where the nonlinear estimates map the best. Let's select topic 14:
 
-![](theme_cont_t7_ppd.png)
+![](theme_cont_t14_ppd.png)
 
 There's a clear trend: the probability of a sample containing topic 14 is highest during the first half year and then becomes effectively 0. Now, we can take this a step further. When we performed our effects estimation, for a given continuous covariate, all factors are compared to their respective reference level (hence the need of expanding factors to dummy variables). Thus, the red line is the trend over time with all covariate weights held fixed (that is, averaged across all samples) and the weight for site set to 1, whereas the blue line (the reference) is when site is set to 0. Although the uncertainty is larger early, between days 40 and 175, there seems to be a discernible difference between the frequency of topic 14 across these samples. What does that mean taxanomically though? I mean, this is microbiome data! Well, if we scroll down, we can see a bunch of scatter plots. These are the true abundances (i.e., the abundances from the raw data) from highest probability taxa in topic 14, plotted as a function of Day. Each point represents a sample. 
 
