@@ -65,7 +65,7 @@ t4f <- function(otu_table,rows_are_taxa,tax_table,reference_path,type=c('uproc',
 
   type <- match.arg(type)
 
-  ref_profile_path <- file.path(reference_path,'t4f_ref_profiles.rds')
+  ref_profile_path <- file.path(reference_path,'t4f_ref_profiles.rds',fsep=platform_sep())
   map_path <- file.path(reference_path,'t4f_silva_to_kegg.rds',fsep=platform_sep())
 
   if (rows_are_taxa == TRUE) otu_table <- t(otu_table)
