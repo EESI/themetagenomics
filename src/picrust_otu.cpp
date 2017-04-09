@@ -101,7 +101,7 @@ List sweep_picrust(string file_path, StringVector otu_id_targets) {
           }
 
           int c=0;
-          for (int m=gene_n;m<counts.size();m++){
+          for (std::size_t m=gene_n;m<counts.size();m++){
             pimeta_table(o,c) = atof(counts[m].c_str()); // str to dbl
             c += c;
           }
@@ -216,7 +216,7 @@ List sweep_picrust_gz(string file_path, StringVector otu_id_targets) {
           }
 
           int c=0;
-          for (int m=gene_n;m<counts.size();m++){
+          for (std::size_t m=gene_n;m<counts.size();m++){
             pimeta_table(o,c) = atof(counts[m].c_str()); // str to dbl
             c += c;
           }
