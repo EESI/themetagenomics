@@ -99,9 +99,8 @@ resume.effects <- function(object,init_type=c('last','orig'),inits,
 
   mm[['inits']] <- list(orig=object$model$inits$orig,
                         last=inits)
-  mm[['seeds']] <- list(seed=seed,mod_seed=mod_seed,next_seed=object$seeds$next_seed)
 
-  out <- list(model=mm,gene_table=object$gene_table)
+  out <- list(model=mm,gene_table=object$gene_table,seeds=list(seed=seed,mod_seed=mod_seed,next_seed=object$seeds$next_seed))
   class(out) <- 'effects'
   attr(out,'type') <- 'functions'
   attr(out,'method') <- attr(object,'method')
