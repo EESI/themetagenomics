@@ -226,19 +226,17 @@ sample_last <- function(fit,chains){
 
   fit_chains <- seq_len(fit@sim$chains)
   fit_samps <- seq(fit@sim$iter-chains+1,fit@sim$iter,1)
-  grid <- expand.grid(ch=fit_chains,s=fit_samps)[sample(nrow(grid)),]
+  grid <- expand.grid(ch=fit_chains,s=fit_samps)
+  grid <- grid[sample(nrow(grid)),]
 
   sims <- lapply(fit_chains,function(ch)
     utils::relist(fit@sim$samples[[ch]],skeleton=create_skel(fit@model_pars,fit@par_dims)))
 
   inits <- vector(mode='list',length=chains)
   for (i in seq_len(chains)){
-
     ch_i <- grid$ch[i]
     samp_i <- grid$s[i]
-
     inits[[i]] <- lapply(sims[[ch_i]],function(x) sapply(x,function(y) y[samp_i]))
-
   }
 
   return(inits)

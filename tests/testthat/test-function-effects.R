@@ -13,8 +13,8 @@ test_that('picrust results gives similar results for ml and hmc',{
              prior=c('t','t','normal'),
              t_df=c(7,7),seed=123)))
   hmc_summary <- suppressMessages(suppressWarnings(extract(hmc)))
-  resume_orig <- suppressMessages(suppressWarnings(resume(hmc,init_type='orig',iters=50,chains=1,return_summary=TRUE,seed=123)))
-  resume_last <- suppressMessages(suppressWarnings(resume(hmc,init_type='last',iters=50,chains=1,return_summary=TRUE,seed=123)))
+  resume_orig <- suppressMessages(suppressWarnings(resume(hmc,init_type='orig',iters=50,chains=1,return_summary=TRUE)))
+  resume_last <- suppressMessages(suppressWarnings(resume(hmc,init_type='last',iters=50,chains=1,return_summary=TRUE)))
 
   expect_identical(unlist(lapply(hmc$model$summary[overlap],rownames)),
                    unlist(lapply(ml$model$summary[overlap],rownames)))
