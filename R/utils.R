@@ -226,6 +226,7 @@ sample_last <- function(fit,chains){
 
   fit_chains <- seq_len(fit@sim$chains)
   fit_samps <- seq(fit@sim$iter-chains+1,fit@sim$iter,1)
+  grid <- expand.grid(ch=fit_chains,s=fit_samps)[sample(nrow(grid)),]
 
   sims <- lapply(fit_chains,function(ch)
     utils::relist(fit@sim$samples[[ch]],skeleton=create_skel(fit@model_pars,fit@par_dims)))
@@ -233,17 +234,16 @@ sample_last <- function(fit,chains){
   inits <- vector(mode='list',length=chains)
   for (i in seq_len(chains)){
 
-    ch_i <- sample(fit_chains,1)
-    samp_i <- sample(fit_samps,1)
+    ch_i <- grid$ch[i]
+    samp_i <- grid$s[i]
 
-    inits[[ch_i]] <- lapply(sims[[ch_i]],function(x) sapply(x,function(y) y[samp_i]))
+    inits[[i]] <- lapply(sims[[ch_i]],function(x) sapply(x,function(y) y[samp_i]))
 
   }
 
   return(inits)
 
 }
-
 # rmvnorm from stm
 rmvnorm <- function(n,mu,Sigma,chol_Sigma=chol(Sigma)){
   E <- matrix(rnorm(n*length(mu)),n,length(mu))
