@@ -98,6 +98,7 @@ predict.topics <- function(object,
                        scalar=scalar,
                        drop=drop,...)
 
+  predictions[['seeds']] <- object$seeds
 
   class(predictions) <- 'functions'
   if (grepl('ko\\_',reference_path)){

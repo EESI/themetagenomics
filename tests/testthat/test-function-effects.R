@@ -1,4 +1,4 @@
-context("test function effects")
+context("function effects")
 
 Sys.setenv("R_TESTS" = "")
 

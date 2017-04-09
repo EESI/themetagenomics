@@ -39,7 +39,7 @@ download_ref <- function(destination,reference=c('all','gg_ko','gg_cog','silva_k
 
     if (overwrite==TRUE | !file.exists(file.path(destination,fn))){
 
-      cat(sprintf('Downloading %s.\n',fn))
+      if (verbose) cat(sprintf('Downloading %s.\n',fn))
 
       suppressWarnings(
       utils::download.file(sprintf('https://gitlab.com/sw1/themetagenomics_data/raw/master/%s',fn),
