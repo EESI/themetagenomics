@@ -82,10 +82,13 @@ Launch in interactive visualize to explore topic effects
   p(s|k) component, the covariate effects from the p(s|k) component, and
   their relationship with the raw taxonomic abundances. The covariate effects
   for each topic are shown as a scatterplot of posterior weights with error bars corresponding the
-  global approximation of uncertainty. If the covariate chosen is binary,
-  this reflects the mean difference between levels. For continuous covariates, the points
-  represent the mean regression weights (i.e., the posterior slope estimate of the
-  covariate). Colors indicate whether a given point was positive (red) or negative
+  global approximation of uncertainty. If the covariate chosen is binary, then the posterior regression
+  weights with uncertainty intervals are shown. This is analogous to the mean difference between factor
+  levels in the posterior predictive distribution. For continuous covariates, the points
+  again represent the mean regression weights (i.e., the posterior slope estimate of the
+  covariate). If, however, a spline or polynomial expansion was used, then the figure shows the posterior estimates of
+  the standard deviation of the predicted topic probabilities from the posterior predictive distribution.
+  Colors indicate whether a given point was positive (red) or negative
   (blue) and did not enclose 0 at a user defined uncertainty interval.
 
   The ordination figure maintains the color coding just decribed. The
@@ -130,9 +133,10 @@ Launch in interactive visualize to explore topic effects
   over taxa p(k|t) distribution from the STM, binary covariate effects from the p(s|k) component, and
   their relationship with the raw taxonomic abundances. The covariate effects
   for each topic are shown as a scatterplot of posterior weights with error bars corresponding the
-  global approximation of uncertainty. If the covariate chosen is binary,
-  this reflects the mean difference between levels. For continuous covariates, the points
-  represent the mean regression weights (i.e., the posterior slope estimate of the
+  global approximation of uncertainty. If the covariate chosen is binary, then the posterior regression
+  weights with uncertainty intervals are shown. This is analogous to the mean difference between factor
+  levels in the posterior predictive distribution. For continuous covariates, the points
+  again represent the mean regression weights (i.e., the posterior slope estimate of the
   covariate). Colors indicate whether a given point was positive (red) or negative
   (blue) and did not enclose 0 at a user defined uncertainty interval.
 
@@ -148,15 +152,14 @@ Launch in interactive visualize to explore topic effects
   over taxa p(k|t) distributions from the STM, binary and continuous covariate effects from the p(s|k) component, and
   their relationship with the raw taxonomic abundances. The covariate effects
   for each topic are shown as a scatterplot of posterior weights with error bars corresponding the
-  global approximation of uncertainty. If the covariate chosen is binary,
-  this reflects the mean difference between levels. For continuous covariates, the points
-  represent the mean regression weights (i.e., the posterior slope estimate of the
-  covariate). If, however, a spline or polynomial expansion was used, then the figure shows the estimated  Spearman rank
-  correlation between \eqn{\hat\theta} from the posterior predictive distribution and \eqn{\theta} for a given topic k.
-  Colors indicate whether a given point was positive (red) or negative
-  (blue) and did not enclose 0 at a user defined uncertainty interval.
+  global approximation of uncertainty. If the covariate chosen is binary, then the posterior regression
+  weights with uncertainty intervals are shown. This is analogous to the mean difference between factor
+  levels in the posterior predictive distribution. For continuous covariates, the points
+  again represent the mean regression weights (i.e., the posterior slope estimate of the
+  covariate). If, however, a spline or polynomial expansion was used, then the figure shows the posterior estimates of
+  the standard deviation of the predicted topic probabilities from the posterior predictive distribution.
 
-  Selecting a topic estimate generates three panels. The top panel shows the posterior predictive estimate of the
+  Selecting a topic estimate generates three panels. The top panel shows the posterior estimates of the
   selected continuous covariate. If binary covariates were present in the model formula, then the continuous effect
   given the binary covariate is shown as two regression lines, along with their corresponding uncertainty intervals.
   The points show the true p(k|s) values determined by the STM as a function of the selected continuous covariate.
@@ -172,10 +175,13 @@ Launch in interactive visualize to explore topic effects
   Integrates the taxa over topics p(t|k) and gene functions over topics p(g|k) distributions,
   along with and the covariate effects from the p(s|k) component. The covariate effects
   for each topic are shown as a scatterplot of posterior weights with error bars corresponding the
-  global approximation of uncertainty. If the covariate chosen is binary,
-  this reflects the mean difference between levels. For continuous covariates, the points
-  represent the mean regression weights (i.e., the posterior slope estimate of the
-  covariate). Colors indicate whether a given point was positive (red) or negative
+  global approximation of uncertainty. IIf the covariate chosen is binary, then the posterior regression
+  weights with uncertainty intervals are shown. This is analogous to the mean difference between factor
+  levels in the posterior predictive distribution. For continuous covariates, the points
+  again represent the mean regression weights (i.e., the posterior slope estimate of the
+  covariate). If, however, a spline or polynomial expansion was used, then the figure shows the posterior estimates of
+  the standard deviation of the predicted topic probabilities from the posterior predictive distribution.
+  Colors indicate whether a given point was positive (red) or negative
   (blue) and did not enclose 0 at a user defined uncertainty interval.
 
   The upper heatmap shows p(t|k), clustered via Wards method on a user chosen distance metric. Topics are ranked

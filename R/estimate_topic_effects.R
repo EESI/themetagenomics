@@ -177,26 +177,21 @@ est_topics_backend <- function(estimated_effects,theta,nsims=100,ui_level=.8,npo
     if (verbose) cat(sprintf('Making posterior predictions for %s.\n',cov_i))
 
     if (multiclasses$multiclass[i] == 'spline'){
+      # for splines, measure posterior sd to get an idea of just how nonlinear each topic is
       ppd <- make_ppd_x(estimated_effects,npoints=100)[[1]]
       for (k in seq_len(K)){
         ppd_beta <- ppd %*% t(sim_weights[[k]])
-        spearman <- vector(mode='double',length=ncol(ppd_beta))
-        for (j in seq_len(ncol(ppd_beta))){
-          spearman[j] <- cor(ppd_beta[,j],theta[,k],method='spearman')
-        }
-        est[k,] <- c(mean(spearman),quantile(spearman,c(ui_offset,1-ui_offset)))
+        ppd_sd <- apply(ppd_beta,2,sd)
+        est[k,] <- c(mean(ppd_sd),quantile(ppd_sd,c(ui_offset,1-ui_offset)))
       }
     }else{
+      # for non-spline continuous, measure posterior slopes
       for (j in seq_len(K)) est[j,] <- c(mean(sim_weights[[j]][,cov_i]),quantile(sim_weights[[j]][,cov_i],c(ui_offset,1-ui_offset)))
     }
 
     if (multiclasses$baseclass[i] == 'factor'){
-      ppd <- make_ppd_x(estimated_effects,covariate=cov_i,npoints=100)[[1]]
-      for (k in seq_len(K)){
-        ppd_beta <- ppd %*% t(sim_weights[[k]])
-        diff <- ppd_beta[2,] - ppd_beta[1,]             ### check this ###
-        est[k,] <- c(mean(diff),quantile(diff,c(ui_offset,1-ui_offset)))
-      }
+      # for factors, measure the covariate weight (same as ppd diff)
+      for (j in seq_len(K)) est[j,] <- c(mean(sim_weights[[j]][,cov_i]),quantile(sim_weights[[j]][,cov_i],c(ui_offset,1-ui_offset)))
     }
 
     if (multiclasses$baseclass[i] == 'numeric'){
@@ -220,8 +215,8 @@ est_topics_backend <- function(estimated_effects,theta,nsims=100,ui_level=.8,npo
           ppd <- make_ppd_x(estimated_effects,covariate=cov_i,mod=mod,npoints=100)
 
           for (k in seq_len(K)){
-            sims <- ppd[[1]] %*% t(sim_weights[[k]])
-            sims_switch <- ppd[[2]] %*% t(sim_weights[[k]])
+            sims <- ppd[[2]] %*% t(sim_weights[[k]])
+            sims_switch <- ppd[[1]] %*% t(sim_weights[[k]])
             fitted[[mod]][[k]] <- cbind(rowMeans(sims),
                                         t(apply(sims,1,function(x) quantile(x,c(ui_offset,1-ui_offset)))),
                                         cov_vals)

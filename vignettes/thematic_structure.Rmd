@@ -115,7 +115,9 @@ This object contains all of our covariate information, ranging from estimates an
 TOPIC_EFFECTS$topic_effects$`SiteUBERON:feces`$est
 ```
 
-The continuous covariate Day is treated somewhat differently, particularly because we used a spline. Our intention for these estimates was to guide the user during the visualizations. Say you had 100 topics, which one should you investigate first? We'll, that was the idea. For splines, because there are potentially so many weights and because they're nonlinear, it's difficult to simply obtain a single predicted value or slope that's meaningful. Instead, we do the following: for a given topic, we calculate the predicted topic probability for the values our covariate ranges over with all other covariates held fixed; we then calculate the *Spearman correlation coefficient* between our predicted probabilities to the probabilities we obtained directly from the topic model. This gives us an idea of which topics mapped to the best for a given topic, thanks to this particular covariate, informing us which topics to explore first. Here are the results:
+The continuous covariate Day is treated somewhat differently, particularly because we used a spline. Our intention for these estimates was to guide the user during the visualizations. Say you had 100 topics, which one should you investigate first? We'll, that was the idea. For splines, because there are potentially so many weights and because they're nonlinear, it's difficult to simply obtain a single predicted value or slope that's meaningful. Instead, we calculate the predicted 
+topic probabilities given samples from the posterior predictive distribution, spanning over the continuous covariates range. We then calcualte the standard
+deviation of these predictions, giving us an idea of the variation in the nonlinear fit. This informs us which topics to explore first. Here are the results:
 
 ```{r}
 TOPIC_EFFECTS$topic_effects$Day$est

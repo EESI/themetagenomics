@@ -1,4 +1,4 @@
-This is a submission 
+This is a submission (first release)
 
 ---
 
@@ -7,7 +7,7 @@ This is a submission
 * OS X Sierra (local machine): R 3.3.1
 * ubuntu 12.04 (travis-ci): R-release, R-devel
 * ubuntu 16.10 (local machine): R 3.3.2 
-* win-builder: R-release
+* win-builder: R-release, R-devel
 * windows 10 Pro (local machine): MRO 3.3.3
 
 ## R CMD check results
@@ -19,4 +19,4 @@ This is a submission
   
 ## Downstream dependencies
 
-* None (submission)
+* None (first release)
