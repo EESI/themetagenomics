@@ -137,7 +137,4 @@ t4f <- function(otu_table,rows_are_taxa,tax_table,reference_path,type=c('uproc',
   fxn_meta <- list(KEGG_Description=desc,KEGG_Pathways=pw)
 
   return(list(fxn_table=as.matrix(fxn_table),fxn_meta=fxn_meta,method_meta=t4f_meta))
-
-  # why do the references have 1 less row than the kegg id
-  # why RA normalize
 }

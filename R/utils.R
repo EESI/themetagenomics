@@ -93,21 +93,35 @@ make_ppd_x <- function(estimated_effects,covariate,mod,npoints=100){
     return(list(modelframe))
   }
 
-  if (attr(covariate,'multiclass') == 'spline'){
-    newdata <- metadata
-    newdata[[covariate]] <- seq(min(newdata[[covariate]]),max(newdata[[covariate]]),length.out=nrow(newdata))
-    modelframe <- stats::model.matrix(formula,data=newdata)
-    ppd_idx <- which(labels(modelframe)[[2]] %in% colnames(modelframe_full))
-    modelframe[,ppd_idx] <- matrix(rep(colMeans(modelframe[,ppd_idx,drop=FALSE]),nrow(modelframe)),nrow(modelframe),byrow=TRUE)
-  }
+  # if (attr(covariate, 'multiclass') == 'spline') {
+  #   newdata <- metadata
+  #   newdata[[covariate]] <- seq(min(newdata[[covariate]]),max(newdata[[covariate]]),length.out=nrow(newdata))
+  #   modelframe <- stats::model.matrix(formula,data=newdata)
+  #   ppd_idx <- which(labels(modelframe)[[2]] %in% colnames(modelframe_full))
+  #   modelframe[,ppd_idx] <- matrix(rep(colMeans(modelframe[,ppd_idx,drop=FALSE]),nrow(modelframe)),nrow(modelframe),byrow=TRUE)
+  # }
+  #
+  # if (attr(covariate,'baseclass') == 'numeric' & attr(covariate,'multiclass') != 'spline'){
+  #   newdata <- metadata
+  #   newdata[[covariate]] <- seq(min(newdata[[covariate]]),max(newdata[[covariate]]),length.out=nrow(newdata))
+  #   modelframe <- stats::model.matrix(formula,data=newdata)
+  #   if (ncol(modelframe) > 2)
+  #     modelframe[,colnames(modelframe) != covariate] <- matrix(rep(colMeans(modelframe[,colnames(modelframe) != covariate,drop=FALSE]),
+  #                                                                  nrow(modelframe)),nrow(modelframe),byrow=TRUE)
+  # }
 
-  if (attr(covariate,'baseclass') == 'numeric' & attr(covariate,'multiclass') != 'spline'){
+  if (attr(covariate,'baseclass') == 'numeric') {
     newdata <- metadata
-    newdata[[covariate]] <- seq(min(newdata[[covariate]]),max(newdata[[covariate]]),length.out=nrow(newdata))
+    newdata[,covariate] <- seq(min(newdata[[covariate]]),max(newdata[[covariate]]),length.out=nrow(newdata))
     modelframe <- stats::model.matrix(formula,data=newdata)
-    if (ncol(modelframe) > 2)
-      modelframe[,colnames(modelframe) != covariate] <- matrix(rep(colMeans(modelframe[,colnames(modelframe) != covariate,drop=FALSE]),
-                                                                          nrow(modelframe)),nrow(modelframe),byrow=TRUE)
+    others <- !grepl(sprintf('^%s$|[[:punct:]]%s[[:punct:]]',covariate,covariate),colnames(modelframe))
+    if (sum(others) > 1){
+      newmeta_avg <- colMeans(modelframe)
+      newmeta_avg <- matrix(newmeta_avg,nrow(modelframe),ncol(modelframe),byrow=TRUE,
+                            dimnames=dimnames(modelframe))
+      modelframe[,others] <- newmeta_avg[,others]
+    }
+
   }
 
   if (!missing(mod)){
