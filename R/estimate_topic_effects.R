@@ -196,7 +196,8 @@ est_topics_backend <- function(estimated_effects,theta,nsims=100,ui_level=.8,npo
 
     if (multiclasses$baseclass[i] == 'numeric'){
 
-      cov_vals <- seq(min(estimated_effects$data[[cov_i]]),max(estimated_effects$data[[cov_i]]),length.out=length(estimated_effects$data[[cov_i]]))
+      # cov_vals <- seq(min(estimated_effects$data[[cov_i]]),max(estimated_effects$data[[cov_i]]),length.out=length(estimated_effects$data[[cov_i]]))
+      cov_vals <- estimated_effects$data[[cov_i]]
 
       if (length(mods) > 0){
 
