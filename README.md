@@ -6,7 +6,7 @@
 Overview
 --------
 
-themetagenomics provides functions to explore topics generated from 16S rRNA sequencing information on both the abundance and functional levels. It also provides an R implementation of PICRUSt and wraps Tax4fun, giving users a choice for his or her function prediction strategy.
+themetagenomics provides functions to explore topics generated from 16S rRNA sequencing information on both the abundance and functional levels. It also provides an R implementation of PICRUSt and wraps Tax4fun, giving users a choice for their functional prediction strategy.
 
 Relevant Software and Literature
 --------------------------------
