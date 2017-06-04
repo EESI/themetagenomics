@@ -1,6 +1,6 @@
 Package: themetagenomics
 Title: A Topic Modeling Library for 16S rRNA Amplicon Data
-Version: 0.0.0.9000
+Version: 0.1.0
 Authors@R: c(
     person("Stephen", "Woloszynek", email = "sw424@drexel.edu", role = c("aut", "cre"))
     )
