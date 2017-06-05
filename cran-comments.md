@@ -14,6 +14,13 @@ This is a submission (first release)
 
 0 errors | 0 warnings | 0 notes
 
+## R build results
+
+travis.ci (OS X) returns the following for R 3.4.0:
+* ! LaTeX Error: File `inconsolata.sty' not found.
+
+## License 
+
 * License components with restrictions and base license permitting such:
   MIT + file LICENSE
   
