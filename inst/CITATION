@@ -1,21 +1,14 @@
-citHeader('To cite themetagenomics for publications, please use:')
+citHeader('To cite themetagenomics for publications, see https://github.com/eesi/themetagenomics
+for most recent information; otherwise, please use:')
 
 citEntry(
   entry='Article',
-  title = 'TBD',
+  title = 'Exploring thematic structure in 16S rRNA marker gene surveys',
   author = personList(as.person('Stephen Woloszynek'),
                       as.person('Joshua Chang Mell'),
                       as.person('Gideon Simpson'),
-                      as.person('Gail Rosen')),
-  journal = 'TBD',
+                      as.person('Gail L. Rosen')),
+  journal = 'bioRxiv',
   year = '2017',
-  volume = 'TBD',
-  number = 'TBD',
-  pages = 'TBD',
-  url = 'TBD',
-  doi = 'TBD',
-  textVersion = paste('Woloszynek, S., Mell, J.C., Simpson, G., and Rosen, G. (2017)',
-                      'TBD.',
-                      'TBD, TBD(TBD), TBD.',
-                      'TBD.')
+  doi = 'https://doi.org/10.1101/146126'
 )
