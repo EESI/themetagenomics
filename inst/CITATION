@@ -9,7 +9,8 @@ citEntry(
                       as.person('Gail L. Rosen')),
   journal = 'bioRxiv',
   year = '2017',
-  doi = 'https://doi.org/10.1101/146126',
+  doi = '10.1101/146126',
+  url = 'https://doi.org/10.1101/146126',
 
   textVersion =
   paste("Exploring thematic structure in 16S rRNA marker gene surveys.",
