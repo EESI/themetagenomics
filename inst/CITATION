@@ -1,5 +1,4 @@
-citHeader('To cite themetagenomics for publications, see https://github.com/eesi/themetagenomics
-for most recent information; otherwise, please use:')
+citHeader('To cite themetagenomics for publications, see https://github.com/eesi/themetagenomics for most recent information; otherwise, please use:')
 
 citEntry(
   entry='Article',
@@ -10,5 +9,11 @@ citEntry(
                       as.person('Gail L. Rosen')),
   journal = 'bioRxiv',
   year = '2017',
-  doi = 'https://doi.org/10.1101/146126'
+  doi = 'https://doi.org/10.1101/146126',
+
+  textVersion =
+  paste("Exploring thematic structure in 16S rRNA marker gene surveys.",
+  "Stephen Woloszynek, Joshua Chang Mell, Gideon Simpson, Gail L. Rosen.",
+  "bioRxiv 146126.",
+  "doi: https://doi.org/10.1101/146126.")
 )
