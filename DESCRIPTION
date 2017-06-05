@@ -1,5 +1,5 @@
 Package: themetagenomics
-Title: A Topic Modeling Library for 16S rRNA Amplicon Data
+Title: A Topic Model and Functional Prediction Library for 16S rRNA Amplicon Data
 Version: 0.1.0
 Authors@R: c(
     person("Stephen", "Woloszynek", email = "sw424@drexel.edu", role = c("aut", "cre"))
@@ -31,6 +31,7 @@ Imports:
   stats4,
   stm (>= 1.1.4),
 Suggests:
+  assertthat,
   covr,
   huge,
   igraph,
