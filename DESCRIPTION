@@ -1,11 +1,12 @@
 Package: themetagenomics
-Title: A Topic Model and Functional Prediction Library for 16S rRNA Amplicon Data
+Title: Exploring Thematic Structure and Predicted Functionality of 16S rRNA Amplicon Data 
 Version: 0.1.0
 Authors@R: c(
     person("Stephen", "Woloszynek", email = "sw424@drexel.edu", role = c("aut", "cre"))
     )
-Description: A library for performing topic modeling and functional prediction for 16S
-  rRNA surveys. You provide an abundance table, sample metadata, and taxonomy
+Description: themetagenomics provides a means to explore the structure of 16S
+  rRNA surveys using a Structual Topic Model coupled with functional prediction.
+  The user provides an abundance table, sample metadata, and taxonomy
   information, and themetagenomics infers associations between topics and sample
   features, as well as topics and predicted functional content. Functional prediction
   can be accomplished via Tax4Fun (for Silva references) and PICRUSt (for GreenGeenes
