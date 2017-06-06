@@ -4,13 +4,12 @@ Version: 0.1.0
 Authors@R: c(
     person("Stephen", "Woloszynek", email = "sw424@drexel.edu", role = c("aut", "cre"))
     )
-Description: themetagenomics provides a means to explore the structure of 16S
-  rRNA surveys using a Structural Topic Model coupled with functional prediction.
-  The user provides an abundance table, sample metadata, and taxonomy
-  information, and themetagenomics infers associations between topics and sample
-  features, as well as topics and predicted functional content. Functional prediction
-  can be accomplished via Tax4Fun (for Silva references) and PICRUSt (for GreenGeenes
-  references).
+Description: A means to explore the structure of 16S rRNA surveys using a Structural 
+  Topic Model coupled with functional prediction. The user provides an abundance 
+  table, sample metadata, and taxonomy information, and themetagenomics infers 
+  associations between topics and sample features, as well as topics and predicted 
+  functional content. Functional prediction can be accomplished via Tax4Fun (for 
+  Silva references) and PICRUSt (for GreenGeenes references).
 URL: http://github.com/EESI/themetagenomics
 BugReports: http://github.com/EESI/themetagenomics/issues
 License: MIT + file LICENSE
