@@ -25,7 +25,7 @@ This is a submission (first release)
 
 ## Resubmission 1
 
-* URLs: removed empty URLS; change biorxiv doi url to direct url; changed citation doi to biorxive url
+* URLs: removed empty URLS; change biorxiv doi url to direct url; changed citation doi to biorxiv url
 * Native routines and symbol search: ran package_native_routine_registration_skeleton() in R 3.4 and
   placed output in src/themetagenomics_init.c; added .registration = TRUE to useDynLib() in NAMESPACE
 * Examples: wrapped all examples exceeding 10s with \dontrun
