@@ -40,8 +40,9 @@ dat <- prepare_data(otu_table=GEVERS$OTU,rows_are_taxa=FALSE,tax_table=GEVERS$TA
                     metadata=GEVERS$META,formula=formula,refs=refs,
                     cn_normalize=TRUE,drop=TRUE)
 
-topics <- find_topics(dat,K=15)
 \dontrun{
+topics <- find_topics(dat,K=15)
+
 functions <- predict(topics,reference_path='/references/ko_13_5_precalculated.tab.gz')
 
 function_effects <- est(functions,level=3,
@@ -50,6 +51,6 @@ function_effects <- est(functions,level=3,
                         return_summary=FALSE)
 
 function_effects_summary <- extract(function_effects)
-                        }
+}
 
 }

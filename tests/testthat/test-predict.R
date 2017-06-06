@@ -2,6 +2,8 @@ context('prediction functions')
 
 test_that('picrust for cog and kegg both work',{
 
+  skip_on_cran()
+
   DAT <- readRDS(system.file('testdata','otudata.rds',package='themetagenomics'))
 
   x <- prepare_data(otu_table=DAT$OTU,

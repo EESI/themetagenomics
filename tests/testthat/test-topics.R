@@ -2,6 +2,8 @@ context('find topics')
 
 test_that('find_topics returns correct results for different params',{
 
+  skip_on_cran()
+
   DAT <- readRDS(system.file('testdata','otudata.rds',package='themetagenomics'))
 
   set.seed(423)

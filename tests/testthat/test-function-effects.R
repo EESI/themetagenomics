@@ -4,6 +4,8 @@ Sys.setenv("R_TESTS" = "")
 
 test_that('picrust results gives similar results for ml and hmc',{
 
+  skip_on_cran()
+
   DAT <- readRDS(system.file('testdata','otufuncdata.rds',package='themetagenomics'))
   overlap <- c('mu','phi','b_pw_sigma','b_topic_sigma','b_pwxtopic_sigma','b_pw','b_topic','b_pwxtopic','yhat')
 

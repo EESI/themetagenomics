@@ -106,7 +106,9 @@ dat <- prepare_data(otu_table=GEVERS$OTU,rows_are_taxa=FALSE,tax_table=GEVERS$TA
                     metadata=GEVERS$META,formula=formula,refs=refs,
                     cn_normalize=TRUE,drop=TRUE)
 
+\dontrun{
 topics <- find_topics(dat,K=15)
+}
 
 }
 \references{

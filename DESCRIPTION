@@ -10,8 +10,8 @@ Description: A library for performing topic modeling and functional prediction f
   features, as well as topics and predicted functional content. Functional prediction
   can be accomplished via Tax4Fun (for Silva references) and PICRUSt (for GreenGeenes
   references).
-URL: http://github.com/sw1/themetagenomics
-BugReports: http://github.com/sw1/themetagenomics/issues
+URL: http://github.com/EESI/themetagenomics
+BugReports: http://github.com/EESI/themetagenomics/issues
 License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: TRUE
