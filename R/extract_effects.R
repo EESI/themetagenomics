@@ -25,8 +25,9 @@ extract <- function(object,...) UseMethod('extract')
 #'                     metadata=GEVERS$META,formula=formula,refs=refs,
 #'                     cn_normalize=TRUE,drop=TRUE)
 #'
-#' topics <- find_topics(dat,K=15)
 #' \dontrun{
+#' topics <- find_topics(dat,K=15)
+#'
 #' functions <- predict(topics,reference_path='/references/ko_13_5_precalculated.tab.gz')
 #'
 #' function_effects <- est(functions,level=3,
@@ -35,7 +36,7 @@ extract <- function(object,...) UseMethod('extract')
 #'                         return_summary=FALSE)
 #'
 #' function_effects_summary <- extract(function_effects)
-#'                         }
+#' }
 #'
 #' @export
 extract.effects <- function(object,...){

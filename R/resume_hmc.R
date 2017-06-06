@@ -46,15 +46,16 @@ NULL
 #'                     metadata=GEVERS$META,formula=formula,refs=refs,
 #'                     cn_normalize=TRUE,drop=TRUE)
 #'
-#' topics <- find_topics(dat,K=15)
 #' \dontrun{
+#' topics <- find_topics(dat,K=15)
+#'
 #' functions <- predict(topics,reference_path='/references/ko_13_5_precalculated.tab.gz')
 #'
 #' function_effects_init <- est(functions,level=3,iters=150,
 #'                              prior=c('laplace','t','laplace'))
 #' function_effects <- resume(function_effects_init,init_type='last',
 #'                            iters=300,chains=4)
-#'                            }
+#' }
 #'
 #' @export
 resume <- function(object,...) UseMethod('resume')

@@ -10,9 +10,9 @@ themetagenomics provides functions to explore topics generated from 16S rRNA seq
 Relevant Software and Literature
 --------------------------------
 
-[Stephen Woloszynek, Joshua Chang Mell, Gideon Simpson, and Gail Rosen. Exploring thematic structure in 16S rRNA marker gene surveys. 2017. bioRxiv 146126; doi: https://doi.org/10.1101/146126](https://doi.org/10.1101/146126)
+[Stephen Woloszynek, Joshua Chang Mell, Gideon Simpson, and Gail Rosen. Exploring thematic structure in 16S rRNA marker gene surveys. 2017. bioRxiv 146126; doi: https://doi.org/10.1101/146126](http://biorxiv.org/content/early/2017/06/05/146126.article-info)
 
-[Stephen Woloszynek, Zhengqiao Zhao, Gideon Simpson, Joshua Chang Mell, and Gail Rosen. Gauging the use of topic models as a means to understand microbiome data structure. TBD, 2017](http://)
+Stephen Woloszynek, Zhengqiao Zhao, Gideon Simpson, Joshua Chang Mell, and Gail Rosen. Gauging the use of topic models as a means to understand microbiome data structure. TBD, 2017
 
 [Margaret E. Roberts, Brandon M. Stewart, and Dustin Tingley (2017). stm: R Package for Structural Topic Models, 2016.](http://www.structuraltopicmodel.com)
 

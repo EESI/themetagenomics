@@ -69,8 +69,10 @@
 #'                     metadata=GEVERS$META,formula=formula,refs=refs,
 #'                     cn_normalize=TRUE,drop=TRUE)
 #'
+#' \dontrun{
 #' topics <- find_topics(dat,K=15)
 #' topic_effects <- est(topics)
+#' }
 #'
 #' @aliases est_topics est.topics
 #'

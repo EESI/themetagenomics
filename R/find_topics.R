@@ -92,7 +92,9 @@ NULL
 #'                     metadata=GEVERS$META,formula=formula,refs=refs,
 #'                     cn_normalize=TRUE,drop=TRUE)
 #'
+#' \dontrun{
 #' topics <- find_topics(dat,K=15)
+#' }
 #'
 #' @export
 find_topics <- function(themetadata_object,K,sigma_prior=0,model=NULL,iters=500,
