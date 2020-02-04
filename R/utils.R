@@ -36,7 +36,7 @@ create_modelframe <- function(formula,metadata,refs){
 
     term <- term_names[i]
 
-    if (class(metadata[,term]) != 'factor'){
+    if (class(metadata[,term])[1] != 'factor'){
       tmp <- metadata[term]
       tmp <- stats::model.matrix(stats::as.formula(paste0('~',term)),tmp)
       cnames <- c(cnames,colnames(tmp)[-1])
@@ -146,7 +146,7 @@ create_multiclasses_table <- function(modelframe,modelframe_full,splines=NULL){
 
   })
 
-  if (class(multiclasses) == 'list'){
+  if (class(multiclasses)[1] == 'list'){
     out <- cbind(full=names(sapply(modelframe_full,class)),
                  do.call('rbind',multiclasses))
     rownames(out) <- NULL

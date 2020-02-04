@@ -323,7 +323,7 @@ vis.taxa <- function(object,taxa_bar_n=30,top_n=7,method=c('huge','simple'),corr
 
          p <- 30
          d <- try(Rtsne::Rtsne(beta,3,theta=.5,perplexity=p),silent=TRUE)
-         while(class(d) == 'try-error'){
+         while(class(d)[1] == 'try-error'){
            p <- p-1
            d <- try(Rtsne::Rtsne(beta,3,theta=.5,perplexity=p),silent=TRUE)
          }

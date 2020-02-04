@@ -4,7 +4,7 @@ NULL
 #' @export
 print.topics <- function(x,...){
   cat(sprintf('A %s object containing a topic model with %s topics, %s samples and %s discrete taxa.\n',
-              class(x),
+              class(x)[1],
               x$fit$settings$dim$K,
               x$fit$settings$dim$N,
               x$fit$settings$dim$V))
@@ -14,12 +14,12 @@ print.topics <- function(x,...){
 print.effects <- function(x,...){
 
   if (attr(x,'type') == 'topics'){
-    cat(sprintf('An %s object containing topic effects information.\n',class(x)))
+    cat(sprintf('An %s object containing topic effects information.\n',class(x)[1]))
 
     cat(sprintf('\n%s total covariate(s):\n',ncol(x$modelframe)))
     mf <- x$modelframe
     for (i in seq_len(ncol(x$modelframe))){
-      cl <- class(mf[[i]])
+      cl <- class(mf[[i]])[1]
       if (cl == 'numeric'){
         cat(sprintf('%s\t%s (mean=%.02f, median=%.02f, std=%.02f)\n',
                     cl,
@@ -55,7 +55,7 @@ print.effects <- function(x,...){
 
     if (attr(x,'method') == 'hmc'){
       cat(sprintf('An %s object containing function effects information fit via %s.\n',
-                  class(x),
+                  class(x)[1],
                   attr(x,'method')))
 
       cat(sprintf('%s pathways span %s topics. %s parameters were flagged with Rhat > 1.1 after %s iterations with a %s iteration warmup. The seed for this fit is %s.\n',
@@ -72,7 +72,7 @@ print.effects <- function(x,...){
 
     if (attr(x,'method') == 'ml'){
       cat(sprintf('An %s object containing function effects information fit via %s.\n',
-                  class(x),
+                  class(x)[1],
                   attr(x,'method')))
 
       cat(sprintf('%s pathways span %s topics. The model was run using %s with %s iterations.\n',

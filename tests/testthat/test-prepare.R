@@ -8,13 +8,13 @@ test_that('prepare_data works with no formula',{
                     rows_are_taxa=FALSE,
                     cn_normalize=TRUE,
                     drop=TRUE)
-  expect_identical(list('matrix',NULL,NULL,NULL,NULL,NULL,NULL),c(class(x[[1]]),unname(x[2:7])))
+  expect_identical(list('matrix',NULL,NULL,NULL,NULL,NULL,NULL),c(class(x[[1]])[1],unname(x[2:7])))
 
   x <- prepare_data(otu_table=DAVID$ABUND,
                     rows_are_taxa=FALSE,
                     cn_normalize=FALSE,
                     drop=TRUE)
-  expect_identical(list('matrix',NULL,NULL,NULL,NULL,NULL,NULL),c(class(x[[1]]),unname(x[2:7])))
+  expect_identical(list('matrix',NULL,NULL,NULL,NULL,NULL,NULL),c(class(x[[1]])[1],unname(x[2:7])))
 
   expect_warning(prepare_data(otu_table=DAVID$ABUND,
                               rows_are_taxa=FALSE,

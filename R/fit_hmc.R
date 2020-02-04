@@ -147,7 +147,7 @@ est.hmc <- function(object,inits,prior=c('t','normal','laplace'),t_df=c(7,7,7),i
                                                      b_topic=unlist(ranef(mm_init)$topic),
                                                      b_pwxtopic=unlist(ranef(mm_init)$pwxtopic)))
 
-  }else if (class(inits) == 'glmerMod'){
+  }else if (class(inits)[1] == 'glmerMod'){
 
     inits <- lapply(seq_len(chains),function(x) list(mu=fixef(inits),
                                                      phi=getME(inits,'glmer.nb.theta'),
@@ -155,7 +155,7 @@ est.hmc <- function(object,inits,prior=c('t','normal','laplace'),t_df=c(7,7,7),i
                                                      b_topic=unlist(ranef(inits)$topic),
                                                      b_pwxtopic=unlist(ranef(inits)$pwxtopic)))
 
-  }else if (class(inits) == 'list'){
+  }else if (class(inits)[1] == 'list'){
 
     inits <- inits[names(inits) %in% c('mu','phi','b_pw','b_topic','b_pwxtopic')]
 

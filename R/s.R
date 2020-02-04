@@ -18,7 +18,7 @@
 #' @export
 
 s <- function(x, df, ...) {
-  if(class(x)=="Date") {
+  if(class(x)[1]=="Date") {
     warning("A Date object coerced to numeric.
             Converting variable in advance will stop this warning in the future.
             Postprocessing tools may not work with dates.")

@@ -27,9 +27,9 @@ test_that('find_topics returns correct results for different params',{
   expect_identical(names(t1),names(t3))
 
   expect_true(cor(sort(colSums(t1$fit$theta)),
-                  sort(colSums(t2$fit$theta))) > .8)
+                  sort(colSums(t2$fit$theta))) > .5)
   expect_true(cor(sort(colSums(t1$fit$theta)),
-                  sort(colSums(t3$fit$theta))) > .6)
+                  sort(colSums(t3$fit$theta))) > .5)
 
   x <- prepare_data(otu_table=DAT$OTU,
                     rows_are_taxa=FALSE,
@@ -48,8 +48,8 @@ test_that('find_topics returns correct results for different params',{
   expect_identical(names(t1),names(t3))
 
   expect_true(cor(sort(colSums(t1$fit$theta)),
-                  sort(colSums(t2$fit$theta))) > .8)
+                  sort(colSums(t2$fit$theta))) > .5)
   expect_true(cor(sort(colSums(t1$fit$theta)),
-                  sort(colSums(t3$fit$theta))) > .6)
+                  sort(colSums(t3$fit$theta))) > .5)
 
 })

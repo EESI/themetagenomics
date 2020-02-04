@@ -157,7 +157,7 @@ vis.binary <- function(object,taxa_grp_n=7,...){
                                 sample=rep(colnames(otu_subset),each=nrow(otu_subset))),
                      silent=TRUE)
 
-          validate(need(!(class(df1) == 'try-error'),'Too many points filtered. Lower the minimum beta probability.'))
+          validate(need(!(class(df1)[1] == 'try-error'),'Too many points filtered. Lower the minimum beta probability.'))
 
           df1$covariate <- metadata[df1$sample,EST()$covariate]
           df1$covariate <- factor(df1$covariate,levels=EST()$cov_names,ordered=TRUE)
@@ -228,7 +228,7 @@ vis.binary <- function(object,taxa_grp_n=7,...){
 
         },silent=TRUE)
 
-        validate(need(!(class(df_tax) == 'try-error'),'Too few or no points selected. Drag select points in the ribbon plots.'))
+        validate(need(!(class(df_tax)[1] == 'try-error'),'Too few or no points selected. Drag select points in the ribbon plots.'))
 
         p_tax <- ggplot(df_tax,aes_(~taxon,~abundance,fill=~cov)) +
           geom_bar(color='black',stat='identity',position='dodge') +
