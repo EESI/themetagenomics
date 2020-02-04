@@ -1,6 +1,6 @@
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
-[![Build Status](https://travis-ci.com/sw1/themetagenomics.svg?token=8r1TnJBy8TyidNrmbPpa&branch=master)](https://travis-ci.com/sw1/themetagenomics) [![codecov](https://codecov.io/gh/sw1/themetagenomics/branch/master/graph/badge.svg?token=pmjXMfuHrw)](https://codecov.io/gh/sw1/themetagenomics) [![CRAN\_Status\_Badge](http://www.r-pkg.org/badges/version/themetagenomics)](https://cran.r-project.org/package=themetagenomics)
+[![Build Status](https://travis-ci.com/sw1/themetagenomics.svg?token=8r1TnJBy8TyidNrmbPpa&branch=master)](https://travis-ci.com/sw1/themetagenomics) [![codecov](https://codecov.io/gh/sw1/themetagenomics/branch/master/graph/badge.svg)](https://codecov.io/gh/sw1/themetagenomics) [![CRAN\_Status\_Badge](http://www.r-pkg.org/badges/version/themetagenomics)](https://cran.r-project.org/package=themetagenomics)
 
 Overview
 --------
