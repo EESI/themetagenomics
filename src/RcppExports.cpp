@@ -7,7 +7,7 @@ using namespace Rcpp;
 
 // picrust_otu
 List picrust_otu(std::string file_path, StringVector otu_id_targets);
-RcppExport SEXP themetagenomics_picrust_otu(SEXP file_pathSEXP, SEXP otu_id_targetsSEXP) {
+RcppExport SEXP _themetagenomics_picrust_otu(SEXP file_pathSEXP, SEXP otu_id_targetsSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -16,4 +16,14 @@ BEGIN_RCPP
     rcpp_result_gen = Rcpp::wrap(picrust_otu(file_path, otu_id_targets));
     return rcpp_result_gen;
 END_RCPP
+}
+
+static const R_CallMethodDef CallEntries[] = {
+    {"_themetagenomics_picrust_otu", (DL_FUNC) &_themetagenomics_picrust_otu, 2},
+    {NULL, NULL, 0}
+};
+
+RcppExport void R_init_themetagenomics(DllInfo *dll) {
+    R_registerRoutines(dll, NULL, CallEntries, NULL, NULL);
+    R_useDynamicSymbols(dll, FALSE);
 }

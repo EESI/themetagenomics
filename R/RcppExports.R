@@ -23,6 +23,6 @@
 #' \item{pimeta_table_out}{Numeric matrix of method specific metadata (NSTI)}
 #' }
 picrust_otu <- function(file_path, otu_id_targets) {
-    .Call('themetagenomics_picrust_otu', PACKAGE = 'themetagenomics', file_path, otu_id_targets)
+    .Call(`_themetagenomics_picrust_otu`, file_path, otu_id_targets)
 }
 

@@ -66,12 +66,20 @@ prepare_data <- function(otu_table,rows_are_taxa,tax_table,metadata,formula,refs
     stop('Count table must contain counts (non-negative integers) and hence cannot be normalized.')
   if (is.null(colnames(otu_table)) | is.null(rownames(otu_table)))
     stop('otu_table must contain appropriate row and column names.')
-  if (!missing(tax_table))
+  if (!missing(tax_table)){
     if (is.null(colnames(tax_table)) & is.null(rownames(tax_table)))
       stop('tax_table must contain appropriate row and column names.')
+    if (!rows_are_taxa){
+      if (substr(colnames(otu_table)[1],1,1) == 'X' & substr(colnames(tax_table)[1],1,1) != 'X'){
+        warning('otu_table taxa names may have a leading X. Renaming.')
+        colnames(otu_table) <- gsub('^X','',colnames(otu_table))
+      }
+    }
+  }
   if (!missing(metadata))
     if (is.null(colnames(metadata)) & is.null(rownames(metadata)))
       stop('metadata must contain appropriate row and column names.')
+
 
   slots <- list(otu_table=NULL,
                 tax_table=NULL,
@@ -85,7 +93,12 @@ prepare_data <- function(otu_table,rows_are_taxa,tax_table,metadata,formula,refs
   splines <- NULL
   class(slots) <- 'themetadata'
 
-  if (rows_are_taxa) otu_table <- t(otu_table)
+  if (rows_are_taxa) {
+    otu_table <- t(otu_table)
+  }else{
+    if (!is.matrix(otu_table)) otu_table <- as.matrix(otu_table)
+  }
+
 
   miss <- list()
   if (missing(tax_table)) miss$tax_table <- TRUE else miss$tax_table <- FALSE
