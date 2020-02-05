@@ -1,8 +1,7 @@
 language: r
-dist: trusty
 sudo: required
 cache: packages
-warnings_are_errors: true
+warnings_are_errors: false
 r:
   - release
   - devel
@@ -27,15 +26,11 @@ r_binary_packages:
  - rstan
  - stm
 
-#r_packages:
-# - rstan
-# - stm
-
-r_github_packages:
-  - hadley/assertthat
-  - hadley/testthat
-  - jimhester/covr
-  - kbenoit/quanteda
+r_packages:
+ - assertthat
+ - testthat
+ - covr
+ - quanteda
 
 env:
   global:
@@ -52,14 +47,3 @@ after_success:
 
 after_failure:
   - cat themetagenomics.Rcheck/00*
-
-notifications:
-  email:
-    on_success: never
-    on_failure: change
-  slack:
-    rooms:
-      secure: "blIfobo0Df34Mpu3mqEskoRHVqkmHZOpqd7ORladqcWRvjoBYOwCgFZUF4ohXSVCuCYc9sSBkyiFRkV1VlgfAc9jTzK5/3qeyTCuNg4bEkeOp1Apbza26ul4qa5Iyaj1E23jWECnAUahrDq4P//8GwYTnvb987z2hZ/Do3vtA/N0a/VRbM60gAIrgn2Lbs6Y0MDQ/s6t870auVuk9ROZ99Hn1+UKPpaAv3YaZRJvWep6D8FTg9sIHt4UjIxK+HA/3yDXrg62//riiWbuO4A02ezsODWLk4+fOieQV4CcOK4kSjYb41WlynjaxJ4afg/71ksaFD2F1w25OxZgYb+bdBIIDGdsVmzunQ2WQWnl+NmEOz/SfvhvYXz2Ut3Xhq9DWXHGYpeIuH3/jj4cUWmKEHQ8921ZdiJYyNTLFF6OUOYzIuvx9C1Is8Q/H5p1VCf1t6McPV+pIiGwQJ3QtXBuEMs0JruBWmJiogNUbj+gEIRrH51lx6ANR8pCTc+wg3ZgJFcfskJ6Qj8rjPSl4Z8VAL3dvaqJjMwmKzhQuaFrhST4BVIzgltohQo3CdInVGQJb1/gA6bZfX7yKJMBegmkCpfcEOAfeJuw8/lv1SoPfV0t6fD0fmOZrgrtl1tebVpqVtJpxhmP0NPQYze8jyx3pwCCFA2ZwX+dTK0G+uBxWb4="
-    on_success: always
-    on_failure: always
-    on_pull_requests: true
