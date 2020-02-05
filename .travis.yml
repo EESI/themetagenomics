@@ -28,9 +28,9 @@ r_binary_packages:
 
 r_packages:
  - assertthat
- - testthat
  - covr
  - quanteda
+ - testthat
 
 env:
   global:
