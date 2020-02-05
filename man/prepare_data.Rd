@@ -4,9 +4,18 @@
 \alias{prepare_data}
 \title{Prepare themetadata object from data for topic modeling pipeline}
 \usage{
-prepare_data(otu_table, rows_are_taxa, tax_table, metadata, formula, refs,
-  cn_normalize = TRUE, drop = TRUE,
-  seed = sample.int(.Machine$integer.max, 1), verbose = FALSE)
+prepare_data(
+  otu_table,
+  rows_are_taxa,
+  tax_table,
+  metadata,
+  formula,
+  refs,
+  cn_normalize = TRUE,
+  drop = TRUE,
+  seed = sample.int(.Machine$integer.max, 1),
+  verbose = FALSE
+)
 }
 \arguments{
 \item{otu_table}{(required) Matrix or dataframe containing taxa abundances

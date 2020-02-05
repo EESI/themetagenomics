@@ -14,22 +14,47 @@
 \usage{
 vis(object, ...)
 
-\method{vis}{effects}(object, topic_effects, type = c("taxa", "binary",
-  "continuous", "functions"), seed = object$seed$next_seed, ...)
+\method{vis}{effects}(
+  object,
+  topic_effects,
+  type = c("taxa", "binary", "continuous", "functions"),
+  seed = object$seed$next_seed,
+  ...
+)
 
 \method{vis}{binary}(object, taxa_grp_n = 7, ...)
 
 \method{vis}{continuous}(object, lambda_step = 0.1, taxa_reg_n = 8, ...)
 
-\method{vis}{functions}(object, topic_effects, beta_min = 1e-05,
-  ui_level = 0.8, gene_min = 0, pw_min = 20, ...)
+\method{vis}{functions}(
+  object,
+  topic_effects,
+  beta_min = 1e-05,
+  ui_level = 0.8,
+  gene_min = 0,
+  pw_min = 20,
+  ...
+)
 
-\method{vis}{taxa}(object, taxa_bar_n = 30, top_n = 7, method = c("huge",
-  "simple"), corr_thresh = 0.01, lambda_step = 0.01, ...)
+\method{vis}{taxa}(
+  object,
+  taxa_bar_n = 30,
+  top_n = 7,
+  method = c("huge", "simple"),
+  corr_thresh = 0.01,
+  lambda_step = 0.01,
+  ...
+)
 
-\method{vis}{topics}(object, taxa_bar_n = 30, top_n = 7,
-  method = c("huge", "simple"), corr_thresh = 0.01, lambda_step = 0.01,
-  ...)
+\method{vis}{topics}(
+  object,
+  taxa_bar_n = 30,
+  top_n = 7,
+  method = c("huge", "simple"),
+  corr_thresh = 0.01,
+  lambda_step = 0.01,
+  ...
+)
 }
 \arguments{
 \item{object}{(required) Output of \code{\link{find_topics}}, or

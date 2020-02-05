@@ -20,9 +20,7 @@ provides an R implementation of PICRUSt and wraps Tax4fun, giving users a choice
 
 ## Relevant Software and Literature
 
-[Stephen Woloszynek, Joshua Chang Mell, Gideon Simpson, and Gail Rosen. Exploring thematic structure in 16S rRNA marker gene surveys. 2017. bioRxiv 146126; doi: https://doi.org/10.1101/146126](http://biorxiv.org/content/early/2017/06/05/146126.article-info)
-
-Stephen Woloszynek, Zhengqiao Zhao, Gideon Simpson, Joshua Chang Mell, and Gail Rosen. Gauging the use of topic models as a means to understand microbiome data structure. TBD, 2017
+[Stephen Woloszynek, Joshua Chang Mell, Zhengqiao Zhao, Gideon Simpson, Michael P. O'Connor, and Gail Rosen. Exploring thematic structure and predicted functionality of 16S rRNA amplicon data. 2019. PLoS ONE 14(12); doi: https://doi.org/10.1371/journal.pone.0219235](https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0219235)
 
 [Margaret E. Roberts, Brandon M. Stewart, and Dustin Tingley (2017). stm: R Package for Structural Topic Models, 2016.](http://www.structuraltopicmodel.com)
 

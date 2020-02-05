@@ -4,8 +4,14 @@
 \alias{est_topics_backend}
 \title{Backend to extract effects for \code{\link{est.topics}}.}
 \usage{
-est_topics_backend(estimated_effects, theta, nsims = 100, ui_level = 0.8,
-  npoints = 100, verbose = FALSE)
+est_topics_backend(
+  estimated_effects,
+  theta,
+  nsims = 100,
+  ui_level = 0.8,
+  npoints = 100,
+  verbose = FALSE
+)
 }
 \description{
 Backend to extract effects for \code{\link{est.topics}}.

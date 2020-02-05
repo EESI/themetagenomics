@@ -7,9 +7,16 @@
 \alias{predict_topics}
 \title{Predict topic functional content}
 \usage{
-\method{predict}{topics}(object, reference = c("gg_ko", "gg_cog", "silva_ko"),
-  reference_path, scalar = 100, cn_normalize = FALSE,
-  sample_normalize = FALSE, drop = TRUE, ...)
+\method{predict}{topics}(
+  object,
+  reference = c("gg_ko", "gg_cog", "silva_ko"),
+  reference_path,
+  scalar = 100,
+  cn_normalize = FALSE,
+  sample_normalize = FALSE,
+  drop = TRUE,
+  ...
+)
 }
 \arguments{
 \item{object}{(required) Output of \code{\link{find_topics}}.}

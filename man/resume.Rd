@@ -7,10 +7,19 @@
 \usage{
 resume(object, ...)
 
-\method{resume}{effects}(object, init_type = c("last", "orig"), inits, iters,
-  warmup = iters/2, chains = 1, cores = 1,
-  seed = object$seeds$next_seed, return_summary = TRUE, verbose = FALSE,
-  ...)
+\method{resume}{effects}(
+  object,
+  init_type = c("last", "orig"),
+  inits,
+  iters,
+  warmup = iters/2,
+  chains = 1,
+  cores = 1,
+  seed = object$seeds$next_seed,
+  return_summary = TRUE,
+  verbose = FALSE,
+  ...
+)
 }
 \arguments{
 \item{object}{(required) Ouput of \code{\link{est.functions}}.}

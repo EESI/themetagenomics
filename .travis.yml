@@ -4,12 +4,13 @@ sudo: required
 cache: packages
 warnings_are_errors: true
 r:
-  - release #3.4.0
-  #- devel
+  - release
+  - devel
 
 os:
   - linux
   - osx
+  - windows
 
 latex: true
 
@@ -23,10 +24,12 @@ r_binary_packages:
  - Rcpp
  - scales
  - shiny
-
-r_packages:
  - rstan
  - stm
+
+#r_packages:
+# - rstan
+# - stm
 
 r_github_packages:
   - hadley/assertthat

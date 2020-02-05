@@ -4,9 +4,15 @@
 \alias{picrust}
 \title{Predict OTU functional content via PICRUSt}
 \usage{
-picrust(otu_table, rows_are_taxa, reference = c("gg_ko", "gg_cog"),
-  reference_path, cn_normalize = FALSE, sample_normalize = FALSE,
-  drop = TRUE)
+picrust(
+  otu_table,
+  rows_are_taxa,
+  reference = c("gg_ko", "gg_cog"),
+  reference_path,
+  cn_normalize = FALSE,
+  sample_normalize = FALSE,
+  drop = TRUE
+)
 }
 \arguments{
 \item{otu_table}{(required) Matrix or dataframe containing taxa abundances

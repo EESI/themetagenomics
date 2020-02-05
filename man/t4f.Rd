@@ -4,9 +4,19 @@
 \alias{t4f}
 \title{Predict taxonomic functional content via tax4fun}
 \usage{
-t4f(otu_table, rows_are_taxa, tax_table, reference_path, type = c("uproc",
-  "pauda"), short = TRUE, cn_normalize = FALSE, sample_normalize = FALSE,
-  scalar, drop = TRUE, verbose = FALSE)
+t4f(
+  otu_table,
+  rows_are_taxa,
+  tax_table,
+  reference_path,
+  type = c("uproc", "pauda"),
+  short = TRUE,
+  cn_normalize = FALSE,
+  sample_normalize = FALSE,
+  scalar,
+  drop = TRUE,
+  verbose = FALSE
+)
 }
 \arguments{
 \item{otu_table}{(required) Matrix or dataframe containing taxa abundances

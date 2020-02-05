@@ -4,10 +4,20 @@
 \alias{find_topics}
 \title{Perform topic estimation on a themetadata object}
 \usage{
-find_topics(themetadata_object, K, sigma_prior = 0, model = NULL,
-  iters = 500, tol = 1e-05, batches = 1, init_type = c("Spectral",
-  "LDA", "Random"), seed = themetadata_object$seed, verbose = FALSE,
-  verbose_n = 5, control = list())
+find_topics(
+  themetadata_object,
+  K,
+  sigma_prior = 0,
+  model = NULL,
+  iters = 500,
+  tol = 1e-05,
+  batches = 1,
+  init_type = c("Spectral", "LDA", "Random"),
+  seed = themetadata_object$seed,
+  verbose = FALSE,
+  verbose_n = 5,
+  control = list()
+)
 }
 \arguments{
 \item{themetadata_object}{(required) Ouput of \code{\link{prepare_data}}.}

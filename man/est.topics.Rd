@@ -5,9 +5,18 @@
 \alias{est_topics}
 \title{Estimate topic effects}
 \usage{
-\method{est}{topics}(object, metadata, formula, refs, nsims = 100,
-  ui_level = 0.8, npoints = 100, seed = object$seeds$next_seed,
-  verbose = FALSE, ...)
+\method{est}{topics}(
+  object,
+  metadata,
+  formula,
+  refs,
+  nsims = 100,
+  ui_level = 0.8,
+  npoints = 100,
+  seed = object$seeds$next_seed,
+  verbose = FALSE,
+  ...
+)
 }
 \arguments{
 \item{object}{(required) Ouput of \code{\link{find_topics}}.}
