@@ -7,7 +7,7 @@
 #'
 #' @param object (required) Ouput of \code{\link{predict.topics}}.
 #' @param topics_subset Vector of topic indexes to be evaluated. Recommended to be < 25.
-#' @param level Gene category level to evalulate. Defaults to 2.
+#' @param level Gene category level to evaluate. Defaults to 2.
 #' @param method String indicating either ml or hmc. Defaults to hmc.
 #' @param seed Seed for the random number generator to reproduce previous
 #'   results.
@@ -40,7 +40,7 @@
 #' desired. For the latter, each variance term is given an additional regularization parameter
 #' \eqn{\lambda} which in turn is distributed by a \eqn{chi-squared(1)} distribution.
 #'
-#' Unless a set of initization values are provided by the user, or the user chooses to select a random
+#' Unless a set of initialization values are provided by the user, or the user chooses to select a random
 #' initialization procedure, initial values are set at the maximum likelihood estimate via
 #' \code{\link[lme4]{glmer.nb}}, but at a far smaller number of iterations than had the user chosen
 #' ML as his or her estimation method.}

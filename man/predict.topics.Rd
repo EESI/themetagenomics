@@ -26,7 +26,7 @@ Defaults to gg_ko.}
 
 \item{reference_path}{Folder path of the reference file}
 
-\item{scalar}{Value for scaling the topics over taxa distrubution
+\item{scalar}{Value for scaling the topics over taxa distribution
 to predicted counts. Defaults to 100.}
 
 \item{cn_normalize}{Logical flag for performing 16S rRNA copy number

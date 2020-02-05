@@ -38,7 +38,7 @@
 #' distribution by holding all covariates other than the target covariate fixed. This is accomplished by
 #' marginalizing over the sample data. This fixed design matrix is then multiplied by the weights simulated
 #' from the multivariate normal distribution. For a target binary covariate x (which includes expanded factors),
-#' effect estimates are defined as the difference between y-hat when x=1 and y-hat when x=0 is calcuated, with the reference
+#' effect estimates are defined as the difference between y-hat when x=1 and y-hat when x=0 is calculated, with the reference
 #' covariate designated as 1 (hence negative differences imply a strong effect for the reference class). For
 #' continuous covariates, the effect estimates are defined as the regression weight for that covariate of interest.
 #' To explore the posterior predictive distribution, y-hat is again calculated, but over a vector of values spanning the

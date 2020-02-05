@@ -5,9 +5,9 @@ This is a submission (first release)
 ## Test environments
 * OSX (travis-ci): R-release (3.6.2) [2/4/2020]
 * ubuntu (travis-ci): R-release (3.6.2) [2/4/2020]
-* win (travis-ci): R-release (3.6.2) [2/4/2020]
 * ubuntu 16.10 (local machine): R 3.6.2
-* win-builder: R-release (3.6.1), R-devel (4.0.0) [2/4/2020]
+* win-builder: R-release (3.6.1) [2/5/2020]
+* win-builder: R-devel (4.0.0) [2/5/2020]
 
 ## R CMD check results
 

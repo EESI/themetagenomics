@@ -83,12 +83,12 @@ distribution to set to 0. Defaults to 1e-5.}
 
 \item{gene_min}{Mininum count for gene set table. Defaults to 0.}
 
-\item{pw_min}{Maximium number of pathways to show in heatmap. for Defaults to 20.}
+\item{pw_min}{Maximum number of pathways to show in heatmap. for Defaults to 20.}
 
 \item{taxa_bar_n}{Number of taxa to show in the frequency bar plot.
 Defaults to 30.}
 
-\item{top_n}{Number of taxonic groups to colorize in the frequency
+\item{top_n}{Number of taxonomic groups to colorize in the frequency
 bar plot. Defaults to 7.}
 
 \item{method}{Method for estimating topic correlations links.
@@ -116,7 +116,7 @@ Launch in interactive visualize to explore topic effects
   Colors indicate whether a given point was positive (red) or negative
   (blue) and did not enclose 0 at a user defined uncertainty interval.
 
-  The ordination figure maintains the color coding just decribed. The
+  The ordination figure maintains the color coding just described. The
   ordination is performed on p(k|t) via either PCoA (using either
   Jensen-Shannon, Euclidean, Hellinger, Bray-Curtis, Jaccard, or Chi-squared
   distance) or t-SNE. The latter iterates through decreasing perplexity
@@ -130,15 +130,15 @@ Launch in interactive visualize to explore topic effects
   multiplied by the marginal topic distribution (in counts). To determine the
   initial order in which taxa are shown, these two distributions are compared
   via Kullback-Liebler divergence and then weighted by the overall taxa
-  frequency. The coloration of the bars indiciates the taxonomic group the
-  inidividual taxa belong to. The groups shown are determined based on the
+  frequency. The coloration of the bars indicates the taxonomic group the
+  individual taxa belong to. The groups shown are determined based on the
   abundance of that group in the raw abundance table. When a topic is
   selected, the relative frequency of a given taxa in that topic is shown in
   red.
 
   \eqn{\lambda} controls relevance of taxa within a topic, which in turn is used to
   adjust the order in which the taxa are shown when a topic is selected.
-  Relevence is essentially a weighted sum between the probability of taxa in
+  Relevance is essentially a weighted sum between the probability of taxa in
   a given topic and the probability of taxa in a given topic relative to the
   overall frequency of that taxa. Adjusting \eqn{\lambda} influences the relative weighting such
   that \deqn{r = \lambda x log p(t|k) + \lambda x log p(t|k)/p(x)}
@@ -169,7 +169,7 @@ Launch in interactive visualize to explore topic effects
   on chosen binary covariate effects. The slider
   allows the user to threshold the number of points shown, based on their values in p(s|k).
   Highlighting points in the violin plots generates bar plots that show their abundances (or
-  relative abundanecs) in the raw abundance table.
+  relative abundances) in the raw abundance table.
   }
 
 \subsection{Continuous}{
@@ -192,7 +192,7 @@ Launch in interactive visualize to explore topic effects
   control by adjusting \eqn{\lambda} where \deqn{r = \lambda x log p(t|k) + \lambda x log p(t|k)/p(x)}
   If binary
   covariates were provided in the model formula, selected split will split the regressions based on the selected
-  covariate. Each figure overlays a linear best fit (red) and loess fit (red) to facilitate intepretation. The bottom
+  covariate. Each figure overlays a linear best fit (red) and loess fit (red) to facilitate interpretation. The bottom
   panel shows these taxa combined.
   }
 
@@ -200,7 +200,7 @@ Launch in interactive visualize to explore topic effects
   Integrates the taxa over topics p(t|k) and gene functions over topics p(g|k) distributions,
   along with and the covariate effects from the p(s|k) component. The covariate effects
   for each topic are shown as a scatterplot of posterior weights with error bars corresponding the
-  global approximation of uncertainty. IIf the covariate chosen is binary, then the posterior regression
+  global approximation of uncertainty. If the covariate chosen is binary, then the posterior regression
   weights with uncertainty intervals are shown. This is analogous to the mean difference between factor
   levels in the posterior predictive distribution. For continuous covariates, the points
   again represent the mean regression weights (i.e., the posterior slope estimate of the

@@ -14,7 +14,7 @@ knitr::opts_chunk$set(collapse=TRUE,comment='#>')
 set.seed(1014)
 ```
 
-Currently, we provide two approaches for prediction functional content from 16S rRNA amplicon ambundance data: PICRUSt, which utilizes GreenGreens 13.5 assigned OTUs, and Tax4Fun, which can handle Silva assignments.
+Currently, we provide two approaches for prediction functional content from 16S rRNA amplicon abundance data: PICRUSt, which utilizes GreenGreens 13.5 assigned OTUs, and Tax4Fun, which can handle Silva assignments.
 
 ## PICRUSt
 
@@ -31,14 +31,14 @@ These column names correspond with the row names in the taxonomy table:
 GEVERS$TAX[1:5,1:3]
 ```
 
-To run PICRUSt, we first have to download the reference files. We can choose between KO terms or COG terms, or we can simply download the entire set of files, which is what the download command defaults to. We'll stick with KO terms for now, and we'll download it to a temporary directly. It's probably best for you to downlaod them to a permenant location. If you would like to download these files manually, the repo can be found here: https://gitlab.com/sw1/themetagenomics_data/.
+To run PICRUSt, we first have to download the reference files. We can choose between KO terms or COG terms, or we can simply download the entire set of files, which is what the download command defaults to. We'll stick with KO terms for now, and we'll download it to a temporary directly. It's probably best for you to download them to a permanant location. If you would like to download these files manually, the repo can be found here: https://gitlab.com/sw1/themetagenomics_data/.
 
 ```{r}
 tmp <- tempdir()
 download_ref(tmp,reference='gg_ko',overwrite=FALSE)
 ```
 
-We now have our GreenGenes KO terms reference file in a temporary directory for easy access. Before we perform the actual prediction, we could manually normalize for OTU copy number via the *cnn* command, but we provide an argument within the PICRUSt function to make our approach a little more steamlined. Now, we'll run PICRUSt. Our implementation uses Rcpp, so it's fast, but behaves analogously to the python scripts you may be familiar with. 
+We now have our GreenGenes KO terms reference file in a temporary directory for easy access. Before we perform the actual prediction, we could manually normalize for OTU copy number via the *cnn* command, but we provide an argument within the PICRUSt function to make our approach a little more streamlined. Now, we'll run PICRUSt. Our implementation uses Rcpp, so it's fast, but behaves analogously to the python scripts you may be familiar with. 
 
 ```{r}
 system.time(FUNCTIONS <- picrust(GEVERS$OTU,rows_are_taxa=FALSE,
@@ -77,11 +77,11 @@ Each element in these lists are named, so they're easily accessible. For example
 FUNCTIONS$fxn_meta$KEGG_Description['K05846']
 FUNCTIONS$fxn_meta$KEGG_Pathways['K05846']
 ```
-The hierarchy information is ordered based on its depth, so environmental information processing is the most genereal level, whereas abc transporters is the most specific.
+The hierarchy information is ordered based on its depth, so environmental information processing is the most general level, whereas abc transporters is the most specific.
 
 ## Tax4Fun
 
-If we used Silva assignments instead of GreenGenes, we no longer can use PICRUSt. Instead, we can take advantage of Tax4Fun. For this, we'll use the David et al. time series dataset, which is accessable via the **DAVID** command. Like GEVERS, DAVID is a list containing an abundance table, a metadata dataframe, and a taxonomy table. Note, however, that we are no longer working with OTU IDs (since this table was created via the Dada2 pipeline).
+If we used Silva assignments instead of GreenGenes, we no longer can use PICRUSt. Instead, we can take advantage of Tax4Fun. For this, we'll use the David et al. time series dataset, which is accessible via the **DAVID** command. Like GEVERS, DAVID is a list containing an abundance table, a metadata dataframe, and a taxonomy table. Note, however, that we are no longer working with OTU IDs (since this table was created via the Dada2 pipeline).
 
 ```{r}
 DAVID$ABUND[1:5,1:5]

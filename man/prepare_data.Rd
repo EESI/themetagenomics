@@ -25,7 +25,7 @@ uniquely named.}
 \item{rows_are_taxa}{(required) Logical flag indicating whether otu_table
 rows correspond to taxa (TRUE) or samples (FALSE).}
 
-\item{tax_table}{Matrix or dataframe containing taxonimc information with row or
+\item{tax_table}{Matrix or dataframe containing taxonomic information with row or
 column names corresponding to the otu_table.}
 
 \item{metadata}{Matrix or dataframe containing sample information with row or
@@ -67,7 +67,7 @@ expanded as dummy variables}
 }
 \description{
 Creates a themetadata class by preprocessing data from an OTU table,
-taxonimic information, sample metadata, and a formula reflecting the preposed
+taxonomic information, sample metadata, and a formula reflecting the preposed
 relationship between sample metadata and the topics over samples
 distribution.
 }

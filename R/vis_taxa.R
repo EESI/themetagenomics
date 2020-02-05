@@ -2,7 +2,7 @@
 #'
 #' @param taxa_bar_n Number of taxa to show in the frequency bar plot.
 #'   Defaults to 30.
-#' @param top_n Number of taxonic groups to colorize in the frequency
+#' @param top_n Number of taxonomic groups to colorize in the frequency
 #'   bar plot. Defaults to 7.
 #' @param method Method for estimating topic correlations links.
 #'   Defaults to huge.

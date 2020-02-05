@@ -19,7 +19,7 @@ NULL
 #' @param reference_path Folder path of the silva-to-kegg mapping file
 #' (t4f_silva_to_kegg.rds) and reference profiles (t4f_ref_profiles.rds). Must
 #' not be renamed.
-#' @param type Type of protein domain classifcation methods used to generate
+#' @param type Type of protein domain classification methods used to generate
 #'   references (uproc or pauda). Defaults to uproc.
 #' @param short Logical flag whether to use a short or long read
 #'   references. Defaults to TRUE.

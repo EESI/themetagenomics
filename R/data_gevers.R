@@ -1,11 +1,11 @@
 #' Inflammatory bowel disease gut microbiome data
 #'
-#' Subset of samples from the 16S amplicon Gevers et al prediatric
+#' Subset of samples from the 16S amplicon Gevers et al pediatric
 #' inflammatory bowel disease (IBD) dataset. The data include 200 gut samples,
 #' 100 of which are controls, spanning 991 OTUs. Three tables are included: an
 #' OTU table generated via QIIME, picked against GreenGreens 13.5 at 97%
 #' similarity; a taxonomy reference table, and a sample metadata table that
-#' includes diagnoiss and PCDAI scores, a continuous measure of disease burden.
+#' includes diagnosis and PCDAI scores, a continuous measure of disease burden.
 #'
 #' @docType data
 #' @name GEVERS

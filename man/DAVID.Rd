@@ -3,7 +3,7 @@
 \docType{data}
 \name{DAVID}
 \alias{DAVID}
-\title{Human logitudinal microbiome data}
+\title{Human longitudinal microbiome data}
 \format{A list containing a 746x1493 matrix (ABUND), a 1493x7 matrix (TAX),
 and a 746x9 dataframe (META).}
 \source{

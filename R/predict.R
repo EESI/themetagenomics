@@ -9,7 +9,7 @@
 #' @param reference A string for either gg_ko, gg_cog, or silva_ko.
 #' Defaults to gg_ko.
 #' @param reference_path Folder path of the reference file
-#' @param scalar Value for scaling the topics over taxa distrubution
+#' @param scalar Value for scaling the topics over taxa distribution
 #'   to predicted counts. Defaults to 100.
 #' @param cn_normalize Logical flag for performing 16S rRNA copy number
 #'   normalization. Defaults to FALSE.

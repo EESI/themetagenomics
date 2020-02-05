@@ -1,4 +1,4 @@
-#' Human logitudinal microbiome data
+#' Human longitudinal microbiome data
 #'
 #' This includes 16S amplicon sequencing measurements over time from 2
 #' individuals. One donor provided both gut and oral samples, whereas the other

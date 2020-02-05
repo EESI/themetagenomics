@@ -8,7 +8,7 @@ extract <- function(object,...) UseMethod('extract')
 
 #' @describeIn extract Extract summary statistics from HMC effects object
 #'
-#' Extracts the summary information in a form condusive with vis methods,
+#' Extracts the summary information in a form conducive with vis methods,
 #' specifically in cases when return_summary was set to FALSE.
 #'
 #' @return A list containing

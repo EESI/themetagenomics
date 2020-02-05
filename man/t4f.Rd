@@ -34,7 +34,7 @@ information is required.}
 (t4f_silva_to_kegg.rds) and reference profiles (t4f_ref_profiles.rds). Must
 not be renamed.}
 
-\item{type}{Type of protein domain classifcation methods used to generate
+\item{type}{Type of protein domain classification methods used to generate
 references (uproc or pauda). Defaults to uproc.}
 
 \item{short}{Logical flag whether to use a short or long read

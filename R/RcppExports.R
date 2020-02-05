@@ -14,7 +14,7 @@
 #' @return A list containing
 #' \describe{
 #' \item{gene_ids}{String vector of KO IDs, the column names in genome_table_out.}
-#' \item{pimeta_ids}{String vector of names for the PICRUSt metdata categories,
+#' \item{pimeta_ids}{String vector of names for the PICRUSt metadata categories,
 #' the column names of pimeta_table_out.}
 #' \item{matches}{String vector of OTU IDs from otu_id_targets that were present
 #' in the mapping file.}

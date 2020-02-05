@@ -9,7 +9,6 @@ r:
 os:
   - linux
   - osx
-  - windows
 
 latex: true
 
@@ -19,6 +18,7 @@ r_binary_packages:
  - lda
  - lme4
  - Matrix
+ - plotly
  - RcppArmadillo
  - Rcpp
  - scales

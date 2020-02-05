@@ -4,7 +4,7 @@ NULL
 
 #' Resume HMC using a previous fit
 #'
-#' Perform HMC using a previously compiled Stan model. This is specifcally useful in
+#' Perform HMC using a previously compiled Stan model. This is specifically useful in
 #' cases when a previous fit failed to converged (i.e., Rhat > 1.1 for a portion
 #' of parameter estimates), thus requiring more iterations.
 #'
