@@ -6,3 +6,4 @@
 ^\.Rprofile$
 ^README\.Rmd$
 ^packrat/
+^CRAN-RELEASE$

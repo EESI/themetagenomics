@@ -127,7 +127,7 @@ est.topics <- function(object,metadata,formula,refs,nsims=100,ui_level=.8,npoint
   formula <- as.formula(sprintf('1:%s %s',K,paste0(formula,collapse=' ')))
 
   if (verbose) cat('Estimating regression weights with global uncertainty.\n')
-  estimated_effects <- stm::estimateEffect(formula,fit,modelframe,uncertainty='Global')
+  estimated_effects <- suppressWarnings(stm::estimateEffect(formula,fit,modelframe,uncertainty='Global'))
 
   estimated_effects$modelframe_full <- modelframe_full
   estimated_effects$modelframe <- modelframe

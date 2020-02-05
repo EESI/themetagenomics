@@ -8,6 +8,7 @@ This is a submission (first release)
 * ubuntu 16.10 (local machine): R 3.6.2
 * win-builder: R-release (3.6.1) [2/5/2020]
 * win-builder: R-devel (4.0.0) [2/5/2020]
+* win 10 Pro v1903 (local machine): 4.0.0
 
 ## R CMD check results
 
@@ -39,3 +40,7 @@ This is a submission (first release)
 ## Resubmission 3
 
 * Adjusted any use of class(x) to prevent issues from length 2 (matrix, array) output if matrix.
+
+## Resubmission 4
+
+* Fixed lapply using class issue in tests 

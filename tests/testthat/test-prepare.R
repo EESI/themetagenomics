@@ -34,7 +34,8 @@ test_that('prepare_data works with binary factor',{
                     refs='Not IBD',
                     cn_normalize=TRUE,
                     drop=TRUE)
-  expect_identical(list('matrix','matrix','data.frame','formula','character','NULL','data.frame','list'),
+  expect_identical(list(c('matrix','array'),c('matrix','array'),
+                        'data.frame','formula','character','NULL','data.frame','list'),
                    unname(lapply(x,class)))
   expect_true(colnames(x$metadata) != colnames(x$modelframe))
 
@@ -52,7 +53,8 @@ test_that('prepare_data works with continuous covariate',{
                     formula=~PCDAI,
                     cn_normalize=TRUE,
                     drop=TRUE)
-  expect_identical(list('matrix','matrix','data.frame','formula','NULL','data.frame','list'),
+  expect_identical(list(c('matrix','array'),c('matrix','array'),
+                        'data.frame','formula','NULL','data.frame','list'),
                    unname(lapply(x,class)))
   expect_true(any(is.na(DAT$META$PCDAI)))
   expect_false(any(is.na(x$metadata$PCDAI)))
@@ -70,16 +72,17 @@ test_that('prepare_data works with spline covariate',{
                     formula=~s(PCDAI),
                     cn_normalize=TRUE,
                     drop=FALSE)
-  expect_identical(list('matrix','matrix','data.frame','formula','list','data.frame','list'),
+  expect_identical(list(c('matrix','array'),c('matrix','array'),
+                        'data.frame','formula','list','data.frame','list'),
                    unname(lapply(x,class)))
   expect_equal(list('PCDAI',
                     's',
                     model.frame(~s(PCDAI),na.omit(DAT$META)),
                     ~PCDAI),
                list(x$splineinfo[[1]][[1]][[1]],
-                     x$splineinfo[[1]][[1]][[2]],
-                     x$splineinfo[[1]][[1]][[3]],
-                     x$splineinfo[[2]]))
+                    x$splineinfo[[1]][[1]][[2]],
+                    x$splineinfo[[1]][[1]][[3]],
+                    x$splineinfo[[2]]))
 })
 
 test_that('prepare_data works with multiclass factor',{
@@ -102,7 +105,8 @@ test_that('prepare_data works with multiclass factor',{
                     formula=~Multi,
                     cn_normalize=FALSE,
                     drop=TRUE)
-  expect_identical(list('matrix','matrix','data.frame','formula','character','NULL','data.frame','list'),
+  expect_identical(list(c('matrix','array'),c('matrix','array'),
+                        'data.frame','formula','character','NULL','data.frame','list'),
                    unname(lapply(x,class)))
   expect_true(ncol(x$modelframe) > ncol(x$metadata))
 
@@ -120,7 +124,8 @@ test_that('prepare_data works with multiclass factor and continuous',{
                     formula=~Multi + Day,
                     cn_normalize=FALSE,
                     drop=TRUE)
-  expect_identical(list('matrix','matrix','data.frame','formula','character','NULL','data.frame','list'),
+  expect_identical(list(c('matrix','array'),c('matrix','array'),
+                        'data.frame','formula','character','NULL','data.frame','list'),
                    unname(lapply(x,class)))
   expect_true(ncol(x$modelframe) > ncol(x$metadata))
   y <- prepare_data(otu_table=DAT$ABUND,
@@ -148,7 +153,8 @@ test_that('prepare_data works with multiclass factor and spline',{
                     formula=~Multi + s(Day),
                     cn_normalize=FALSE,
                     drop=TRUE)
-  expect_identical(list('matrix','matrix','data.frame','formula','character','list','data.frame','list'),
+  expect_identical(list(c('matrix','array'),c('matrix','array'),
+                        'data.frame','formula','character','list','data.frame','list'),
                    unname(lapply(x,class)))
   expect_true(ncol(x$modelframe) > ncol(x$metadata))
   y <- prepare_data(otu_table=DAT$ABUND,
