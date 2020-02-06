@@ -24,6 +24,8 @@ test_that('prepare_data works with no formula',{
 
 test_that('prepare_data works with binary factor',{
 
+  skip_on_cran()
+
   DAT <- readRDS(system.file('testdata','otudata.rds',package='themetagenomics'))
 
   x <- prepare_data(otu_table=DAT$OTU,
@@ -42,6 +44,8 @@ test_that('prepare_data works with binary factor',{
 })
 
 test_that('prepare_data works with continuous covariate',{
+
+  skip_on_cran()
 
   DAT <- readRDS(system.file('testdata','otudata.rds',package='themetagenomics'))
   DAT$META$PCDAI[1] <- NA
@@ -62,6 +66,8 @@ test_that('prepare_data works with continuous covariate',{
 })
 
 test_that('prepare_data works with spline covariate',{
+
+  skip_on_cran()
 
   DAT <- readRDS(system.file('testdata','otudata.rds',package='themetagenomics'))
 
@@ -86,6 +92,8 @@ test_that('prepare_data works with spline covariate',{
 })
 
 test_that('prepare_data works with multiclass factor',{
+
+  skip_on_cran()
 
   DAT <- readRDS(system.file('testdata','seqdata.rds',package='themetagenomics'))
 
@@ -113,6 +121,8 @@ test_that('prepare_data works with multiclass factor',{
 })
 
 test_that('prepare_data works with multiclass factor and continuous',{
+
+  skip_on_cran()
 
   DAT <- readRDS(system.file('testdata','seqdata.rds',package='themetagenomics'))
 
@@ -142,6 +152,8 @@ test_that('prepare_data works with multiclass factor and continuous',{
 })
 
 test_that('prepare_data works with multiclass factor and spline',{
+
+  skip_on_cran()
 
   DAT <- readRDS(system.file('testdata','seqdata.rds',package='themetagenomics'))
 
