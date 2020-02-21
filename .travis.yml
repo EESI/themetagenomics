@@ -4,7 +4,7 @@ cache: packages
 warnings_are_errors: false
 r:
   - release
-  - devel
+    #  - devel
 
 os:
   - linux
