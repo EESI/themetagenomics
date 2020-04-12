@@ -1,6 +1,6 @@
 Package: themetagenomics
 Title: Exploring Thematic Structure and Predicted Functionality of 16s rRNA Amplicon Data
-Version: 1.0.0
+Version: 1.0.1
 Authors@R: c(
     person("Stephen", "Woloszynek", email = "sw424@drexel.edu", role = c("aut", "cre"))
     )

@@ -43,4 +43,8 @@ This is a submission (first release)
 
 ## Resubmission 4
 
-* Fixed lapply using class issue in tests 
+* Fixed lapply using class issue in tests
+
+## Resubmission 5
+
+* Fixed stringsAsFactors issue for data.frame and read.table for R 4.0.0 release -- set all to FALSE
