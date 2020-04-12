@@ -51,11 +51,13 @@ vis.functions <- function(object,topic_effects,beta_min=1e-5,ui_level=.8,gene_mi
 
   dd_row <- as.dendrogram(hclust(dist(int_mat,method='euclidean'),method='ward.D2'))
   pw_ord <- data.frame(pw=rownames(int_mat)[order.dendrogram(dd_row)],
-                       pw_rank=1:nrow(int_mat))
+                       pw_rank=1:nrow(int_mat),
+                       stringsAsFactors=FALSE)
 
   df1 <- data.frame(weight=matrix(int_mat,ncol=1),
                     pw=pws,
-                    topic=rep(colnames(int_mat),each=N_pw))
+                    topic=rep(colnames(int_mat),each=N_pw),
+                    stringsAsFactors=FALSE)
   df1$pw <- factor(df1$pw,levels=unique(df1$pw),ordered=TRUE)
 
 
@@ -74,7 +76,8 @@ vis.functions <- function(object,topic_effects,beta_min=1e-5,ui_level=.8,gene_mi
     df2 <- data.frame(sig=matrix(sig_mat,ncol=1),
                       weight=matrix(int_mat,ncol=1),
                       pw=pws,
-                      topic=rep(colnames(int_mat),each=N_pw))
+                      topic=rep(colnames(int_mat),each=N_pw),
+                      stringsAsFactors=FALSE)
     df2$pw <- factor(df2$pw,levels=unique(df2$pw),ordered=TRUE)
 
     if (length(unique(df2$pw)) > pw_min){
@@ -159,7 +162,8 @@ vis.functions <- function(object,topic_effects,beta_min=1e-5,ui_level=.8,gene_mi
                            est=est_mat[,1],
                            lower=est_mat[,2],
                            upper=est_mat[,3],
-                           sig=ifelse(1:K %in% topic_effects[[covariate]][['sig']],'1','0'))[order(topic_effects[[covariate]][['rank']]),]
+                           sig=ifelse(1:K %in% topic_effects[[covariate]][['sig']],'1','0'),
+                           stringsAsFactors=FALSE)[order(topic_effects[[covariate]][['rank']]),]
           df$sig <- factor(as.character(sign(df$est) * as.numeric(as.character.factor(df$sig))),levels=c('0','1','-1'),ordered=TRUE)
           df$topic <- factor(df$topic,levels=df$topic,ordered=TRUE)
 
@@ -220,7 +224,8 @@ vis.functions <- function(object,topic_effects,beta_min=1e-5,ui_level=.8,gene_mi
         logbeta <- logbeta_global[order.dendrogram(dd_row),]
         df <- data.frame(probability=matrix(logbeta,ncol=1),
                          otu=rownames(logbeta),
-                         topic=rep(colnames(logbeta),each=nrow(logbeta)))
+                         topic=rep(colnames(logbeta),each=nrow(logbeta)),
+                         stringsAsFactors=FALSE)
         df$taxon <- pretty_taxa_names(tax_table[df$otu,])
         df$taxon <- paste0(df$taxon,' (',df$otu,')')
 

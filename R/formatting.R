@@ -177,8 +177,10 @@ sum_taxa_by_group <- function(otu_ids,taxa,otu_table,metadata,cov_list,group=c('
   names(group_list) <- group
   for (g in names(group_list)){
 
-    group_df <- rbind(data.frame(taxon=taxa[otu_ids,g],abundance=colSums(otu_table[cov_list$ids[[1]],otu_ids])/z[1],cov=names(cov_list$ids)[1],group=g),
-                      data.frame(taxon=taxa[otu_ids,g],abundance=colSums(otu_table[cov_list$ids[[2]],otu_ids])/z[2],cov=names(cov_list$ids)[2],group=g))
+    group_df <- rbind(data.frame(taxon=taxa[otu_ids,g],abundance=colSums(otu_table[cov_list$ids[[1]],otu_ids])/z[1],cov=names(cov_list$ids)[1],group=g,
+                                 stringsAsFactors=FALSE),
+                      data.frame(taxon=taxa[otu_ids,g],abundance=colSums(otu_table[cov_list$ids[[2]],otu_ids])/z[2],cov=names(cov_list$ids)[2],group=g,
+                                 stringsAsFactors=FALSE))
 
     group_list[[g]] <- with(group_df,aggregate(abundance,by=list(taxon=taxon,cov=cov,group=group),FUN=sum))
 
@@ -212,7 +214,7 @@ rename_taxa_to_other <- function(x,taxa,top_n=7,group=c('Phylum','Class','Order'
 
     if (type == 'otu_table'){
 
-      group_df <- data.frame(count=colSums(x[,taxa_temp_ids]),taxon=taxa_temp)
+      group_df <- data.frame(count=colSums(x[,taxa_temp_ids]),taxon=taxa_temp,stringsAsFactors=FALSE)
 
     }else{
 
@@ -225,7 +227,7 @@ rename_taxa_to_other <- function(x,taxa,top_n=7,group=c('Phylum','Class','Order'
 
       }
 
-      group_df <- data.frame(count=taxa_temp_ids_total,taxon=taxa_temp)
+      group_df <- data.frame(count=taxa_temp_ids_total,taxon=taxa_temp,stringsAsFactors=FALSE)
       group_df <- group_df[group_df$count > 0,]
 
     }

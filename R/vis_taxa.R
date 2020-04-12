@@ -252,7 +252,8 @@ vis.taxa <- function(object,taxa_bar_n=30,top_n=7,method=c('huge','simple'),corr
                            est=est_mat[,1],
                            lower=est_mat[,2],
                            upper=est_mat[,3],
-                           sig=ifelse(1:K %in% topic_effects[[covariate]]$sig,'1','0'))
+                           sig=ifelse(1:K %in% topic_effects[[covariate]]$sig,'1','0'),
+                           stringsAsFactors=FALSE)
           df0$sig <- factor(as.character(sign(df0$est) * as.numeric(as.character.factor(df0$sig))),levels=c('0','1','-1'),ordered=TRUE)
           df <- df0[order(topic_effects[[covariate]][['rank']]),]
           df$topic <- factor(df$topic,levels=df$topic,ordered=TRUE)
@@ -339,7 +340,7 @@ vis.taxa <- function(object,taxa_bar_n=30,top_n=7,method=c('huge','simple'),corr
 
        eig <- d$eig[1:3]/sum(d$eig)
        colnames(d$points) <- c('Axis1','Axis2','Axis3')
-       df <- data.frame(d$points,EST()$df0)
+       df <- data.frame(d$points,EST()$df0,stringsAsFactors=FALSE)
        df$marg <- topic_marg
 
        df$colors <- colors[as.character(df$sig)]

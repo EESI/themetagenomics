@@ -263,7 +263,7 @@ vis.topics <- function(object,taxa_bar_n=30,top_n=7,method=c('huge','simple'),co
 
         eig <- d$eig[1:3]/sum(d$eig)
         colnames(d$points) <- c('Axis1','Axis2','Axis3')
-        df <- data.frame(d$points)
+        df <- data.frame(d$points,stringsAsFactors=FALSE)
         df$topic <- paste0('T',1:K)
         df$marg <- topic_marg
 

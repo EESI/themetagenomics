@@ -92,7 +92,8 @@ vis.binary <- function(object,taxa_grp_n=7,...){
                            est=est_mat[,1],
                            lower=est_mat[,2],
                            upper=est_mat[,3],
-                           sig=ifelse(1:K %in% topic_effects[[covariate]][['sig']],'1','0'))[order(topic_effects[[covariate]][['rank']]),]
+                           sig=ifelse(1:K %in% topic_effects[[covariate]][['sig']],'1','0'),
+                           stringsAsFactors=FALSE)[order(topic_effects[[covariate]][['rank']]),]
           df$sig <- factor(as.character(sign(df$est) * as.numeric(as.character.factor(df$sig))),levels=c('0','1','-1'),ordered=TRUE)
           df$topic <- factor(df$topic,levels=df$topic,ordered=TRUE)
 
@@ -110,7 +111,8 @@ vis.binary <- function(object,taxa_grp_n=7,...){
           df0 <- data.frame(otu=c('x','y'),
                             p=c(0,1),
                             covariate=unique(metadata[,covariate]),
-                            taxon=c('x','y'))
+                            taxon=c('x','y'),
+                            stringsAsFactors=FALSE)
 
 
           list(p_est=p_est,k_levels=levels(df$topic),df0=df0,cov_list=cov_list,cov_names=cov_names,covariate=covariate)
@@ -154,7 +156,8 @@ vis.binary <- function(object,taxa_grp_n=7,...){
           df1 <- try(data.frame(abundance=matrix(otu_subset,ncol=1),
                                 otu=rownames(otu_subset),
                                 p=beta_subset,
-                                sample=rep(colnames(otu_subset),each=nrow(otu_subset))),
+                                sample=rep(colnames(otu_subset),each=nrow(otu_subset)),
+                                stringsAsFactors=FALSE),
                      silent=TRUE)
 
           validate(need(!(class(df1)[1] == 'try-error'),'Too many points filtered. Lower the minimum beta probability.'))

@@ -200,7 +200,8 @@ vis.continuous <- function(object,lambda_step=.1,taxa_reg_n=8,...){
           covariate <- input$choose_cov
 
           df0 <- data.frame(p=c(0,max(theta)),
-                            covariate=range(metadata[,covariate]))
+                            covariate=range(metadata[,covariate]),
+                            stringsAsFactors=FALSE)
 
           est_mat <- topic_effects[[covariate]]$est
 
@@ -208,7 +209,8 @@ vis.continuous <- function(object,lambda_step=.1,taxa_reg_n=8,...){
                            est=est_mat[,1],
                            lower=est_mat[,2],
                            upper=est_mat[,3],
-                           sig=ifelse(1:K %in% topic_effects[[covariate]]$sig,'1','0'))[order(topic_effects[[covariate]]$rank),]
+                           sig=ifelse(1:K %in% topic_effects[[covariate]]$sig,'1','0'),
+                           stringsAsFactors=FALSE)[order(topic_effects[[covariate]]$rank),]
           df$sig <- factor(as.character(sign(df$est) * as.numeric(as.character.factor(df$sig))),levels=c('0','1','-1'),ordered=TRUE)
           df$topic <- factor(df$topic,levels=df$topic,ordered=TRUE)
 
@@ -360,16 +362,16 @@ vis.continuous <- function(object,lambda_step=.1,taxa_reg_n=8,...){
           if (input$choose_mod != ''){
             topic_fitted <- topic_effects[[EST()$covariate]]$fitted[[input$choose_mod]][[k]]
             topic_switch <- topic_effects[[EST()$covariate]]$fitted_switch[[input$choose_mod]][[k]]
-            df_th <- data.frame(Value=theta[rownames(metadata),k],Covariate=metadata[,EST()$covariate])
-            df_fit <- data.frame(topic_fitted)
-            df_switch <- data.frame(topic_switch)
+            df_th <- data.frame(Value=theta[rownames(metadata),k],Covariate=metadata[,EST()$covariate],stringsAsFactors=FALSE)
+            df_fit <- data.frame(topic_fitted,stringsAsFactors=FALSE)
+            df_switch <- data.frame(topic_switch,stringsAsFactors=FALSE)
             colnames(df_fit) <- c('Value','Lower','Upper','Covariate')
             colnames(df_switch) <- c('Value','Lower','Upper','Covariate')
             R <- range(c(df_th$Covariate,df_fit$covariate,df_switch$covariate))
           }else{
             topic_fitted <- topic_effects[[EST()$covariate]]$fitted[[1]][[k]]
-            df_th <- data.frame(Value=theta[rownames(metadata),k],Covariate=metadata[,EST()$covariate])
-            df_fit <- data.frame(topic_fitted)
+            df_th <- data.frame(Value=theta[rownames(metadata),k],Covariate=metadata[,EST()$covariate],stringsAsFactors=FALSE)
+            df_fit <- data.frame(topic_fitted,stringsAsFactors=FALSE)
             colnames(df_fit) <- c('Value','Lower','Upper','Covariate')
             R <- range(c(df_th$Covariate,df_fit$covariate))
           }

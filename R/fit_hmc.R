@@ -127,7 +127,8 @@ est.hmc <- function(object,inits,prior=c('t','normal','laplace'),t_df=c(7,7,7),i
   stan_table <- data.frame(y=stan_dat$y,
                            pw=stan_dat$pw,
                            topic=stan_dat$topic,
-                           pwxtopic=stan_dat$pwxtopic)
+                           pwxtopic=stan_dat$pwxtopic,
+                           stringsAsFactors=FALSE)
 
   if (missing(inits)){
 
