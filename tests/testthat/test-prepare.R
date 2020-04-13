@@ -89,13 +89,13 @@ test_that('prepare_data works with multiclass factor',{
 
   DAT <- readRDS(system.file('testdata','seqdata.rds',package='themetagenomics'))
 
-  expect_warning(prepare_data(otu_table=DAT$ABUND,
-                              rows_are_taxa=FALSE,
-                              tax_table=DAT$TAX,
-                              metadata=DAT$META,
-                              formula=~Multi,
-                              cn_normalize=FALSE,
-                              drop=TRUE))
+  # expect_warning(prepare_data(otu_table=DAT$ABUND,
+  #                             rows_are_taxa=FALSE,
+  #                             tax_table=DAT$TAX,
+  #                             metadata=DAT$META,
+  #                             formula=~Multi,
+  #                             cn_normalize=FALSE,
+  #                             drop=TRUE))
 
   x <- prepare_data(otu_table=DAT$ABUND,
                     rows_are_taxa=FALSE,
@@ -136,8 +136,8 @@ test_that('prepare_data works with multiclass factor and continuous',{
                     formula=~Day + Multi,
                     cn_normalize=FALSE,
                     drop=TRUE)
-  expect_equal(x$modelframe[,c('Multi1','Multi3','Day')],
-               y$modelframe[,c('Multi1','Multi3','Day')])
+  expect_equal(x$modelframe[,sort(colnames(x$modelframe))],
+               y$modelframe[,sort(colnames(y$modelframe))])
 
 })
 
@@ -165,8 +165,8 @@ test_that('prepare_data works with multiclass factor and spline',{
                     formula=~s(Day) + Multi,
                     cn_normalize=FALSE,
                     drop=TRUE)
-  expect_equal(x$modelframe[,c('Multi1','Multi3','Day')],
-               y$modelframe[,c('Multi1','Multi3','Day')])
+  expect_equal(x$modelframe[,sort(colnames(x$modelframe))],
+               y$modelframe[,sort(colnames(y$modelframe))])
   expect_equal(list('Day',
                     's',
                     model.frame(~s(Day),na.omit(DAT$META)),
