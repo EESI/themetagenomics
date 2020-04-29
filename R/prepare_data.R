@@ -297,7 +297,7 @@ prepare_data <- function(otu_table,rows_are_taxa,tax_table,metadata,formula,refs
 
   slots$otu_table <- otu_table
   if (!miss$tax_table) slots$tax_table <- tax_table
-  slots$metadata <- data.frame(metadata,stringsAsFactors=FALSE)
+  slots$metadata <- data.frame(metadata,stringsAsFactors=TRUE)
   slots$refs <- refs
   slots$formula <- formula
   slots$modelframe <- modelframe

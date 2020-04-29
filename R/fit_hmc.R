@@ -128,7 +128,7 @@ est.hmc <- function(object,inits,prior=c('t','normal','laplace'),t_df=c(7,7,7),i
                            pw=stan_dat$pw,
                            topic=stan_dat$topic,
                            pwxtopic=stan_dat$pwxtopic,
-                           stringsAsFactors=FALSE)
+                           stringsAsFactors=TRUE)
 
   if (missing(inits)){
 

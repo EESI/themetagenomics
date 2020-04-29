@@ -31,16 +31,16 @@ est.ml <- function(object,iters=1000,verbose=FALSE,seed=sample.int(.Machine$inte
   extract_summary[['b_pwxtopic_sigma']] <- matrix(c(VarCorr(mm)$`pw:topic`),ncol=1,dimnames=list('b_pwxtopic_sigma','mean'))
   extract_summary[['b_pw']] <- data.frame(pw=rownames(ranef(mm)$pw),
                                           mean=ranef(mm)$pw[,1],
-                                          stringsAsFactors=FALSE)
+                                          stringsAsFactors=TRUE)
   rownames(extract_summary[['b_pw']]) <- extract_summary[['b_pw']]$pw
   extract_summary[['b_topic']] <- data.frame(topic=1:nrow(ranef(mm)$topic),
                                              mean=ranef(mm)$topic[,1],
-                                             stringsAsFactors=FALSE)
+                                             stringsAsFactors=TRUE)
   rownames(extract_summary[['b_topic']]) <- extract_summary[['b_topic']]$topic
   extract_summary[['b_pwxtopic']] <- data.frame(pw=gsub('^(.*)\\:([0-9]+)$','\\1',rownames(ranef(mm)$`pw:topic`)),
                                                 topic=gsub('^(.*)\\:([0-9]+)$','\\2',rownames(ranef(mm)$`pw:topic`)),
                                                 mean=ranef(mm)$`pw:topic`[,1],
-                                                stringsAsFactors=FALSE)
+                                                stringsAsFactors=TRUE)
   rownames(extract_summary[['b_pwxtopic']]) <- rownames(ranef(mm)$`pw:topic`)
   extract_summary[['yhat']] <- matrix(predict(mm),ncol=1)
   dimnames(extract_summary[['yhat']]) <- list(sprintf('yhat[%s]',1:nrow(extract_summary[['yhat']])),'mean')

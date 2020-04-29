@@ -1,6 +1,6 @@
 Package: themetagenomics
 Title: Exploring Thematic Structure and Predicted Functionality of 16s rRNA Amplicon Data
-Version: 1.0.1
+Version: 1.0.2
 Authors@R: c(
     person("Stephen", "Woloszynek", email = "sw424@drexel.edu", role = c("aut", "cre"))
     )
@@ -9,7 +9,10 @@ Description: A means to explore the structure of 16S rRNA surveys using a Struct
   table, sample metadata, and taxonomy information, and themetagenomics infers 
   associations between topics and sample features, as well as topics and predicted 
   functional content. Functional prediction can be accomplished via Tax4Fun (for 
-  Silva references) and PICRUSt (for GreenGeenes references).
+  Silva references) and PICRUSt (for GreenGeenes references). See Woloszynek S, 
+  Mell JC, Zhao Z, Simpson G, O’Connor MP, Rosen GL (2019) Exploring thematic 
+  structure and predicted functionality of 16S rRNA amplicon data. PLoS ONE 
+  14(12): e0219235. https://doi.org/10.1371/journal.pone.0219235
 URL: http://github.com/EESI/themetagenomics
 BugReports: http://github.com/EESI/themetagenomics/issues
 License: MIT + file LICENSE

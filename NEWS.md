@@ -1,3 +1,3 @@
-# Themetagenomics 1.0.1
+# Themetagenomics 1.0.2
 
 * First release.

@@ -1,4 +1,4 @@
-This is a submission (first release)
+This is a minor fix/update from 1.0.1 to 1.0.2. 
 
 ---
 
@@ -48,3 +48,7 @@ This is a submission (first release)
 ## Resubmission 5
 
 * Fixed stringsAsFactors issue for data.frame and read.table for R 4.0.0 release -- set all to FALSE
+
+## Resubmission 6
+
+* Resubmission 5 caused an issue with one of the visualizations. Now fixed.
