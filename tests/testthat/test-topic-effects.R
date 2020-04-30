@@ -3,6 +3,7 @@ context('estimate topic effects')
 test_that('est.topics returns correct results for different formulae',{
 
   skip_on_cran()
+  skip_on_travis()
 
   DAT <- readRDS(system.file('testdata','otudata.rds',package='themetagenomics'))
 
